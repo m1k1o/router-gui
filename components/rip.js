@@ -1,5 +1,4 @@
 Vue.component('rip', {
-    props: ['rip', 'fetch_data', 'table'],
     template: `
         <div class="card mb-3">
             <div class="card-body">
@@ -57,48 +56,39 @@ Vue.component('rip', {
     `,
     data: () => {
         return {
-            entries: {},
-
             timers: false,
             interfaces: false
         }
     },
-    methods: {
-        /*
-        UnsolicitedUpdates(active){
-            ajax("RIP", "Updates", active ? "start" : "stop").then(({ active }) => {
-                
-            }, () => {})
+    computed: {
+        entries() {
+            return this.$store.state.rip.table;
         },
-        */
-        Update(){
-            ajax("RIP", "Table").then((response) => {
-                this.entries = response;
-            }, () => {})
-        },
-        Initialize(){
-            this.Update();
-        }
-    },
-    watch: { 
-        table: function(newVal, oldVal) {
-            this.entries = newVal;
-        }
-    },
-    mounted() {
-        if(this.fetch_data) {
-            this.Initialize();
-            setInterval(() => this.Update(), 1000)
+        running() {
+            return this.$store.state.running;
         }
     },
     components: {
         'timers_modal': {
             props: ['opened'],
+            watch: { 
+                opened: function(newVal, oldVal) {
+                    if(!oldVal && newVal) {
+                        this.Open();
+                    }
+                    
+                    if(oldVal && !newVal) {
+                        this.Close();
+                    }
+                }
+            },
             data: () => ({
-                data: false
+                visible: false,
+
+                timers: {}
             }),
             template: `
-                <modal v-if="data" v-on:close="Close()" v-cloak>
+                <modal v-if="visible" v-on:close="Close()" v-cloak>
                     <div slot="header">
                         <h1 class="mb-3"> RIP Timers </h1>
                     </div>
@@ -106,26 +96,26 @@ Vue.component('rip', {
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">Update Timer <small>(s)</small></label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" v-model="data.update_timer">
+                                <input type="text" class="form-control" v-model="timers.update_timer">
                             </div>
                         </div>
                         <hr>
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">Invalid Timer <small>(s)</small></label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" v-model="data.invalid_timer">
+                                <input type="text" class="form-control" v-model="timers.invalid_timer">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">Hold Timer <small>(s)</small></label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" v-model="data.hold_timer">
+                                <input type="text" class="form-control" v-model="timers.hold_timer">
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">Flush Timer <small>(s)</small></label>
                             <div class="col-sm-8">
-                                <input type="text" class="form-control" v-model="data.flush_timer">
+                                <input type="text" class="form-control" v-model="timers.flush_timer">
                             </div>
                         </div>
                     </div>
@@ -135,6 +125,26 @@ Vue.component('rip', {
                     </div>
                 </modal>
             `,
+            methods: {
+                Open(){
+                    this.timers = {
+                        ...this.$store.state.rip.timers
+                    }
+                    this.visible = true;
+                },
+                Close(){
+                    this.visible = false;
+                    this.$emit("closed");
+                },
+                Action(){
+                    this.$store.dispatch('RIP_TIMERS', this.timers).then(() => {
+                        this.Close();
+                    })
+                }
+            }
+        },
+        'interfaces_modal': {
+            props: ['opened'],
             watch: { 
                 opened: function(newVal, oldVal) {
                     if(!oldVal && newVal) {
@@ -146,57 +156,40 @@ Vue.component('rip', {
                     }
                 }
             },
-            methods: {
-                Open(){
-                    ajax("RIP", "Timers").then((response) => {
-                        this.$set(this, 'data', response);
-                    }, () => {
-                        this.Close();
-                    })
-                },
-                Close(){
-                    this.data = false;
-                    this.$emit("closed");
-                },
-                Action(){
-                    ajax("RIP", "Timers", Object.values(this.data).join('\n')).then((response) => {
-                        this.data = response;
-                        this.Close();
-                    }, () => {});
-                }
-            }
-        },
-        'interfaces_modal': {
-            props: ['opened'],
             data: () => ({
-                data: false
+                visible: false
             }),
+            computed: {
+                interfaces() {
+                    return this.$store.state.rip.interfaces;
+                }
+            },
             template: `
-                <modal v-if="data" v-on:close="Close()" v-cloak>
+                <modal v-if="visible" v-on:close="Close()" v-cloak>
                     <div slot="header">
                         <h1 class="mb-3"> RIP Interfaces </h1>
                     </div>
                     <div slot="body" class="form-horizontal">
                         <table class="table">
-                            <tr v-for="(iface, id) in data">
+                            <tr v-for="(iface, id) in interfaces">
                                 <td width="1%"><interface-show :id="id"></interface-show></td>
-                                <td>
+                                <td class="text-center">
                                     <span v-if="iface.running" class="text-success">Running</span>
                                     <span v-else class="text-danger">Not Running</span>
                                 </td>
-                                <td>
+                                <td class="text-center">
                                     <span v-if="iface.active" class="text-success">Active</span>
                                     <span v-else class="text-danger">Not Active</span>
                                 </td>
                                 <td width="1%">
                                     <button
                                         v-if="!iface.active"
-                                        v-on:click="Add(id)"
+                                        v-on:click="Toggle(id)"
                                         class="btn btn-info"
                                     > Add </button>
                                     <button
                                         v-else
-                                        v-on:click="Remove(id)"
+                                        v-on:click="Toggle(id)"
                                         class="btn btn-danger"
                                     > Remove </button>
                                 </td>
@@ -206,39 +199,16 @@ Vue.component('rip', {
                     </div>
                 </modal>
             `,
-            watch: { 
-                opened: function(newVal, oldVal) {
-                    if(!oldVal && newVal) {
-                        this.Open();
-                    }
-                    
-                    if(oldVal && !newVal) {
-                        this.Close();
-                    }
-                }
-            },
             methods: {
                 Open(){
-                    ajax("RIP", "Interfaces").then((response) => {
-                        this.$set(this, 'data', response);
-                    }, () => {
-                        this.Close();
-                    })
+                    this.visible = true;
                 },
                 Close(){
-                    this.data = false;
+                    this.visible = false;
                     this.$emit("closed");
                 },
-
-                Add(id){
-                    ajax("RIP", "AddInterface", id).then((iface) => {
-                        this.data[id] = iface;
-                    });
-                },
-                Remove(id){
-                    ajax("RIP", "RemoveInterface", id).then((iface) => {
-                        this.data[id] = iface;
-                    });
+                Toggle(id){
+                    this.$store.dispatch('RIP_INTERFACE_TOGGLE', id);
                 }
             }
         }

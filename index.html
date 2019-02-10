@@ -48,35 +48,12 @@
 
         <h3 class="mb-3">Router</h3>
         
-        <interfaces v
-            :running="running"
-
-            :fetch_data="false"
-            :table="interfaces_table"
-
+        <interfaces
             :services="services"
         ></interfaces>
-
-        <arp
-            :running="running"
-
-            :fetch_data="false"
-            :table="arp_table"
-        ></arp>
-            
-        <routing
-            :running="running"
-
-            :fetch_data="false"
-            :table="routing_table"
-        ></routing>
-
-        <rip
-            :running="running"
-
-            :fetch_data="false"
-            :table="rip_table"
-        ></rip>
+        <arp></arp>
+        <routing></routing>
+        <rip></rip>
 
         <modal v-if="modal" v-on:close="modal = false" v-cloak>
             <div slot="header">
@@ -137,9 +114,7 @@
                 rip: {
                     table: {},
 
-                    interfaces: {
-
-                    },
+                    interfaces: {},
                     timers: {
                         update: null,
                         invalid: null,
@@ -161,8 +136,6 @@
                     state.running = true;
                 },
                 INTERFACE_EDIT(state, interface) {
-                    //Vue.set(state.interfaces.table, interface.id, interface);
-                    
                     for (const key in interface) {
                         if (interface.hasOwnProperty(key) && state.interfaces.table[interface.id].hasOwnProperty(key) && state.interfaces.table[interface.id][key] != interface[key]) {
                             Vue.set(state.interfaces.table[interface.id], key, interface[key]);
@@ -183,15 +156,33 @@
                         }
                     }
                 },
-/*
-                RIP_TIMRES(state, timers) {
+                
+                RIP_TIMERS(state, timers) {
                     for (const key in timers) {
                         if (timers.hasOwnProperty(key) && state.rip.timers.hasOwnProperty(key)) {
                             Vue.set(state.rip.timers, key, timers[key]);
                         }
                     }
                 },
-*/
+                RIP_INTERFACE(state, interface) {
+                    for (const key in interface) {
+                        if (interface.hasOwnProperty(key) && state.rip.interfaces[interface.id].hasOwnProperty(key) && state.rip.interfaces[interface.id][key] != interface[key]) {
+                            Vue.set(state.rip.interfaces[interface.id], key, interface[key]);
+                        }
+                    }
+                },
+
+                ROUTING_ENTRY_ADD(state, entries) {
+                    for (const id in entries) {
+                        if (entries.hasOwnProperty(id)) {
+                            Vue.set(state.routing.table, id, entries[id]);
+                        }
+                    }
+                },
+
+                ROUTING_ENTRY_REMOVE(state, id) {
+                    Vue.delete(state.routing.table, id);
+                }
             },
             getters: {
 
@@ -235,6 +226,41 @@
                         input.enabled.toString(),
                     ]).then((proxy) => {
                         commit('ARP_PROXY', proxy);
+                    });
+                },
+
+                RIP_TIMERS({commit}, input) {
+                    return ajax("RIP", "Timers", [
+                        input.update_timer,
+                        input.invalid_timer,
+                        input.hold_timer,
+                        input.flush_timer
+                    ]).then((timers) => {
+                        commit('RIP_TIMERS', timers);
+                    });
+                },
+                RIP_INTERFACE_TOGGLE({commit}, id) {
+                    return ajax("RIP", "InterfaceToggle", id).then((interface) => {
+                        commit('RIP_INTERFACE', { id, ...interface });
+                    });
+                },
+
+                ROUTING_STATIC_ADD({commit}, input) {
+                    return ajax("Routing", "AddStatic", [
+                        input.ip,
+                        input.mask,
+                        input.next_hop_ip,
+                        input.interface
+                    ]).then((entry) => {
+                        commit('ROUTING_ENTRY_ADD', entry);
+                    });
+                },
+                ROUTING_STATIC_REMOVE({state, commit}, id) {
+                    return ajax("Routing", "RemoveStatic", [
+                        state.routing.table[id].ip,
+                        state.routing.table[id].mask
+                    ]).then((interface) => {
+                        commit('ROUTING_ENTRY_REMOVE', id);
                     });
                 }
             }

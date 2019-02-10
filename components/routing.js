@@ -1,5 +1,4 @@
 Vue.component('routing', {
-    props: ['running', 'fetch_data', 'table'],
     template: `
         <div class="card mb-3">
             <div class="card-body">
@@ -36,7 +35,6 @@ Vue.component('routing', {
             
             <add_static_modal
                 :opened="add_static"
-                @new_entry="$set(entries, $event.id, $event)"
                 @closed="add_static = false"
             ></add_static_modal>
 
@@ -44,47 +42,48 @@ Vue.component('routing', {
     `,
     data: () => {
         return {
-            entries: {},
-
             add_static: false
+        }
+    },
+    computed: {
+        entries() {
+            return this.$store.state.routing.table;
+        },
+        running() {
+            return this.$store.state.running;
         }
     },
     methods: {
         RemoveRoute(id){
-            ajax("Routing", "RemoveRoute", [this.entries[id].ip, this.entries[id].mask].join('\n')).then((response) => {
-                if(this.removed) {
-                    this.$remove(this.entries, id);
-                }
-            }, () => {})
-        },
-        Update(){
-            ajax("Routing", "Table").then((response) => {
-                this.entries = response;
-            }, () => {})
-        },
-        Initialize(){
-            this.Update();
-        }
-    },
-    watch: { 
-        table: function(newVal, oldVal) {
-            this.entries = newVal;
-        }
-    },
-    mounted() {
-        if(this.fetch_data) {
-            this.Initialize();
-            setInterval(() => this.Update(), 1000)
+            this.$store.dispatch('ROUTING_STATIC_REMOVE', id);
         }
     },
     components: {
         'add_static_modal': {
             props: ['opened'],
+            watch: { 
+                opened: function(newVal, oldVal) {
+                    if(!oldVal && newVal) {
+                        this.Open();
+                    }
+                    
+                    if(oldVal && !newVal) {
+                        this.Close();
+                    }
+                }
+            },
             data: () => ({
-                data: false
+                visible: false,
+
+                data: {
+                    ip: null,
+                    mask: null,
+                    next_hop_ip: null,
+                    interface: null
+                }
             }),
             template: `
-                <modal v-if="data" v-on:close="Close()" v-cloak>
+                <modal v-if="visible" v-on:close="Close()" v-cloak>
                     <div slot="header">
                         <h1 class="mb-3"> Add Static Route </h1>
                     </div>
@@ -121,35 +120,23 @@ Vue.component('routing', {
                     </div>
                 </modal>
             `,
-            watch: { 
-                opened: function(newVal, oldVal) {
-                    if(!oldVal && newVal) {
-                        this.Open();
-                    }
-                    
-                    if(oldVal && !newVal) {
-                        this.Close();
-                    }
-                }
-            },
             methods: {
                 Open(){
-                    this.$set(this, 'data', {
-                        ip: null,
-                        mask: null,
-                        next_hop_ip: null,
-                        interface: null,
-                    });
+                    this.data.ip =  null;
+                    this.data.mask =  null;
+                    this.data.next_hop_ip =  null;
+                    this.data.interface =  null;
+
+                    this.visible = true;
                 },
                 Close(){
-                    this.data = false;
+                    this.visible = false;
                     this.$emit("closed");
                 },
                 Action(){
-                    ajax("Routing", "AddRoute", Object.values(this.data).join('\n')).then((response) => {
-                        this.$emit("new_entry", response);
+                    this.$store.dispatch('ROUTING_STATIC_ADD', this.data).then(() => {
                         this.Close();
-                    }, () => {});
+                    })
                 }
             }
         }
