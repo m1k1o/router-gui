@@ -1,5 +1,5 @@
 Vue.component('interfaces', {
-    props: ['running', 'fetch_data', 'table', 'services'],
+    props: ['services'],
     template: `
         <div class="card mb-3">
             <div class="card-body">
@@ -17,12 +17,12 @@ Vue.component('interfaces', {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(i, id) in interfaces" v-bind:class="{'table-success': i.running}">
+                    <tr v-for="(i, id) in entries" v-bind:class="{'table-success': i.running}">
                         <td><interface-show :id="id"></interface-show></td>
                         <td><span v-bind:title="i.description">{{ i.friendly_name }}</span><br><small v-bind:title="i.name">{{ i.mac }}</small></td>
                         <td>{{ i.ip }}<br><small>{{ i.mask }}</small></td>
                         <td>
-                            <button class="btn btn-success mt-1" v-on:click="ModalOpen(id)">Edit</button>
+                            <button class="btn btn-success mt-1" v-on:click="Edit(id)">Edit</button>
                         </td>
                         <td>
                             <button v-if="!i.running" v-on:click="Start(id)" class="btn" v-bind:class="i.ip && i.mask ? 'btn-info' : 'btn-secondary disabled'"> Start </button>
@@ -32,140 +32,195 @@ Vue.component('interfaces', {
                 </tbody>
             </table>
             
-            <modal v-if="modal" v-on:close="ModalClose()" v-cloak>
-                <div slot="header">
-                    <h1 class="mb-3"> Edit Interface </h1>
-                    <div class="">
-                        <div class="float-left eth mr-3"><img src="images/eth.png"><span class="id">{{ modal.id }}</span></div>
-                        <span v-bind:title="modal.description">{{ modal.friendly_name }}</span><br><small v-bind:title="modal.name">{{ modal.mac }}</small>
-                    </div>
-                </div>
-                <div slot="body" class="form-horizontal">
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">
-                            Status:&nbsp;<span v-if="modal.running" class="text-success">Running</span> <span v-else class="text-danger">Stopped</span></label>
-                        <div class="btn-group col-sm-8">
-                            <button
-                                v-if="!modal.running"
-                                v-on:click="Start(modal.id)"
-                                v-bind:class="{'disabled': !interfaces[modal.id].ip || !interfaces[modal.id].mask}"
-                                class="btn btn-success"
-                            > Start </button>
-                            <button v-else v-on:click="Stop(modal.id)" class="btn btn-danger"> Stop </button>
-                        </div>
-                    </div>
-                    <hr>
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">IP Address</label>
-                        <div class="col-sm-8">
-                            <ip-address-input v-model="modal.ip" v-bind:placeholder="interfaces[modal.id].ip"></ip-address-input>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Mask</label>
-                        <div class="col-sm-8">
-                            <ip-mask-input v-model="modal.mask" v-bind:placeholder="interfaces[modal.id].mask"></ip-mask-input>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label"></label>
-                        <div class="btn-group col-sm-8">
-                            <button v-if="interfaces[modal.id].ip == modal.ip  && interfaces[modal.id].mask == modal.mask" class="btn btn-success disabled"> All changes saved </button>
-                            <button v-else v-on:click="ModalAction()" class="btn btn-success"> Save Changes </button>
-                        </div>
-                    </div>
-                    
-                    <hr v-if="Object.keys(services).length > 0">
-                    <div v-for="service in services" class="form-group row">
-                        <label class="col-sm-4 col-form-label">
-                            {{ service.name }}
-                        </label>
-                        <div class="col-sm-8">
-                            <button
-                                v-if="!service.running[modal.id]"
-                                v-on:click="((service.must_be_runnig && modal.running) || !service.must_be_runnig) && service.start(modal.id)"
-                                v-bind:class="{'disabled': !((service.must_be_runnig && modal.running) || !service.must_be_runnig) }"
-                                class="btn btn-info"
-                            > Start </button>
-                            <button
-                                v-else
-                                v-on:click="((service.must_be_runnig && modal.running) || !service.must_be_runnig)  && service.stop(modal.id)"
-                                class="btn btn-danger"
-                            > Stop </button>
-
-                            <span v-if="modal.id in service.running && service.running[modal.id]" class="text-success">Running</span>
-                            <span v-else class="text-danger">Not Running</span>
-                        </div>
-                    </div>
-                </div>
-            </modal>
-
+            <interface_modal
+                :id="interface_modal"
+                
+                :opened="interface_modal !== false"
+                @closed="interface_modal = false"
+            ></interface_modal>
         </div>
     `,
     data: () => {
         return {
-            interfaces: {},
-
-            modal: false,
-            editing: false
+            interface_modal: false
+        }
+    },
+    computed: {
+        entries() {
+            return this.$store.state.interfaces.table;
+        },
+        running() {
+            return this.$store.state.running;
         }
     },
     methods: {
-        ModalOpen(id){
-            this.modal = { id, ...this.interfaces[id]};
+        Edit(id){
+            this.interface_modal = id;
         },
-        ModalClose(){
-            this.modal = false
-        },
-        ModalAction(){
-            ajax("Interfaces", "Edit", [this.modal.id, this.modal.ip, this.modal.mask].join('\n')).then((interface) => {
-                this.$set(this.interfaces, this.modal.id, interface);
-                this.modal = { id: this.modal.id, ...interface };
-            }, () => {});
-        },
-
         Start(id){
-            if(!this.interfaces[id].ip || !this.interfaces[id].mask){
+            /*
+            if(!this.entries[id].ip || !this.entries[id].mask){
                 return;
             }
 
             ajax("Interfaces", "Start", id).then(({ running }) => {
-                this.interfaces[id].running = running;
+                this.entries[id].running = running;
 
                 if(this.modal && this.modal.id == id) {
                     this.modal.running = running;
                 }
             });
+            */
         },
         Stop(id){
+            /*
             ajax("Interfaces", "Stop", id).then(({ running }) => {
-                this.interfaces[id].running = running;
+                this.entries[id].running = running;
 
                 if(this.modal && this.modal.id == id) {
                     this.modal.running = running;
                 }
             });
-        },
-        
-        Update(id){
-            ajax("Interfaces", "Get", id).then((response) => {
-                this.$set(this.interfaces, this.modal.id, interface);
-            }, () => {})
-        },
-        Initialize(){
-            ajax("Interfaces", "Show").then((response) => {
-                this.interfaces = response;
-            }, () => {})
+            */
         }
     },
-    watch: { 
-        table: function(newVal, oldVal) {
-            this.interfaces = newVal;
-        }
-    },
-    mounted() {
-        if(this.fetch_data) {
-            this.Initialize();
+    components: {
+        'interface_modal': {
+            props: ['id', 'opened'],
+            watch: { 
+                opened: function(newVal, oldVal) {
+                    if(!oldVal && newVal) {
+                        this.Open();
+                    }
+                    
+                    if(oldVal && !newVal) {
+                        this.Close();
+                    }
+                },
+                id: {
+                    handler: function(newVal, oldVal) {
+                        console.log(newVal);
+                        this.interface = this.$store.state.interfaces.table[newVal];
+                    },
+                    immediate: true
+                }
+            },
+            computed: {
+                interfaces() {
+                    return this.$store.state.interfaces.table;
+                }
+            },
+            data() {
+                return {
+                    visible: false,
+
+                    interface: {},
+                    
+                    ip_address: null,
+                    subnet_mask: null
+                }
+            },
+            template: `
+                <modal v-if="visible" v-on:close="Close()" v-cloak>
+                    <div slot="header">
+                        <h1 class="mb-3"> Edit Interface </h1>
+                        <div class="">
+                            <div class="float-left eth mr-3"><img src="images/eth.png"><span class="id">{{ interface.id }}</span></div>
+                            <span v-bind:title="interface.description">{{ interface.friendly_name }}</span><br><small v-bind:title="interface.name">{{ interface.mac }}</small>
+                        </div>
+                    </div>
+                    <div slot="body" class="form-horizontal">
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">
+                                Status:&nbsp;<span v-if="interface.running" class="text-success">Running</span> <span v-else class="text-danger">Stopped</span>
+                            </label>
+                            <div class="btn-group col-sm-8">
+                                <button
+                                    v-if="!interface.running"
+                                    v-on:click="Start()"
+                                    v-bind:class="{'disabled': !interface.ip || !interface.mask}"
+                                    class="btn btn-success"
+                                > Start </button>
+                                <button v-else v-on:click="Start()" class="btn btn-danger"> Stop </button>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">IP Address</label>
+                            <div class="col-sm-8">
+                                <ip-address-input v-model="ip_address" v-bind:placeholder="interface.ip"></ip-address-input>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">Mask</label>
+                            <div class="col-sm-8">
+                                <ip-mask-input v-model="subnet_mask" v-bind:placeholder="interface.mask"></ip-mask-input>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label"></label>
+                            <div class="btn-group col-sm-8">
+                                <button v-if="interface.ip == ip_address  && interface.mask == subnet_mask" class="btn btn-success disabled"> All changes saved </button>
+                                <button v-else v-on:click="Action()" class="btn btn-success"> Save Changes </button>
+                            </div>
+                        </div>
+                        
+                        <!--
+                        <hr v-if="Object.keys(services).length > 0">
+                        <div v-for="service in services" class="form-group row">
+                            <label class="col-sm-4 col-form-label">
+                                {{ service.name }}
+                            </label>
+                            <div class="col-sm-8">
+                                <button
+                                    v-if="!service.running[id]"
+                                    v-on:click="((service.must_be_runnig && interface.running) || !service.must_be_runnig) && service.start(id)"
+                                    v-bind:class="{'disabled': !((service.must_be_runnig && interface.running) || !service.must_be_runnig) }"
+                                    class="btn btn-info"
+                                > Start </button>
+                                <button
+                                    v-else
+                                    v-on:click="((service.must_be_runnig && interface.running) || !service.must_be_runnig)  && service.stop(id)"
+                                    class="btn btn-danger"
+                                > Stop </button>
+
+                                <span v-if="id in service.running && service.running[id]" class="text-success">Running</span>
+                                <span v-else class="text-danger">Not Running</span>
+                            </div>
+                        </div>
+                        -->
+                    </div>
+                </modal>
+            `,
+            methods: {
+                Open(){
+                    this.ip_address = this.interface.ip;
+                    this.subnet_mask = this.interface.mask;
+                    
+                    this.visible = true;
+                },
+                Close(){
+                    this.visible = false;
+                    this.$emit("closed");
+                },
+                Action(){
+                    this.$store.dispatch('INTERFACE_EDIT', {
+                        id: this.id,
+                        ip: this.ip_address,
+                        mask: this.subnet_mask
+                    }).then(() => {
+                        this.Close();
+                    })
+                },
+
+                Start() {
+
+                },
+                
+                Stop() {
+                    
+                }
+            }
         }
     }
 })

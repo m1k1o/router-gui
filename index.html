@@ -103,6 +103,7 @@
 
     <!-- Global scripts -->
     <script src="vue.js" type="text/javascript"></script>
+    <script src="vuex.js"></script>
     <script src="components/helpers.js" type="text/javascript"></script>
     <script src="components/modal.js" type="text/javascript"></script>
     <script src="components/interfaces.js" type="text/javascript"></script>
@@ -111,10 +112,135 @@
     <script src="components/rip.js" type="text/javascript"></script>
     
     <script type="text/javascript">
-        var app = new Vue({
+        const store = new Vuex.Store({
+            state: {
+                running: false,
+
+                interfaces: {
+                    table: {}
+                },
+                arp: {
+                    table: {},
+
+                    proxy: {
+                        enabled: false
+                    },
+                    timers: {
+                        cache_timeout: 1,
+                        request_timeout: 2,
+                        request_interval: 3
+                    }
+                },
+                routing: {
+                    table: {},
+                },
+                rip: {
+                    table: {},
+
+                    interfaces: {
+
+                    },
+                    timers: {
+                        update: null,
+                        invalid: null,
+                        hold: null,
+                        flush: null,
+                    }
+                }
+            },
+            mutations: {
+                UPDATE_TABLES(state, tables) {
+                    for (const key in tables) {
+                        if (tables.hasOwnProperty(key)) {
+                            state[key].table = tables[key];
+                        }
+                    }
+                },
+                INITIALIZE(state, data) {
+                    Object.assign(state, data);
+                    state.running = true;
+                },
+                INTERFACE_EDIT(state, interface) {
+                    Vue.set(state.interfaces.table, interface.id, interface);
+                    /*
+                    for (const key in interface) {
+                        if (interface.hasOwnProperty(key) && state.interfaces.table[interface.id].hasOwnProperty(key)) {
+                            state.interfaces.table[interface.id][key] = interface[key];
+                            //Vue.set(state.arp.timers, key, timers[key]);
+                        }
+                    }
+                    */
+                },
+                ARP_TIMERS(state, timers) {
+                    for (const key in timers) {
+                        if (timers.hasOwnProperty(key) && state.arp.timers.hasOwnProperty(key) && state.arp.timers[key] != timers[key]) {
+                            Vue.set(state.arp.timers, key, timers[key]);
+                        }
+                    }
+                },
+                ARP_PROXY(state, proxy) {
+                    for (const key in proxy) {
+                        if (proxy.hasOwnProperty(key) && state.arp.proxy.hasOwnProperty(key) && state.arp.proxy[key] != proxy[key]) {
+                            Vue.set(state.arp.proxy, key, proxy[key]);
+                        }
+                    }
+                },
+/*
+                RIP_TIMRES(state, timers) {
+                    for (const key in timers) {
+                        if (timers.hasOwnProperty(key) && state.rip.timers.hasOwnProperty(key)) {
+                            Vue.set(state.rip.timers, key, timers[key]);
+                        }
+                    }
+                },
+*/
+            },
+            getters: {
+
+            },
+            actions: {
+                UPDATE_TABLES({commit}) {
+                    return ajax("Global", "UpdateTables")
+                    .then((tables) => commit('UPDATE_TABLES', tables));
+                },
+                INITIALIZE({commit}) {
+                    return ajax("Global", "Initialize")
+                    .then((data) => commit('INITIALIZE', data));
+                },
+                INTERFACE_EDIT({commit}, input) {
+                    return ajax("Interfaces", "Edit", [
+                        input.id,
+                        input.ip,
+                        input.mask
+                    ]).then((interface) => {
+                        commit('INTERFACE_EDIT', interface);
+                    }, () => {});
+                },
+                ARP_TIMERS({commit}, input) {
+                    return ajax("ARP", "Timers", [
+                        input.cache_timeout,
+                        input.request_timeout,
+                        input.request_interval
+                    ]).then((timers) => {
+                        commit('ARP_TIMERS', timers);
+                    }, () => {});
+                },
+                ARP_PROXY({commit}, input) {
+                    return ajax("ARP", "Proxy", [
+                        input.enabled.toString(),
+                    ]).then((proxy) => {
+                        commit('ARP_PROXY', proxy);
+                    }, () => {});
+                }
+            }
+        })
+
+        const app = new Vue({
             el: '#app',
+            store,
             data: {
-                services: {},/*{
+                services: {},
+                /*{
                     'rip': {
                         name: 'RIP',
                         running: {},
@@ -180,6 +306,7 @@
                         this.rip_table = response.rip_table;
                     }, () => {})
                 },
+                /*
                 Start(){
                     !this.running && ajax("Global", "Initialize").then((response) => {
                         this.interfaces_table = response.interfaces;
@@ -195,13 +322,18 @@
                     this.running && clearInterval(this.interval);
                     this.running = false;
                 }
+                */
             },
             mounted(){
-                setTimeout(() => this.Start(), 0);
+                //setTimeout(() => this.Start(), 0);
             }
         });
 
         function ajax(model, controller, body = null) {
+            if (body != null && Array.isArray(body)) {
+                body = body.join("\n");
+            }
+
             return fetch('http://'+app.api_hostname+':'+app.api_port+'/'+model+'/'+controller, { method: 'POST', body })
                 .then(function(response) {
                     return response.json();
