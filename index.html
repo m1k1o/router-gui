@@ -161,15 +161,13 @@
                     state.running = true;
                 },
                 INTERFACE_EDIT(state, interface) {
-                    Vue.set(state.interfaces.table, interface.id, interface);
-                    /*
+                    //Vue.set(state.interfaces.table, interface.id, interface);
+                    
                     for (const key in interface) {
-                        if (interface.hasOwnProperty(key) && state.interfaces.table[interface.id].hasOwnProperty(key)) {
-                            state.interfaces.table[interface.id][key] = interface[key];
-                            //Vue.set(state.arp.timers, key, timers[key]);
+                        if (interface.hasOwnProperty(key) && state.interfaces.table[interface.id].hasOwnProperty(key) && state.interfaces.table[interface.id][key] != interface[key]) {
+                            Vue.set(state.interfaces.table[interface.id], key, interface[key]);
                         }
                     }
-                    */
                 },
                 ARP_TIMERS(state, timers) {
                     for (const key in timers) {
@@ -207,15 +205,22 @@
                     return ajax("Global", "Initialize")
                     .then((data) => commit('INITIALIZE', data));
                 },
+
                 INTERFACE_EDIT({commit}, input) {
                     return ajax("Interfaces", "Edit", [
                         input.id,
                         input.ip,
                         input.mask
                     ]).then((interface) => {
-                        commit('INTERFACE_EDIT', interface);
-                    }, () => {});
+                        commit('INTERFACE_EDIT', { id: input.id, ...interface });
+                    });
                 },
+                INTERFACE_TOGGLE({commit}, id) {
+                    return ajax("Interfaces", "Toggle", id).then((interface) => {
+                        commit('INTERFACE_EDIT', { id, ...interface });
+                    });
+                },
+                
                 ARP_TIMERS({commit}, input) {
                     return ajax("ARP", "Timers", [
                         input.cache_timeout,
@@ -223,14 +228,14 @@
                         input.request_interval
                     ]).then((timers) => {
                         commit('ARP_TIMERS', timers);
-                    }, () => {});
+                    });
                 },
                 ARP_PROXY({commit}, input) {
                     return ajax("ARP", "Proxy", [
                         input.enabled.toString(),
                     ]).then((proxy) => {
                         commit('ARP_PROXY', proxy);
-                    }, () => {});
+                    });
                 }
             }
         })
@@ -345,10 +350,10 @@
                     
                     console.log("Error Occured.");
                     app.Push(response.error);
-                    throw Error(response.error);
+                    throw response.error;
                 }, (err) => {
                     app.Push(err.toString());
-                    throw Error(err.toString());
+                    throw err.toString();
                 });
         }
     </script>

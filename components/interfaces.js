@@ -25,8 +25,8 @@ Vue.component('interfaces', {
                             <button class="btn btn-success mt-1" v-on:click="Edit(id)">Edit</button>
                         </td>
                         <td>
-                            <button v-if="!i.running" v-on:click="Start(id)" class="btn" v-bind:class="i.ip && i.mask ? 'btn-info' : 'btn-secondary disabled'"> Start </button>
-                            <button v-else v-on:click="Stop(id)" class="btn btn-danger"> Stop </button>
+                            <button v-if="!i.running" v-on:click="Toggle(id)" class="btn" v-bind:class="i.ip && i.mask ? 'btn-info' : 'btn-secondary disabled'"> Start </button>
+                            <button v-else v-on:click="Toggle(id)" class="btn btn-danger"> Stop </button>
                         </td>
                     </tr>
                 </tbody>
@@ -57,31 +57,8 @@ Vue.component('interfaces', {
         Edit(id){
             this.interface_modal = id;
         },
-        Start(id){
-            /*
-            if(!this.entries[id].ip || !this.entries[id].mask){
-                return;
-            }
-
-            ajax("Interfaces", "Start", id).then(({ running }) => {
-                this.entries[id].running = running;
-
-                if(this.modal && this.modal.id == id) {
-                    this.modal.running = running;
-                }
-            });
-            */
-        },
-        Stop(id){
-            /*
-            ajax("Interfaces", "Stop", id).then(({ running }) => {
-                this.entries[id].running = running;
-
-                if(this.modal && this.modal.id == id) {
-                    this.modal.running = running;
-                }
-            });
-            */
+        Toggle(id) {
+            this.$store.dispatch('INTERFACE_TOGGLE', id);
         }
     },
     components: {
@@ -96,25 +73,16 @@ Vue.component('interfaces', {
                     if(oldVal && !newVal) {
                         this.Close();
                     }
-                },
-                id: {
-                    handler: function(newVal, oldVal) {
-                        console.log(newVal);
-                        this.interface = this.$store.state.interfaces.table[newVal];
-                    },
-                    immediate: true
                 }
             },
             computed: {
-                interfaces() {
-                    return this.$store.state.interfaces.table;
+                interface() {
+                    return this.$store.state.interfaces.table[this.id];
                 }
             },
             data() {
                 return {
                     visible: false,
-
-                    interface: {},
                     
                     ip_address: null,
                     subnet_mask: null
@@ -137,11 +105,11 @@ Vue.component('interfaces', {
                             <div class="btn-group col-sm-8">
                                 <button
                                     v-if="!interface.running"
-                                    v-on:click="Start()"
+                                    v-on:click="Toggle()"
                                     v-bind:class="{'disabled': !interface.ip || !interface.mask}"
                                     class="btn btn-success"
                                 > Start </button>
-                                <button v-else v-on:click="Start()" class="btn btn-danger"> Stop </button>
+                                <button v-else v-on:click="Toggle()" class="btn btn-danger"> Stop </button>
                             </div>
                         </div>
                         <hr>
@@ -208,17 +176,10 @@ Vue.component('interfaces', {
                         id: this.id,
                         ip: this.ip_address,
                         mask: this.subnet_mask
-                    }).then(() => {
-                        this.Close();
-                    })
+                    });
                 },
-
-                Start() {
-
-                },
-                
-                Stop() {
-                    
+                Toggle() {
+                    this.$store.dispatch('INTERFACE_TOGGLE', this.id);
                 }
             }
         }
