@@ -34,7 +34,8 @@ Vue.component('interfaces', {
             
             <interface_modal
                 :id="interface_modal"
-                
+                :services="services"
+
                 :opened="interface_modal !== false"
                 @closed="interface_modal = false"
             ></interface_modal>
@@ -63,7 +64,7 @@ Vue.component('interfaces', {
     },
     components: {
         'interface_modal': {
-            props: ['id', 'opened'],
+            props: ['id', 'opened', 'services'],
             watch: { 
                 opened: function(newVal, oldVal) {
                     if(!oldVal && newVal) {
@@ -89,7 +90,7 @@ Vue.component('interfaces', {
                 }
             },
             template: `
-                <modal v-if="visible" v-on:close="Close()" v-cloak>
+                <modal v-if="visible" v-on:close="Close()">
                     <div slot="header">
                         <h1 class="mb-3"> Edit Interface </h1>
                         <div class="">
@@ -133,7 +134,6 @@ Vue.component('interfaces', {
                             </div>
                         </div>
                         
-                        <!--
                         <hr v-if="Object.keys(services).length > 0">
                         <div v-for="service in services" class="form-group row">
                             <label class="col-sm-4 col-form-label">
@@ -141,7 +141,7 @@ Vue.component('interfaces', {
                             </label>
                             <div class="col-sm-8">
                                 <button
-                                    v-if="!service.running[id]"
+                                    v-if="!$store.getters[service.running][id]"
                                     v-on:click="((service.must_be_runnig && interface.running) || !service.must_be_runnig) && service.start(id)"
                                     v-bind:class="{'disabled': !((service.must_be_runnig && interface.running) || !service.must_be_runnig) }"
                                     class="btn btn-info"
@@ -152,11 +152,10 @@ Vue.component('interfaces', {
                                     class="btn btn-danger"
                                 > Stop </button>
 
-                                <span v-if="id in service.running && service.running[id]" class="text-success">Running</span>
+                                <span v-if="id in $store.getters[service.running] && $store.getters[service.running][id]" class="text-success">Running</span>
                                 <span v-else class="text-danger">Not Running</span>
                             </div>
                         </div>
-                        -->
                     </div>
                 </modal>
             `,

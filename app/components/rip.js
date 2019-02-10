@@ -88,7 +88,7 @@ Vue.component('rip', {
                 timers: {}
             }),
             template: `
-                <modal v-if="visible" v-on:close="Close()" v-cloak>
+                <modal v-if="visible" v-on:close="Close()">
                     <div slot="header">
                         <h1 class="mb-3"> RIP Timers </h1>
                     </div>
@@ -165,7 +165,7 @@ Vue.component('rip', {
                 }
             },
             template: `
-                <modal v-if="visible" v-on:close="Close()" v-cloak>
+                <modal v-if="visible" v-on:close="Close()">
                     <div slot="header">
                         <h1 class="mb-3"> RIP Interfaces </h1>
                     </div>

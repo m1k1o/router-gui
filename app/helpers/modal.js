@@ -2,7 +2,7 @@
 Vue.component('modal', {
     template: `
         <transition name="modal" @keydown.esc="$emit('close')">
-            <div class="modal-mask">
+            <div class="modal-mask" v-cloak>
                 <div class="modal-wrapper" v-on:click.self="$emit('close')">
                     <div class="modal-container">
                         <button type="button" class="close" v-on:click="$emit('close')">

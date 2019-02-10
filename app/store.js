@@ -1,0 +1,187 @@
+const store = new Vuex.Store({
+    state: {
+        running: false,
+
+        interfaces: {
+            table: {}
+        },
+        arp: {
+            table: {},
+
+            proxy: {
+                enabled: false
+            },
+            timers: {
+                cache_timeout: 1,
+                request_timeout: 2,
+                request_interval: 3
+            }
+        },
+        routing: {
+            table: {},
+        },
+        rip: {
+            table: {},
+
+            interfaces: {},
+            timers: {
+                update: null,
+                invalid: null,
+                hold: null,
+                flush: null,
+            }
+        }
+    },
+    mutations: {
+        UPDATE_TABLES(state, tables) {
+            for (const key in tables) {
+                if (tables.hasOwnProperty(key)) {
+                    state[key].table = tables[key];
+                }
+            }
+        },
+        INITIALIZE(state, data) {
+            Object.assign(state, data);
+            state.running = true;
+        },
+        STOP(state) {
+            state.running = false;
+        },
+
+        INTERFACE_EDIT(state, interface) {
+            for (const key in interface) {
+                if (interface.hasOwnProperty(key) && state.interfaces.table[interface.id].hasOwnProperty(key) && state.interfaces.table[interface.id][key] != interface[key]) {
+                    Vue.set(state.interfaces.table[interface.id], key, interface[key]);
+                }
+            }
+        },
+
+        ARP_TIMERS(state, timers) {
+            for (const key in timers) {
+                if (timers.hasOwnProperty(key) && state.arp.timers.hasOwnProperty(key) && state.arp.timers[key] != timers[key]) {
+                    Vue.set(state.arp.timers, key, timers[key]);
+                }
+            }
+        },
+        ARP_PROXY(state, proxy) {
+            for (const key in proxy) {
+                if (proxy.hasOwnProperty(key) && state.arp.proxy.hasOwnProperty(key) && state.arp.proxy[key] != proxy[key]) {
+                    Vue.set(state.arp.proxy, key, proxy[key]);
+                }
+            }
+        },
+        
+        RIP_TIMERS(state, timers) {
+            for (const key in timers) {
+                if (timers.hasOwnProperty(key) && state.rip.timers.hasOwnProperty(key)) {
+                    Vue.set(state.rip.timers, key, timers[key]);
+                }
+            }
+        },
+        RIP_INTERFACE(state, interface) {
+            for (const key in interface) {
+                if (interface.hasOwnProperty(key) && state.rip.interfaces[interface.id].hasOwnProperty(key) && state.rip.interfaces[interface.id][key] != interface[key]) {
+                    Vue.set(state.rip.interfaces[interface.id], key, interface[key]);
+                }
+            }
+        },
+
+        ROUTING_ENTRY_ADD(state, entries) {
+            for (const id in entries) {
+                if (entries.hasOwnProperty(id)) {
+                    Vue.set(state.routing.table, id, entries[id]);
+                }
+            }
+        },
+
+        ROUTING_ENTRY_REMOVE(state, id) {
+            Vue.delete(state.routing.table, id);
+        }
+    },
+    getters: {
+        rip_interfaces_running(state) {
+            var Interfaces = {}; 
+            Object.keys(state.rip.interfaces).forEach((key) => {
+                Interfaces[key] = state.rip.interfaces[key].active;
+            });
+            return Interfaces;
+        }
+    },
+    actions: {
+        UPDATE({commit}) {
+            return ajax("Global", "UpdateTables")
+            .then((tables) => commit('UPDATE_TABLES', tables));
+        },
+        INITIALIZE({commit}) {
+            return ajax("Global", "Initialize")
+            .then((data) => commit('INITIALIZE', data));
+        },
+
+        INTERFACE_EDIT({commit}, input) {
+            return ajax("Interfaces", "Edit", [
+                input.id,
+                input.ip,
+                input.mask
+            ]).then((interface) => {
+                commit('INTERFACE_EDIT', { id: input.id, ...interface });
+            });
+        },
+        INTERFACE_TOGGLE({commit}, id) {
+            return ajax("Interfaces", "Toggle", id).then((interface) => {
+                commit('INTERFACE_EDIT', { id, ...interface });
+            });
+        },
+        
+        ARP_TIMERS({commit}, input) {
+            return ajax("ARP", "Timers", [
+                input.cache_timeout,
+                input.request_timeout,
+                input.request_interval
+            ]).then((timers) => {
+                commit('ARP_TIMERS', timers);
+            });
+        },
+        ARP_PROXY({commit}, input) {
+            return ajax("ARP", "Proxy", [
+                input.enabled.toString(),
+            ]).then((proxy) => {
+                commit('ARP_PROXY', proxy);
+            });
+        },
+
+        RIP_TIMERS({commit}, input) {
+            return ajax("RIP", "Timers", [
+                input.update_timer,
+                input.invalid_timer,
+                input.hold_timer,
+                input.flush_timer
+            ]).then((timers) => {
+                commit('RIP_TIMERS', timers);
+            });
+        },
+        RIP_INTERFACE_TOGGLE({commit}, id) {
+            return ajax("RIP", "InterfaceToggle", id).then((interface) => {
+                commit('RIP_INTERFACE', { id, ...interface });
+            });
+        },
+
+        ROUTING_STATIC_ADD({commit}, input) {
+            return ajax("Routing", "AddStatic", [
+                input.ip,
+                input.mask,
+                input.next_hop_ip,
+                input.interface
+            ]).then((entry) => {
+                commit('ROUTING_ENTRY_ADD', entry);
+            });
+        },
+        ROUTING_STATIC_REMOVE({state, commit}, id) {
+            return ajax("Routing", "RemoveStatic", [
+                state.routing.table[id].ip,
+                state.routing.table[id].mask
+            ]).then((interface) => {
+                commit('ROUTING_ENTRY_REMOVE', id);
+            });
+        }
+    }
+})

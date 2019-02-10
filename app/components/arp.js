@@ -83,7 +83,7 @@ Vue.component('arp', {
                 }
             },
             template: `
-                <modal v-if="visible" v-on:close="Close()" v-cloak>
+                <modal v-if="visible" v-on:close="Close()">
                     <div slot="header">
                         <h1 class="mb-0"> Proxy ARP Settings </h1>
                     </div>
@@ -142,7 +142,7 @@ Vue.component('arp', {
                 }
             },
             template: `
-                <modal v-if="visible" v-on:close="Close()" v-cloak>
+                <modal v-if="visible" v-on:close="Close()">
                     <div slot="header">
                         <h1 class="mb-0"> ARP Timers </h1>
                     </div>
@@ -214,7 +214,7 @@ Vue.component('arp', {
                 interface: null
             }),
             template: `
-                <modal v-if="visible" v-on:close="Close()" v-cloak>
+                <modal v-if="visible" v-on:close="Close()">
                     <div slot="header">
                         <h1 class="mb-0"> ARP Lookup </h1>
                     </div>

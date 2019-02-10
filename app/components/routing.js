@@ -83,7 +83,7 @@ Vue.component('routing', {
                 }
             }),
             template: `
-                <modal v-if="visible" v-on:close="Close()" v-cloak>
+                <modal v-if="visible" v-on:close="Close()">
                     <div slot="header">
                         <h1 class="mb-3"> Add Static Route </h1>
                     </div>
