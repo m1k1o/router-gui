@@ -3,9 +3,9 @@ Vue.component('arp', {
         <div class="card mb-3">
             <div class="card-body">
                 <div class="float-right">
-                    <button class="btn btn-success" v-on:click="running && (lookup_modal = true)" v-bind:class="{'disabled': !running}">Lookup</button>
-                    <button class="btn btn-info" v-on:click="running && (timers_modal = true)" v-bind:class="{'disabled': !running}">Timers</button>
                     <button class="btn btn-warning" v-on:click="running && (proxy_modal = true)" v-bind:class="{'disabled': !running}">Proxy</button>
+                    <button class="btn btn-info" v-on:click="running && (timers_modal = true)" v-bind:class="{'disabled': !running}">Timers</button>
+                    <button class="btn btn-success" v-on:click="running && (lookup_modal = true)" v-bind:class="{'disabled': !running}">Lookup</button>
                 </div>
 
                 <h5 class="card-title mb-0 mt-2">ARP</h5>
@@ -87,7 +87,7 @@ Vue.component('arp', {
                     <div slot="header">
                         <h1 class="mb-0"> Proxy ARP Settings </h1>
                     </div>
-                    <div slot="body">
+                    <div slot="body" class="form-horizontal">
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">
                                 Proxy ARP:&nbsp;<span v-if="proxy.enabled" class="text-success">Running</span> <span v-else class="text-danger">Stopped</span>
@@ -146,7 +146,7 @@ Vue.component('arp', {
                     <div slot="header">
                         <h1 class="mb-0"> ARP Timers </h1>
                     </div>
-                    <div slot="body">
+                    <div slot="body" class="form-horizontal">
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">Cache Timeout <small>(s)</small></label>
                             <div class="col-sm-8">
@@ -218,7 +218,7 @@ Vue.component('arp', {
                     <div slot="header">
                         <h1 class="mb-0"> ARP Lookup </h1>
                     </div>
-                    <div slot="body">
+                    <div slot="body" class="form-horizontal">
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">IP Address</label>
                             <div class="col-sm-8">
@@ -228,18 +228,17 @@ Vue.component('arp', {
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">Interface</label>
                             <div class="col-sm-8">
-                                <interface-input v-model="interface"></interface-input>
+                                <interface-input v-model="interface" :running_only="true"></interface-input>
                             </div>
                         </div>
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label"></label>
                             <div class="btn-group col-sm-8">
-                            
                                 <button v-if="is_lookingup" class="btn btn-success disabled"> Processing... </button>
                                 <button v-else v-on:click="Action()" class="btn btn-success"> Lookup </button>
                             </div>
                         </div>
-                        <div class="form-group row mb-0">
+                        <div class="form-group row">
                             <label class="col-sm-4 col-form-label">MAC Address</label>
                             <div class="col-sm-8">
                                 <input type="text" class="form-control-plaintext" v-model="mac">
