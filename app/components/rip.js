@@ -18,8 +18,8 @@ Vue.component('rip', {
                         <th scope="col">Network</th>
                         <!--<th scope="col">Mask</th>-->
                         <th scope="col">Next Hop</th>
-                        <th scope="col" width="1%">Since Last Update</th>
-                        <th scope="col" width="1%">Metric</th>
+                        <th scope="col" style="width: 1%">Changed</th>
+                        <th scope="col" style="width: 1%">Metric</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -41,7 +41,7 @@ Vue.component('rip', {
                             <!--<td>{{ row.ip }}</td>
                             <td>{{ row.mask }}</td>-->
                             <td>{{ row.next_hop }}</td>
-                            <td>{{ row.since_last_update }}</td>
+                            <td class="text-center">{{ row.since_last_update }}</td>
                             <td class="text-center">{{ row.metric }}</td>
                         </tr>
                         <tr v-if="timelapse_enabled && timelapse_selected == id">
@@ -131,7 +131,6 @@ Vue.component('rip', {
             }
 
             this.timelapse_iteration++;
-            console.log(this.timelapse);
         },
     },
     methods: {

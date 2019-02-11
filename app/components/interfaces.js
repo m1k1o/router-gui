@@ -25,7 +25,7 @@ Vue.component('interfaces', {
                             <button class="btn btn-success mt-1" v-on:click="Edit(id)">Edit</button>
                         </td>
                         <td>
-                            <button v-if="!i.running" v-on:click="Toggle(id)" class="btn" v-bind:class="i.ip && i.mask ? 'btn-info' : 'btn-secondary disabled'"> Start </button>
+                            <button v-if="!i.running" v-on:click="i.ip && i.mask && Toggle(id)" class="btn" v-bind:class="i.ip && i.mask ? 'btn-info' : 'btn-secondary disabled'"> Start </button>
                             <button v-else v-on:click="Toggle(id)" class="btn btn-danger"> Stop </button>
                         </td>
                     </tr>
@@ -106,7 +106,7 @@ Vue.component('interfaces', {
                             <div class="btn-group col-sm-8">
                                 <button
                                     v-if="!interface.running"
-                                    v-on:click="Toggle()"
+                                    v-on:click="interface.ip && interface.mask && Toggle()"
                                     v-bind:class="{'disabled': !interface.ip || !interface.mask}"
                                     class="btn btn-success"
                                 > Start </button>

@@ -36,7 +36,7 @@ Vue.component('interface-show', {
         }
     },
     template: `
-        <span v-if="id" class="eth" :title="interface.friendly_name + '\\n' + interface.mac + '\\n' + interface.ip">
+        <span v-if="id" class="eth" :title="interface.friendly_name + '\\n' + interface.mac + '\\n' + (interface.ip || '--no IP--')">
             <img v-bind:src="interface.running ? 'images/eth_active.png' : 'images/eth.png'">
             <span class="id"> {{ id }} </span>
         </span>
