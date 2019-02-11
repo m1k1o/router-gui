@@ -42,6 +42,7 @@ const app = new Vue({
             <arp></arp>
             <routing></routing>
             <rip></rip>
+            <lldp></lldp>
 
             <modal v-if="api_settings" v-on:close="api_settings = false">
                 <div slot="header">

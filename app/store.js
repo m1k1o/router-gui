@@ -30,7 +30,12 @@ const store = new Vuex.Store({
                 hold: null,
                 flush: null,
             }
-        }
+        },
+        lldp: {
+            table: {},
+
+            settings: {},
+        },
     },
     mutations: {
         UPDATE_TABLES(state, tables) {
@@ -93,9 +98,16 @@ const store = new Vuex.Store({
                 }
             }
         },
-
         ROUTING_ENTRY_REMOVE(state, id) {
             Vue.delete(state.routing.table, id);
+        },
+        
+        LLDP_SETTINGS(state, settings) {
+            for (const key in settings) {
+                if (settings.hasOwnProperty(key) && state.lldp.settings.hasOwnProperty(key)) {
+                    Vue.set(state.lldp.settings, key, settings[key]);
+                }
+            }
         }
     },
     getters: {
@@ -179,8 +191,19 @@ const store = new Vuex.Store({
             return ajax("Routing", "RemoveStatic", [
                 state.routing.table[id].ip,
                 state.routing.table[id].mask
-            ]).then((interface) => {
+            ]).then(() => {
                 commit('ROUTING_ENTRY_REMOVE', id);
+            });
+        },
+
+        LLDP_SETTINGS({commit}, input) {
+            return ajax("LLDP", "Settings", [
+                input.running,
+                input.time_to_live,
+                input.system_name,
+                input.system_description,
+            ]).then((response) => {
+                commit('LLDP_SETTINGS', response);
             });
         }
     }
