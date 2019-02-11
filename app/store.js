@@ -12,9 +12,9 @@ const store = new Vuex.Store({
                 enabled: false
             },
             timers: {
-                cache_timeout: 1,
-                request_timeout: 2,
-                request_interval: 3
+                cache_timeout: null,
+                request_timeout: null,
+                request_interval: null
             }
         },
         routing: {
