@@ -152,7 +152,7 @@ Vue.component('interfaces', {
                                     class="btn btn-danger"
                                 > Stop </button>
 
-                                <span v-if="(service.only_running_interface && interface.running) && interface.services[service_name]" class="text-success">Running</span>
+                                <span v-if="((service.only_running_interface && interface.running) || !service.only_running_interface) && interface.services[service_name]" class="text-success">Running</span>
                                 <span v-else-if="interface.services[service_name]" class="text-warning">Waiting until interface starts</span>
                                 <span v-else class="text-danger">Not Running</span>
                             </div>
@@ -223,7 +223,7 @@ Vue.component("services_modal", {
                     <tr v-for="(interface, interface_id) in interfaces">
                         <td width="1%"><interface-show :id="interface_id"></interface-show></td>
                         <td class="text-center">
-                            <span v-if="(service.only_running_interface && interface.running) && interface.services[service_name]" class="text-success">Running</span>
+                            <span v-if="((service.only_running_interface && interface.running) || !service.only_running_interface) && interface.services[service_name]" class="text-success">Running</span>
                             <span v-else-if="interface.services[service_name]" class="text-warning">Waiting until interface starts</span>
                             <span v-else class="text-danger">Not Running</span>
                         </td>
