@@ -1,5 +1,4 @@
 Vue.component('interfaces', {
-    props: ['services'],
     template: `
         <div class="card mb-3">
             <div class="card-body">
@@ -34,7 +33,6 @@ Vue.component('interfaces', {
             
             <interface_modal
                 :id="interface_modal"
-                :services="services"
 
                 :opened="interface_modal !== false"
                 @closed="interface_modal = false"
@@ -64,7 +62,7 @@ Vue.component('interfaces', {
     },
     components: {
         'interface_modal': {
-            props: ['id', 'opened', 'services'],
+            props: ['id', 'opened'],
             watch: { 
                 opened: function(newVal, oldVal) {
                     if(!oldVal && newVal) {
@@ -79,6 +77,9 @@ Vue.component('interfaces', {
             computed: {
                 interface() {
                     return this.$store.state.interfaces.table[this.id];
+                },
+                services() {
+                    return this.$store.state.interfaces.services;
                 }
             },
             data() {
@@ -137,22 +138,23 @@ Vue.component('interfaces', {
                         <hr v-if="Object.keys(services).length > 0">
                         <div v-for="service in services" class="form-group row">
                             <label class="col-sm-4 col-form-label">
-                                {{ service.name }}
+                                {{ service.description }}
                             </label>
                             <div class="col-sm-8">
                                 <button
-                                    v-if="!$store.getters[service.running][id]"
-                                    v-on:click="((service.must_be_runnig && interface.running) || !service.must_be_runnig) && service.start(id)"
-                                    v-bind:class="{'disabled': !((service.must_be_runnig && interface.running) || !service.must_be_runnig) }"
+                                    v-if="!interface.services[service.name]"
+                                    v-on:click="((service.only_running_interface && interface.running) || !service.only_running_interface) && ServiceToggle(id, service.name)"
+                                    v-bind:class="{'disabled': !((service.only_running_interface && interface.running) || !service.only_running_interface) }"
                                     class="btn btn-info"
                                 > Start </button>
                                 <button
                                     v-else
-                                    v-on:click="((service.must_be_runnig && interface.running) || !service.must_be_runnig)  && service.stop(id)"
+                                    v-on:click="ServiceToggle(id, service.name)"
                                     class="btn btn-danger"
                                 > Stop </button>
 
-                                <span v-if="id in $store.getters[service.running] && $store.getters[service.running][id]" class="text-success">Running</span>
+                                <span v-if="(service.only_running_interface && interface.running) && interface.services[service.name]" class="text-success">Running</span>
+                                <span v-else-if="interface.services[service.name]" class="text-warning">Waiting until interface starts</span>
                                 <span v-else class="text-danger">Not Running</span>
                             </div>
                         </div>
@@ -179,6 +181,9 @@ Vue.component('interfaces', {
                 },
                 Toggle() {
                     this.$store.dispatch('INTERFACE_TOGGLE', this.id);
+                },
+                ServiceToggle(interface, service) {
+                    this.$store.dispatch('SERVICE_TOGGLE', { interface, service });
                 }
             }
         }
