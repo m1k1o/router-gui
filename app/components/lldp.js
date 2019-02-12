@@ -76,16 +76,12 @@ Vue.component('lldp', {
                         <h1 class="mb-0"> LLDP Settings </h1>
                     </div>
                     <div slot="body" class="form-horizontal">
-                        <div class="form-group row">
-                            <label class="col-sm-4 col-form-label">
-                                Status:&nbsp;<span v-if="settings.running" class="text-success">Running</span> <span v-else class="text-danger">Stopped</span>
-                            </label>
-                            <div class="btn-group col-sm-8">
-                                <button v-if="!settings.running" v-on:click="settings.running = true" class="btn btn-info"> Start </button>
-                                <button v-else v-on:click="settings.running = false" class="btn btn-danger"> Stop </button>
-                            </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Advertisements Interval <small>(s)</small></label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" v-model="settings.adv_interval">
                         </div>
-                        <hr>
+                    </div>
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">Advertised TTL</label>
                             <div class="col-sm-8">
