@@ -3,7 +3,9 @@ const store = new Vuex.Store({
         running: false,
 
         interfaces: {
-            table: {}
+            table: {},
+
+            services: {}
         },
         arp: {
             table: {},
@@ -60,6 +62,9 @@ const store = new Vuex.Store({
                 }
             }
         },
+        SERVICE_TOGGLE(state, input) {
+            Vue.set(state.interfaces.table[input.interface].services, input.service, input.status);
+        },
 
         ARP_TIMERS(state, timers) {
             for (const key in timers) {
@@ -80,13 +85,6 @@ const store = new Vuex.Store({
             for (const key in timers) {
                 if (timers.hasOwnProperty(key) && state.rip.timers.hasOwnProperty(key)) {
                     Vue.set(state.rip.timers, key, timers[key]);
-                }
-            }
-        },
-        RIP_INTERFACE(state, interface) {
-            for (const key in interface) {
-                if (interface.hasOwnProperty(key) && state.rip.interfaces[interface.id].hasOwnProperty(key) && state.rip.interfaces[interface.id][key] != interface[key]) {
-                    Vue.set(state.rip.interfaces[interface.id], key, interface[key]);
                 }
             }
         },
@@ -111,13 +109,7 @@ const store = new Vuex.Store({
         }
     },
     getters: {
-        rip_interfaces_running(state) {
-            var Interfaces = {}; 
-            Object.keys(state.rip.interfaces).forEach((key) => {
-                Interfaces[key] = state.rip.interfaces[key].active;
-            });
-            return Interfaces;
-        }
+        
     },
     actions: {
         UPDATE({commit}) {
@@ -141,6 +133,14 @@ const store = new Vuex.Store({
         INTERFACE_TOGGLE({commit}, id) {
             return ajax("Interfaces", "Toggle", id).then((interface) => {
                 commit('INTERFACE_EDIT', { id, ...interface });
+            });
+        },
+        SERVICE_TOGGLE({commit}, input) {
+            return ajax("Interfaces", "ToggleService", [
+                input.interface,
+                input.service
+            ]).then((response) => {
+                commit('SERVICE_TOGGLE', response);
             });
         },
         
@@ -171,11 +171,6 @@ const store = new Vuex.Store({
                 commit('RIP_TIMERS', timers);
             });
         },
-        RIP_INTERFACE_TOGGLE({commit}, id) {
-            return ajax("RIP", "InterfaceToggle", id).then((interface) => {
-                commit('RIP_INTERFACE', { id, ...interface });
-            });
-        },
 
         ROUTING_STATIC_ADD({commit}, input) {
             return ajax("Routing", "AddStatic", [
@@ -198,7 +193,6 @@ const store = new Vuex.Store({
 
         LLDP_SETTINGS({commit}, input) {
             return ajax("LLDP", "Settings", [
-                input.running,
                 input.time_to_live,
                 input.system_name,
                 input.system_description,

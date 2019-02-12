@@ -84,11 +84,13 @@ Vue.component('rip', {
                 :opened="timers_modal"
                 @closed="timers_modal = false"
             ></timers_modal>
+            
+            <services_modal
+                :service_name="'rip'"
 
-            <interfaces_modal
                 :opened="interfaces_modal"
                 @closed="interfaces_modal = false"
-            ></interfaces_modal>
+            ></services_modal>
         </div>
     `,
     data: () => {
@@ -238,75 +240,6 @@ Vue.component('rip', {
                     this.$store.dispatch('RIP_TIMERS', this.timers).then(() => {
                         this.Close();
                     })
-                }
-            }
-        },
-        'interfaces_modal': {
-            props: ['opened'],
-            watch: { 
-                opened: function(newVal, oldVal) {
-                    if(!oldVal && newVal) {
-                        this.Open();
-                    }
-                    
-                    if(oldVal && !newVal) {
-                        this.Close();
-                    }
-                }
-            },
-            data: () => ({
-                visible: false
-            }),
-            computed: {
-                interfaces() {
-                    return this.$store.state.rip.interfaces;
-                }
-            },
-            template: `
-                <modal v-if="visible" v-on:close="Close()">
-                    <div slot="header">
-                        <h1 class="mb-3"> RIP Interfaces </h1>
-                    </div>
-                    <div slot="body" class="form-horizontal">
-                        <table class="table">
-                            <tr v-for="(iface, id) in interfaces">
-                                <td width="1%"><interface-show :id="id"></interface-show></td>
-                                <td class="text-center">
-                                    <span v-if="iface.running" class="text-success">Running</span>
-                                    <span v-else class="text-danger">Not Running</span>
-                                </td>
-                                <td class="text-center">
-                                    <span v-if="iface.active" class="text-success">Active</span>
-                                    <span v-else class="text-danger">Not Active</span>
-                                </td>
-                                <td width="1%">
-                                    <button
-                                        v-if="!iface.active"
-                                        v-on:click="Toggle(id)"
-                                        class="btn btn-info"
-                                    > Add </button>
-                                    <button
-                                        v-else
-                                        v-on:click="Toggle(id)"
-                                        class="btn btn-danger"
-                                    > Remove </button>
-                                </td>
-                            </tr>
-
-                        </table>
-                    </div>
-                </modal>
-            `,
-            methods: {
-                Open(){
-                    this.visible = true;
-                },
-                Close(){
-                    this.visible = false;
-                    this.$emit("closed");
-                },
-                Toggle(id){
-                    this.$store.dispatch('RIP_INTERFACE_TOGGLE', id);
                 }
             }
         }

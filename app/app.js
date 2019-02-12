@@ -2,17 +2,6 @@ const app = new Vue({
     el: '#app',
     store,
     data: {
-        services: {
-            'rip': {
-                name: 'RIP',
-                // $store.getter[name][id] = true/false;
-                running: 'rip_interfaces_running',
-                must_be_runnig: false,
-                start: id => store.dispatch('RIP_INTERFACE_TOGGLE', id),
-                stop: id => store.dispatch('RIP_INTERFACE_TOGGLE', id)
-            }
-        },
-        
         api_settings: false,
         api_hostname: "localhost",
         api_port: "5000",
@@ -36,9 +25,7 @@ const app = new Vue({
 
             <h3 class="mb-3">Router</h3>
             
-            <interfaces
-                :services="services"
-            ></interfaces>
+            <interfaces></interfaces>
             <arp></arp>
             <routing></routing>
             <rip></rip>
