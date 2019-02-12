@@ -193,7 +193,6 @@ const store = new Vuex.Store({
 
         LLDP_SETTINGS({commit}, input) {
             return ajax("LLDP", "Settings", [
-                input.running,
                 input.time_to_live,
                 input.system_name,
                 input.system_description,

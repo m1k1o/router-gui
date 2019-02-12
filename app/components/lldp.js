@@ -3,6 +3,7 @@ Vue.component('lldp', {
         <div class="card mb-3">
             <div class="card-body">
                 <div class="float-right">
+                    <button v-bind:class="{'disabled': !running}" class="btn btn-info" v-on:click="running && (interfaces_modal = true)">Interfaces</button>
                     <button class="btn btn-success" v-on:click="running && (settings_modal = true)" v-bind:class="{'disabled': !running}">Settings</button>
                 </div>
 
@@ -17,6 +18,13 @@ Vue.component('lldp', {
                 </li>
             </ul>
 
+            <services_modal
+                :service_name="'lldp'"
+
+                :opened="interfaces_modal"
+                @closed="interfaces_modal = false"
+            ></services_modal>
+
             <settings_modal
                 :opened="settings_modal"
                 @closed="settings_modal = false"
@@ -25,6 +33,7 @@ Vue.component('lldp', {
     `,
     data: () => {
         return {
+            interfaces_modal: false,
             settings_modal: false
         }
     },
