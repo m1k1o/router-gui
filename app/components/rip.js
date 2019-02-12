@@ -3,9 +3,16 @@ Vue.component('rip', {
         <div class="card mb-3">
             <div class="card-body">
                 <div class="float-right">
-                    <button v-bind:class="{'disabled': !running}" class="btn btn-warning" v-on:click="running && (interfaces_modal = true)">Interfaces</button>
-                    <button v-bind:class="{'disabled': !running}" class="btn btn-info" v-on:click="running && (timers_modal = true)">Timers</button>
-                    <button v-bind:class="{'disabled': !running, 'btn-outline-success': !timelapse_enabled, 'btn-success': timelapse_enabled }" class="btn" v-on:click="running && timelapse_toggle()">Stats</button>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && timelapse_toggle()">
+                            Stats: 
+                            <span v-if="timelapse_enabled" class=" text-success">Running</span>
+                            <span v-else class=" text-danger">Not Running</span>
+                        </button>
+                    </div>
+                    
+                    <button v-bind:class="{'disabled': !running}" class="btn btn-primary" v-on:click="running && (timers_modal = true)">Timers</button>
+                    <button v-bind:class="{'disabled': !running}" class="btn btn-primary" v-on:click="running && (interfaces_modal = true)">Interfaces</button>
                 </div>
 
                 <h5 class="card-title mb-0 mt-2">RIP</h5>

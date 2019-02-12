@@ -3,8 +3,8 @@ Vue.component('routing', {
         <div class="card mb-3">
             <div class="card-body">
                 <div class="float-right">
-                    <button class="btn btn-success" v-on:click="running && (lookup_modal = true)" v-bind:class="{'disabled': !running}">Lookup</button>
-                    <button class="btn btn-success" v-on:click="running && (interfaces_modal = true)" v-bind:class="{'disabled': !running}">Interfaces</button>
+                    <button class="btn btn-primary" v-on:click="running && (lookup_modal = true)" v-bind:class="{'disabled': !running}">Lookup</button>
+                    <button class="btn btn-primary" v-on:click="running && (interfaces_modal = true)" v-bind:class="{'disabled': !running}">Interfaces</button>
                 </div>
 
                 <h5 class="card-title mb-0 mt-2">Routing Table</h5>
@@ -19,7 +19,7 @@ Vue.component('routing', {
                         <th scope="col">Next Hop</th>
                         <th scope="col" style="width: 1%;"></th>
                         <th scope="col" style="width: 1%;">
-                            <button class="btn btn-outline-success btn-sm btn-block" type="button" v-on:click="running && (add_static = true)" v-bind:class="{'disabled': !running}">+ Add Static</button>
+                            <button class="btn btn-outline-primary btn-sm btn-block" type="button" v-on:click="running && (add_static = true)" v-bind:class="{'disabled': !running}">+ Add Static</button>
                         </th>
                     </tr>
                 </thead>

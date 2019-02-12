@@ -3,10 +3,10 @@ Vue.component('arp', {
         <div class="card mb-3">
             <div class="card-body">
                 <div class="float-right">
-                    <button class="btn btn-warning" v-on:click="running && (proxy_modal = true)" v-bind:class="{'disabled': !running}">Proxy</button>
-                    <button class="btn btn-info" v-on:click="running && (timers_modal = true)" v-bind:class="{'disabled': !running}">Timers</button>
-                    <button class="btn btn-success" v-on:click="running && (lookup_modal = true)" v-bind:class="{'disabled': !running}">Lookup</button>
-                    <button class="btn btn-success" v-on:click="running && (interfaces_modal = true)" v-bind:class="{'disabled': !running}">Interfaces</button>
+                    <button class="btn btn-primary" v-on:click="running && (lookup_modal = true)" v-bind:class="{'disabled': !running}">Lookup</button>
+                    <button class="btn btn-primary" v-on:click="running && (proxy_modal = true)" v-bind:class="{'disabled': !running}">Proxy</button>
+                    <button class="btn btn-primary" v-on:click="running && (timers_modal = true)" v-bind:class="{'disabled': !running}">Timers</button>
+                    <button class="btn btn-primary" v-on:click="running && (interfaces_modal = true)" v-bind:class="{'disabled': !running}">Interfaces</button>
                 </div>
 
                 <h5 class="card-title mb-0 mt-2">ARP</h5>
