@@ -6,6 +6,7 @@ Vue.component('arp', {
                     <button class="btn btn-warning" v-on:click="running && (proxy_modal = true)" v-bind:class="{'disabled': !running}">Proxy</button>
                     <button class="btn btn-info" v-on:click="running && (timers_modal = true)" v-bind:class="{'disabled': !running}">Timers</button>
                     <button class="btn btn-success" v-on:click="running && (lookup_modal = true)" v-bind:class="{'disabled': !running}">Lookup</button>
+                    <button class="btn btn-success" v-on:click="running && (interfaces_modal = true)" v-bind:class="{'disabled': !running}">Interfaces</button>
                 </div>
 
                 <h5 class="card-title mb-0 mt-2">ARP</h5>
@@ -42,13 +43,21 @@ Vue.component('arp', {
                 :opened="lookup_modal"
                 @closed="lookup_modal = false"
             ></lookup_modal>
+            
+            <services_modal
+                :service_name="'arp'"
+
+                :opened="interfaces_modal"
+                @closed="interfaces_modal = false"
+            ></services_modal>
         </div>
     `,
     data: () => {
         return {
             proxy_modal: false,
             timers_modal: false,
-            lookup_modal: false
+            lookup_modal: false,
+            interfaces_modal: false
         }
     },
     computed: {
@@ -260,6 +269,8 @@ Vue.component('arp', {
                     this.$emit("closed");
                 },
                 Action(){
+                    this.is_lookingup = true
+                    
                     ajax("ARP", "Lookup", [
                         this.interface,
                         this.ip

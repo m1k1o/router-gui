@@ -4,6 +4,7 @@ Vue.component('routing', {
             <div class="card-body">
                 <div class="float-right">
                     <button class="btn btn-success" v-on:click="running && (lookup_modal = true)" v-bind:class="{'disabled': !running}">Lookup</button>
+                    <button class="btn btn-success" v-on:click="running && (interfaces_modal = true)" v-bind:class="{'disabled': !running}">Interfaces</button>
                 </div>
 
                 <h5 class="card-title mb-0 mt-2">Routing Table</h5>
@@ -52,12 +53,20 @@ Vue.component('routing', {
                 :opened="lookup_modal"
                 @closed="lookup_modal = false"
             ></lookup_modal>
+
+            <services_modal
+                :service_name="'routing'"
+
+                :opened="interfaces_modal"
+                @closed="interfaces_modal = false"
+            ></services_modal>
         </div>
     `,
     data: () => {
         return {
             add_static: false,
-            lookup_modal: false
+            lookup_modal: false,
+            interfaces_modal: false
         }
     },
     computed: {
@@ -253,6 +262,8 @@ Vue.component('routing', {
                     this.$emit("closed");
                 },
                 Action(){
+                    this.is_lookingup = true
+                    
                     ajax("Routing", "Lookup", [
                         this.ip
                     ])
