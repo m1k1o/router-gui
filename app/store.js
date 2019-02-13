@@ -38,6 +38,9 @@ const store = new Vuex.Store({
 
             settings: {},
         },
+        sniffing: {
+            data: []
+        }
     },
     mutations: {
         UPDATE_TABLES(state, tables) {
@@ -109,6 +112,10 @@ const store = new Vuex.Store({
                     Vue.set(state.lldp.settings, key, settings[key]);
                 }
             }
+        },
+        
+        SHIFFING_PUSH(state, new_entries) {
+            state.sniffing.data.push(...new_entries)
         }
     },
     getters: {
@@ -117,7 +124,10 @@ const store = new Vuex.Store({
     actions: {
         UPDATE({commit}) {
             return ajax("Global", "UpdateTables")
-            .then((tables) => commit('UPDATE_TABLES', tables));
+            .then(({ sniffing, ...tables }) => {
+                commit('SHIFFING_PUSH', sniffing)
+                commit('UPDATE_TABLES', tables)
+            });
         },
         INITIALIZE({commit}) {
             return ajax("Global", "Initialize")
