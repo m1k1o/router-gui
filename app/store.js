@@ -66,6 +66,9 @@ const store = new Vuex.Store({
             Vue.set(state.interfaces.table[input.interface].services, input.service, input.status);
         },
 
+        ARP_FLUSH(state) {
+            Vue.set(state.arp, 'table', {});
+        },
         ARP_TIMERS(state, timers) {
             for (const key in timers) {
                 if (timers.hasOwnProperty(key) && state.arp.timers.hasOwnProperty(key) && state.arp.timers[key] != timers[key]) {
@@ -144,6 +147,11 @@ const store = new Vuex.Store({
             });
         },
         
+        ARP_FLUSH({commit}, input) {
+            return ajax("ARP", "Flush").then(({ success }) => {
+                commit('ARP_FLUSH');
+            });
+        },
         ARP_TIMERS({commit}, input) {
             return ajax("ARP", "Timers", [
                 input.cache_timeout,

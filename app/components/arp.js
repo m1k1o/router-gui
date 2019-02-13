@@ -4,6 +4,7 @@ Vue.component('arp', {
             <div class="card-body">
                 <div class="float-right">
                     <button class="btn btn-primary" v-on:click="running && (lookup_modal = true)" v-bind:class="{'disabled': !running}">Lookup</button>
+                    <button class="btn btn-primary" v-on:click="running && Flush()" v-bind:class="{'disabled': !running}">Flush</button>
                     <button class="btn btn-primary" v-on:click="running && (proxy_modal = true)" v-bind:class="{'disabled': !running}">Proxy</button>
                     <button class="btn btn-primary" v-on:click="running && (timers_modal = true)" v-bind:class="{'disabled': !running}">Timers</button>
                     <button class="btn btn-primary" v-on:click="running && (interfaces_modal = true)" v-bind:class="{'disabled': !running}">Interfaces</button>
@@ -58,6 +59,11 @@ Vue.component('arp', {
             timers_modal: false,
             lookup_modal: false,
             interfaces_modal: false
+        }
+    },
+    methods: {
+        Flush() {
+            this.$store.dispatch('ARP_FLUSH')
         }
     },
     computed: {
