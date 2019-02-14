@@ -12,9 +12,9 @@ Vue.component('lldp', {
             
             <ul class="list-group list-group-flush">
                 <li class="list-group-item" v-for="entry in entries">
-                    <div class="float-right mt-3">{{ entry.ttl }}</div>
+                    <div class="float-right mt-3">{{ entry.time_to_live }}</div>
                     <interface-show :id="entry.interface" class="float-left mr-3"></interface-show>
-                    <strong>{{ entry.system_name }}</strong> | {{ entry.port_description }} <br><small>{{ entry.chasis_id }}</small>
+                    <strong>{{ entry.system_name }}</strong> &bull; {{ entry.port_description }} <br><small>{{ entry.chassis_id }}</small>
                 </li>
             </ul>
 
