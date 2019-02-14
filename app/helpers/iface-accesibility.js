@@ -9,14 +9,18 @@ Vue.component('interface-input', {
     computed: {
         interfaces() {
             return this.$store.state.interfaces.table;
+        },
+        model: {
+            get() {
+                return this.value == null ? '' : this.value
+            },
+            set(value) {
+                this.$emit('input', value)
+            }
         }
     },
     template: `
-        <select
-            class="form-control"
-            v-bind:value="value"
-            v-on:input="$emit('input', $event.target.value)"
-        >
+        <select class="form-control" v-model="model">
             <option value="">--not selected--</option>
             <optgroup v-if="running_only !== false" label="Running">
                 <option v-for="(interface, id) in interfaces" v-if="interface.running" :value="id">{{ interface.friendly_name }}</option>
