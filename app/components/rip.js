@@ -53,7 +53,7 @@ Vue.component('rip', {
                         </tr>
                         <tr v-if="timelapse_enabled && timelapse_selected == id">
                             <td colspan="6">
-                                <table class="table text-center">
+                                <table class="table table-sm text-center">
                                     <tr>
                                         <th>metric</th>
                                         <th>never_updated</th>
@@ -65,20 +65,25 @@ Vue.component('rip', {
                                         <th>since_last_update</th>
                                     </tr>
                                     <tr v-for="stat in timelapse_order(id)">
-                                        <td :class="stat[0] != 16 ? 'table-success' : 'table-danger'">{{ stat[0] }}</td> <!--metric-->
-                            
-                                        <td :class="stat[1] ? 'table-success' : 'table-danger'">{{ stat[1] }}</td> <!--never_updated-->
-                                        <td :class="stat[2] ? 'table-success' : 'table-danger'">{{ stat[2] }}</td> <!--possibly_down-->
-                                        <td :class="stat[3] ? 'table-success' : 'table-danger'">{{ stat[3] }}</td> <!--in_hold-->
-                            
-                                        <td :class="stat[4] ? 'table-success' : 'table-danger'">{{ stat[4] }}</td> <!--sync_with_rt-->
-                                        <td :class="stat[5] ? 'table-success' : 'table-danger'">{{ stat[5] }}</td> <!--can_be_updated-->
-                                        <td :class="stat[6] ? 'table-success' : 'table-danger'">{{ stat[6] }}</td> <!--timers_enabled-->
-                                        <td :class="{
-                                            'table-success': stat[7] == 0,
-                                            //'table-info': stat[7] < timers.update_timer,
-                                            //'table-info': stat[7] < timers.update_timer
-                                        }">{{ stat[7] }}</td> <!--since_last_update-->
+                                        <template v-if="stat !== null">
+                                            <td :class="stat[0] != 16 ? 'table-success' : 'table-danger'">{{ stat[0] }}</td> <!--metric-->
+                                
+                                            <td :class="stat[1] ? 'table-success' : 'table-danger'">{{ stat[1] }}</td> <!--never_updated-->
+                                            <td :class="stat[2] ? 'table-success' : 'table-danger'">{{ stat[2] }}</td> <!--possibly_down-->
+                                            <td :class="stat[3] ? 'table-success' : 'table-danger'">{{ stat[3] }}</td> <!--in_hold-->
+                                
+                                            <td :class="stat[4] ? 'table-success' : 'table-danger'">{{ stat[4] }}</td> <!--sync_with_rt-->
+                                            <td :class="stat[5] ? 'table-success' : 'table-danger'">{{ stat[5] }}</td> <!--can_be_updated-->
+                                            <td :class="stat[6] ? 'table-success' : 'table-danger'">{{ stat[6] }}</td> <!--timers_enabled-->
+                                            <td :class="{
+                                                'table-success': stat[7] == 0,
+                                                //'table-info': stat[7] < timers.update_timer,
+                                                //'table-info': stat[7] < timers.update_timer
+                                            }">{{ stat[7] }}</td> <!--since_last_update-->
+                                        </template>
+                                        <template v-else>
+                                            <td colspan="8">-- no data--</td>
+                                        </template>
                                     </tr>
                                 </table>
                             </td>
@@ -156,6 +161,8 @@ Vue.component('rip', {
             for (let index = this.timelapse_index + this.timelapse_limit - 1; index >= this.timelapse_index; index--) {
                 if(id in this.timelapse && index % this.timelapse_limit in this.timelapse[id]) {
                     results.push(this.timelapse[id][index % this.timelapse_limit]);
+                } else {
+                    results.push(null);
                 }
             }
             return results;
