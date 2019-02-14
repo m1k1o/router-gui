@@ -61,6 +61,18 @@
   transform: scale(1.1);
 }
 
+.push {
+  background: rgba(183, 23, 23, 0.95);
+  padding: 20px;
+  color: white;
+  position: fixed;
+  z-index: 9999;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
 .eth {
   position: relative;
 }
@@ -84,5 +96,30 @@
 
 .form-horizontal *:last-child {
   margin-bottom: 0;
+}
+
+.sniffing {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.sniffing.arp {
+  background: #ffc107;
+}
+
+.sniffing.rip {
+  background: #dc3545;
+}
+
+.sniffing.tcp {
+  background: #6dd084;
+}
+
+.sniffing.udp {
+  background: #84bdfb;
 }
 /*# sourceMappingURL=design.css.map */

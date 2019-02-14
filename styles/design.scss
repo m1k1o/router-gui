@@ -1,6 +1,18 @@
 // Components
 @import 'modal';
 
+.push {	
+    background: rgba(183, 23, 23, 0.95);	
+    padding: 20px;	
+    color: white;	
+    position: fixed;	
+    z-index: 9999;	
+    bottom: 0;	
+    left: 0;	
+    right: 0;	
+    text-align: center;	
+}
+
 .eth {
     position: relative;
 
@@ -23,4 +35,25 @@
 
 .form-horizontal *:last-child {
     margin-bottom: 0;
+}
+
+.sniffing {
+    display:flex;
+    align-items: center;
+
+    &.arp {
+        background:#ffc107
+    }
+
+    &.rip {
+        background:#dc3545
+    }
+    
+    &.tcp {
+        background:rgb(109, 208, 132)
+    }
+
+    &.udp {
+        background:#84bdfb
+    }
 }

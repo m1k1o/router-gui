@@ -30,7 +30,8 @@ const app = new Vue({
             <routing></routing>
             <rip></rip>
             <lldp></lldp>
-
+            <sniffing></sniffing>
+            
             <modal v-if="api_settings" v-on:close="api_settings = false">
                 <div slot="header">
                     <h1 class="mb-3"> Settings </h1>
