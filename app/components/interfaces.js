@@ -136,7 +136,7 @@ Vue.component('interfaces', {
                         </div>
                         
                         <hr v-if="Object.keys(services).length > 0">
-                        <div v-for="(service, service_name) in services" class="form-group row">
+                        <div v-for="(service, service_name) in services" v-if="!service.anonymous" class="form-group row">
                             <label class="col-sm-4 col-form-label">
                                 {{ service.description }}
                             </label>
