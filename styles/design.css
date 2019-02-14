@@ -98,15 +98,6 @@
   margin-bottom: 0;
 }
 
-.sniffing {
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-box-align: center;
-      -ms-flex-align: center;
-          align-items: center;
-}
-
 .sniffing.arp {
   background: #ffc107;
 }

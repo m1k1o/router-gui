@@ -12,19 +12,28 @@ Vue.component('sniffing', {
                     <button class="btn btn-danger" v-if="active_interface != null" v-on:click="Select(null)">Stop</button>
                     -->
 
-                    <interface-input v-model="active_interface" :running_only="true"></interface-input>
+                    <interface-input :value="active_interface" @input="Select($event)" :running_only="true"></interface-input>
                 </div>
 
                 <interface-show :id="active_interface" class="float-left mr-3"></interface-show>
                 <h5 class="card-title mb-0 mt-2">Sniffing</h5>
                 
             </div>
-
-            <ul class="list-group list-group-flush">
-                <div v-auto-scroll style="height:500px;overflow:auto;">
-                    <template v-for="packet in data" >
-                        <li
-                            class="list-group-item sniffing"
+            <div v-auto-scroll style="width:100%;height:500px;overflow:auto;">
+                <table class="table table-sm" style="width:100%;" v-if="data.length > 0">
+                    <thead>
+                        <th width="1%"> Src MAC </th>
+                        <th width="1%"> Dst MAC </th>
+                        <th width="1%"> Eth&nbsp;Type </th>
+                        <th width="1%"> Src&nbsp;IP </th>
+                        <th width="1%"> Dst&nbsp;IP </th>
+                        <th width="1%"> Protocol </th>
+                        <th> Ethernet Payload </th>
+                    </thead>
+                    <tbody>
+                        <template v-for="packet in data" >
+                        <tr
+                            class="sniffing"
                             @click="properties_modal = packet"
                             :class="{
                                 'arp': 'arp' in packet,
@@ -33,41 +42,44 @@ Vue.component('sniffing', {
                                 'udp': !('rip' in packet) && 'udp' in packet,
                             }"
                         >
-                            <interface-show :id="packet.interface" class="float-left mr-3"></interface-show>
-                            <span class="text-center" style="width:130px;">
-                                <span v-html="MAC(packet.interface, packet.eth.src_mac)"></span><br>
-                                <span v-html="MAC(packet.interface, packet.eth.dst_mac)"></span>
-                            </span>
-                            <span class="ml-3">{{ packet.eth.type }}</span>
-                        
-                            <template v-if="'arp' in packet">
+                            <td class="text-center" v-html="MAC(packet.interface, packet.eth.src_mac)"></td>
+                            <td class="text-center" v-html="MAC(packet.interface, packet.eth.dst_mac)"></td>
+                            <td>{{ packet.eth.type }}</td>
+                            
+                            <template v-if="'ip' in packet">
+                                <td class="text-center" v-html="IP(packet.interface, packet.ip.src_ip)"></td>
+                                <td class="text-center" v-html="IP(packet.interface, packet.ip.dst_ip)"></td>
+                                <td>{{ packet.ip.protocol }}</td>
+                                
+                                <td>
+                                    <template v-if="'tcp' in packet">
+                                        <span class="ml-3">{{ packet.tcp.src_port }} to {{ packet.tcp.dst_port }}</span>
+                                    </template>
+                                    <template v-else-if="'udp' in packet">
+                                        <span class="ml-3">{{ packet.udp.src_port }} to {{ packet.udp.dst_port }}</span>
+                                    </template>
+
+                                    <template v-if="'rip' in packet">
+                                        <span class="ml-3">RIPv2 {{ packet.rip.cmd_type}}</span>
+                                    </template>
+                                </td>
+                            </template>
+                            <td colspan="4" v-else-if="'arp' in packet">
                                 <span class="ml-3">{{ packet.arp.op }}</span>
                                 <span class="ml-3" v-if="packet.arp.op == 'Request'"> Where is <strong>{{ packet.arp.target_ip }}</strong> ? Tell <strong>{{ packet.arp.sender_ip }}</strong> </span>
                                 <span class="ml-3" v-else> <strong>{{ packet.arp.sender_ip }}</strong> is at <strong>{{ packet.arp.sender_mac }}</strong> </span>
-                            </template>
-                            
-                            <template v-if="'ip' in packet">
-                                <span class="text-center" style="width:130px;">
-                                    <span v-html="MAC(packet.interface, packet.ip.src_ip)"></span><br>
-                                    <span v-html="MAC(packet.interface, packet.ip.dst_ip)"></span>
-                                </span>
-                                <span class="ml-3">{{ packet.ip.protocol }}</span>
-                            </template>
-
-                            <template v-if="'tcp' in packet">
-                                <span class="ml-3">{{ packet.tcp.src_port }} <br> {{ packet.tcp.dst_port }}</span>
-                            </template>
-                            <template v-else-if="'udp' in packet">
-                                <span class="ml-3">{{ packet.udp.src_port }} <br> {{ packet.udp.dst_port }}</span>
-                            </template>
-
-                            <template v-if="'rip' in packet">
-                                <span class="ml-3">RIPv2 {{ packet.rip.cmd_type}}</span>
-                            </template>
-                        </li>
-                    </template>
-                </div>
-            </ul>
+                            </td>
+                            <td colspan="4" v-else-if="'lldp' in packet">
+                                LLDP Payload
+                            </td>
+                            <td colspan="4" v-else>
+                                --unknown--
+                            </td>
+                        </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
 
             <properties_modal
                 :packet="properties_modal"
@@ -94,6 +106,9 @@ Vue.component('sniffing', {
         data() {
             return this.$store.state.sniffing.data;
         },
+        active_interface() {
+            return this.$store.state.sniffing.interface;
+        },/*
         active_interface:{
             get() {
                 console.log(this.$store.state.sniffing.interface);
@@ -107,7 +122,7 @@ Vue.component('sniffing', {
                 this.$store.commit('SNIFFING_CLEAR');
                 this.$store.dispatch('SNIFFING_INTERFACE', interface);
             }
-        },
+        },*/
 
         interfaces() {
             return this.$store.state.interfaces.table;
@@ -143,11 +158,13 @@ Vue.component('sniffing', {
             return '<strong title="'+ip+'">my ip</strong>';
         },
         Select(interface) {
+            if(interface == ""){
+                interface = null;
+            }
+
+            this.$store.commit('SNIFFING_CLEAR');
             this.$store.dispatch('SNIFFING_INTERFACE', interface);
         }
-    },
-    mounted() {
-        //this.Scroll();
     },
     components: {
         'properties_modal': {
