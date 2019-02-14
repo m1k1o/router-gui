@@ -39,7 +39,9 @@ const store = new Vuex.Store({
             settings: {},
         },
         sniffing: {
-            data: []
+            data: [],
+
+            interface: null
         }
     },
     mutations: {
@@ -114,8 +116,14 @@ const store = new Vuex.Store({
             }
         },
         
-        SHIFFING_PUSH(state, new_entries) {
+        SNIFFING_PUSH(state, new_entries) {
             state.sniffing.data.push(...new_entries)
+        },
+        SNIFFING_CLEAR(state) {
+            Vue.set(state.sniffing, 'data', []);
+        },
+        SNIFFING_INTERFACE(state, interface) {
+            Vue.set(state.sniffing, 'interface', interface);
         }
     },
     getters: {
@@ -125,7 +133,7 @@ const store = new Vuex.Store({
         UPDATE({commit}) {
             return ajax("Global", "UpdateTables")
             .then(({ sniffing, ...tables }) => {
-                commit('SHIFFING_PUSH', sniffing)
+                commit('SNIFFING_PUSH', sniffing)
                 commit('UPDATE_TABLES', tables)
             });
         },
@@ -217,6 +225,12 @@ const store = new Vuex.Store({
                 input.system_description,
             ]).then((response) => {
                 commit('LLDP_SETTINGS', response);
+            });
+        },
+        
+        SNIFFING_INTERFACE({commit}, interface) {
+            return ajax("Sniffing", "Interface", String(interface)).then(({ interface }) => {
+                commit('SNIFFING_INTERFACE', interface);
             });
         }
     }
