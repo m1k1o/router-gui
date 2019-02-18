@@ -23,17 +23,24 @@ Vue.component('dhcp', {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(row, id) in entries">
+                    <tr
+                        v-for="(row, id) in entries"
+                        v-bind:class="{
+                            'table-success' : row.is_available,
+                            'table-info' : row.is_leased,
+                            'table-warning' : row.is_offered
+                        }"
+                    >
                         <td><interface-show :id="row.interface"></interface-show></td>
                         <td>{{ row.mac }}</td>
                         <td>{{ row.ip }}</td>
-                        <td>{{
-                            row.lease_forever ? 'leased forever' : (
-                                row.is_leased ? 'lease expires in ' + row.lease_expires_in + ' sec.' : (
-                                    row.is_offered ? 'offered for ' + row.offer_expires_in + ' sec.' : ''
-                                )
-                            )
-                        }}</td>
+                        
+                        <td v-if="row.is_available"><i>available</i></td>
+                        <td v-else-if="row.lease_forever"><i>leased (forever)</i></td>
+                        <td v-else-if="row.is_leased"><i>leased ({{ row.lease_expires_in }} sec.)</i></td>
+                        <td v-else-if="row.is_offered"><i>offered ({{ row.offer_expires_in }} sec.)</i></td>
+                        <td v-else><i>--unknown--</i></td>
+
                         <td v-if="row.is_dynamic">
                             <i>Dynamic</i>
                         </td>
@@ -115,22 +122,23 @@ Vue.component('dhcp', {
                     </div>
                     <div slot="body" class="form-horizontal">
                         <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">MAC Address</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" v-model="data.mac">
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="form-group row">
                             <label class="col-sm-4 col-form-label">Interface</label>
                             <div class="col-sm-8">
                                 <interface-input v-model="data.interface"></interface-input>
                             </div>
                         </div>
+                        <hr>
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">IP Address</label>
                             <div class="col-sm-8">
                                 <ip-address-input v-model="data.ip"></ip-address-input>
-                            </div>
-                        </div>
-                        <hr>
-                        <div class="form-group row">
-                            <label class="col-sm-4 col-form-label">MAC Address</label>
-                            <div class="col-sm-8">
-                                <input type="text" class="form-control" v-model="data.mac">
                             </div>
                         </div>
                     </div>
