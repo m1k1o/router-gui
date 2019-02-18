@@ -31,6 +31,7 @@ const app = new Vue({
             <rip></rip>
             <lldp></lldp>
             <sniffing></sniffing>
+            <dhcp></dhcp>
             
             <modal v-if="api_settings" v-on:close="api_settings = false">
                 <div slot="header">

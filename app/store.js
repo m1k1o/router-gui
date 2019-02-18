@@ -42,6 +42,16 @@ const store = new Vuex.Store({
             data: [],
 
             interface: null
+        },
+        dhcp: {
+            table: {},
+
+            timers: {
+                lease_timeout: null,
+                offer_timeout: null,
+                renewal_timeout: null,
+                rebinding_timeout: null,
+            }
         }
     },
     mutations: {
@@ -124,7 +134,25 @@ const store = new Vuex.Store({
         },
         SNIFFING_INTERFACE(state, interface) {
             Vue.set(state.sniffing, 'interface', interface);
-        }
+        },
+        
+        DHCP_TIMERS(state, timers) {
+            for (const key in timers) {
+                if (timers.hasOwnProperty(key) && state.dhcp.timers.hasOwnProperty(key)) {
+                    Vue.set(state.dhcp.timers, key, timers[key]);
+                }
+            }
+        },
+        DHCP_ENTRY_ADD(state, entries) {
+            for (const id in entries) {
+                if (entries.hasOwnProperty(id)) {
+                    Vue.set(state.dhcp.table, id, entries[id]);
+                }
+            }
+        },
+        DHCP_ENTRY_REMOVE(state, id) {
+            Vue.delete(state.dhcp.table, id);
+        },
     },
     getters: {
         
@@ -232,6 +260,34 @@ const store = new Vuex.Store({
             return ajax("Sniffing", "Interface", String(interface)).then(({ interface }) => {
                 commit('SNIFFING_INTERFACE', interface);
             });
-        }
+        },
+        
+        DHCP_TIMERS({commit}, input) {
+            return ajax("DHCP", "Timers", [
+                input.lease_timeout,
+                input.offer_timeout,
+                input.renewal_timeout,
+                input.rebinding_timeout
+            ]).then((timers) => {
+                commit('DHCP_TIMERS', timers);
+            });
+        },
+        DHCP_STATIC_ADD({commit}, input) {
+            return ajax("DHCP", "AddStatic", [
+                input.mac,
+                input.interface,
+                input.ip
+            ]).then((entry) => {
+                commit('DHCP_ENTRY_ADD', entry);
+            });
+        },
+        DHCP_STATIC_REMOVE({state, commit}, id) {
+            return ajax("DHCP", "RemoveStatic", [
+                state.dhcp.table[id].mac,
+                state.dhcp.table[id].interface
+            ]).then(() => {
+                commit('DHCP_ENTRY_REMOVE', id);
+            });
+        },
     }
 })
