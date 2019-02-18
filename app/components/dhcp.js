@@ -262,7 +262,15 @@ Vue.component('dhcp', {
                 }
             },
             data: () => ({
-                visible: false
+                visible: false,
+                new_visible: false,
+
+                new_pool: {
+                    interface_id: null,
+                    first_ip: null,
+                    last_ip: null,
+                    is_dynamic: true
+                }
             }),
             computed: {
                 pools() {
@@ -272,55 +280,77 @@ Vue.component('dhcp', {
             template: `
                 <modal v-if="visible" v-on:close="Close()">
                     <div slot="header">
-                        <h1 class="mb-3"> DHCP Pools </h1>
+                        <h1 class="mb-3" v-if="!new_visible"> DHCP Pools </h1>
+                        <h1 class="mb-3" v-else> Add new DHCP Pool </h1>
                     </div>
                     <div slot="body" class="form-horizontal">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th scope="col" width="1%"></th>
-                                    <th scope="col">First IP</th>
-                                    <th scope="col">Last IP</th>
-                                    <th scope="col">Used</th>
-                                    <th scope="col">Is&nbsp;Dynamic</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <!--
-                                <tr v-for="(pool, interface_id) in pools">
-                                    <td width="1%"><interface-show :id="interface_id"></interface-show></td>
-                                    <td>
-                                        <ip-address-input v-model="pool.first_ip"></ip-address-input>
-                                    </td>
-                                    <td>
-                                        <ip-address-input v-model="pool.last_ip"></ip-address-input>
-                                    </td>
-                                    <td>
-                                        
-                                    </td>
-                                    <td width="1%">
-                                        <input type="checkbox" vylue="1" v-model="pool.is_dynamic">
-                                    </td>
-                                </tr>
-                                -->
-                                <tr v-for="(pool, interface_id) in pools">
-                                    <td width="1%"><interface-show :id="interface_id"></interface-show></td>
-                                    <td>
-                                        {{ pool.first_ip }}
-                                    </td>
-                                    <td>
-                                        {{ pool.last_ip }}
-                                    </td>
-                                    <td :title="'Available: ' + pool.available + '\\nAllocated: ' + pool.allocated">
-                                        {{ Math.round(pool.allocated / pool.available * 100)  }}%
-                                    </td>
-                                    <td width="1%">
-                                        {{ pool.is_dynamic ? 'Dynamic' : 'Static' }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        + Add new (TODO)
+                        <template v-if="!new_visible">
+                            <table class="table" v-if="Object.keys(pools).length > 0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" width="1%"></th>
+                                        <th scope="col">First IP</th>
+                                        <th scope="col">Last IP</th>
+                                        <th scope="col">Type</th>
+                                        <th scope="col"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="(pool, interface_id) in pools">
+                                        <td width="1%"><interface-show :id="interface_id"></interface-show></td>
+                                        <td>
+                                            {{ pool.first_ip }}
+                                        </td>
+                                        <td>
+                                            {{ pool.last_ip }}
+                                        </td>
+                                        <!--<td :title="'Available: ' + pool.available + '\\nAllocated: ' + pool.allocated">
+                                            {{ Math.round(pool.allocated / pool.available * 100)  }}%
+                                        </td>-->
+                                        <td width="1%">
+                                            <button v-if="pool.is_dynamic" class="btn btn-info btn-sm" type="button" v-on:click="Toggle(interface_id)">Dynamic</button>
+                                            <button v-else class="btn btn-info btn-sm" type="button" v-on:click="Toggle(interface_id)">Static</button>
+                                        </td>
+                                        <td width="1%">
+                                            <button class="btn btn-danger btn-sm btn-block" type="button" v-on:click="Remove(interface_id)">Remove</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button v-on:click="NewOpen()" class="btn btn-success"> + Add new DHCP Pool </button>
+                        </template>
+
+                        <template v-else>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Interface</label>
+                                <div class="col-sm-8">
+                                    <interface-input v-model="new_pool.interface_id"></interface-input>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">First IP</label>
+                                <div class="col-sm-8">
+                                    <ip-address-input v-model="new_pool.first_ip"></ip-address-input>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Last IP</label>
+                                <div class="col-sm-8">
+                                    <ip-address-input v-model="new_pool.last_ip"></ip-address-input>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Type</label>
+                                <div class="col-sm-8">
+                                    <button v-if="new_pool.is_dynamic" class="btn btn-info btn-sm" type="button" v-on:click="new_pool.is_dynamic = false">Dynamic</button>
+                                    <button v-else class="btn btn-info btn-sm" type="button" v-on:click="new_pool.is_dynamic = true">Static</button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div slot="footer" v-if="new_visible">
+                        <button v-on:click="NewSave()" class="btn btn-success"> Add new  </button>
+                        <button v-on:click="NewClose()" class="btn btn-secondary">Cancel</button>
                     </div>
                 </modal>
             `,
@@ -336,8 +366,26 @@ Vue.component('dhcp', {
                 Remove(interface) {
                     this.$store.dispatch('DHCP_POOL_REMOVE', interface);
                 },
-                Push(input) {
-                    this.$store.dispatch('DHCP_POOL_PUSH', input);
+                Toggle(interface) {
+                    this.$store.dispatch('DHCP_POOL_TOGGLE', interface);
+                },
+
+                
+                NewOpen(){
+                    this.new_visible = true;
+
+                    this.new_pool.interface_id = null;
+                    this.new_pool.first_ip = null;
+                    this.new_pool.last_ip = null;
+                    this.new_pool.is_dynamic = true;
+                },
+                NewClose(){
+                    this.new_visible = false;
+                },
+                NewSave() {
+                    this.$store.dispatch('DHCP_POOL_ADD', this.new_pool).then(() => {
+                        this.NewClose();
+                    })
                 }
             }
         }
