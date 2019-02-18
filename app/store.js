@@ -51,7 +51,9 @@ const store = new Vuex.Store({
                 offer_timeout: null,
                 renewal_timeout: null,
                 rebinding_timeout: null,
-            }
+            },
+
+            pools: {}
         }
     },
     mutations: {
@@ -153,6 +155,17 @@ const store = new Vuex.Store({
         DHCP_ENTRY_REMOVE(state, id) {
             Vue.delete(state.dhcp.table, id);
         },
+        
+        DHCP_POOL_PUSH(state, entries) {
+            for (const id in entries) {
+                if (entries.hasOwnProperty(id)) {
+                    Vue.set(state.dhcp.pools, id, entries[id]);
+                }
+            }
+        },
+        DHCP_POOL_REMOVE(state, id) {
+            Vue.delete(state.dhcp.pools, id);
+        }
     },
     getters: {
         
@@ -289,5 +302,22 @@ const store = new Vuex.Store({
                 commit('DHCP_ENTRY_REMOVE', id);
             });
         },
+
+        DHCP_POOL_PUSH({commit}, input) {
+            return ajax("DHCP", "PoolPush", [
+                input.interface,
+                input.first_ip,
+                input.last_ip,
+                input.is_dynamic
+            ]).then((entry) => {
+                commit('DHCP_POOL_PUSH', entry);
+            });
+        },
+        DHCP_POOL_REMOVE({commit}, interface_id) {
+            return ajax("DHCP", "PoolRemove", interface_id).then(() => {
+                commit('DHCP_POOL_REMOVE', interface_id);
+            });
+        }
+
     }
 })

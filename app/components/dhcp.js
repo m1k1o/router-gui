@@ -3,6 +3,7 @@ Vue.component('dhcp', {
         <div class="card mb-3">
             <div class="card-body">
                 <div class="float-right">
+                    <button class="btn btn-primary" v-on:click="running && (pools_modal = true)" v-bind:class="{'disabled': !running}">Pools</button>
                     <button class="btn btn-primary" v-on:click="running && (timers_modal = true)" v-bind:class="{'disabled': !running}">Timers</button>
                     <button class="btn btn-primary" v-on:click="running && (interfaces_modal = true)" v-bind:class="{'disabled': !running}">Interfaces</button>
                 </div>
@@ -36,7 +37,6 @@ Vue.component('dhcp', {
                         <td>{{ row.ip }}</td>
                         
                         <td v-if="row.is_available"><i>available</i></td>
-                        <td v-else-if="row.lease_forever"><i>leased (forever)</i></td>
                         <td v-else-if="row.is_leased"><i>leased ({{ row.lease_expires_in }} sec.)</i></td>
                         <td v-else-if="row.is_offered"><i>offered ({{ row.offer_expires_in }} sec.)</i></td>
                         <td v-else><i>--unknown--</i></td>
@@ -51,6 +51,11 @@ Vue.component('dhcp', {
                 </tbody>
             </table>
             
+            <pools_modal
+                :opened="pools_modal"
+                @closed="pools_modal = false"
+            ></pools_modal>
+
             <add_static_modal
                 :opened="add_static"
                 @closed="add_static = false"
@@ -71,6 +76,7 @@ Vue.component('dhcp', {
     `,
     data: () => {
         return {
+            pools_modal: false,
             add_static: false,
             timers_modal: false,
             interfaces_modal: false
@@ -118,7 +124,7 @@ Vue.component('dhcp', {
             template: `
                 <modal v-if="visible" v-on:close="Close()">
                     <div slot="header">
-                        <h1 class="mb-3"> Add Static DHCP Lease </h1>
+                        <h1 class="mb-3"> Add DHCP Static Entry </h1>
                     </div>
                     <div slot="body" class="form-horizontal">
                         <div class="form-group row">
@@ -143,7 +149,7 @@ Vue.component('dhcp', {
                         </div>
                     </div>
                     <div slot="footer">
-                        <button v-on:click="Action()" class="btn btn-success">Add Lease</button>
+                        <button v-on:click="Action()" class="btn btn-success">Add Entry</button>
                         <button v-on:click="Close()" class="btn btn-secondary">Cancel</button>
                     </div>
                 </modal>
@@ -239,6 +245,99 @@ Vue.component('dhcp', {
                     this.$store.dispatch('DHCP_TIMERS', this.timers).then(() => {
                         this.Close();
                     })
+                }
+            }
+        },
+        'pools_modal': {
+            props: ['opened'],
+            watch: { 
+                opened: function(newVal, oldVal) {
+                    if(!oldVal && newVal) {
+                        this.Open();
+                    }
+                    
+                    if(oldVal && !newVal) {
+                        this.Close();
+                    }
+                }
+            },
+            data: () => ({
+                visible: false
+            }),
+            computed: {
+                pools() {
+                    return this.$store.state.dhcp.pools;
+                }
+            },
+            template: `
+                <modal v-if="visible" v-on:close="Close()">
+                    <div slot="header">
+                        <h1 class="mb-3"> DHCP Pools </h1>
+                    </div>
+                    <div slot="body" class="form-horizontal">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col" width="1%"></th>
+                                    <th scope="col">First IP</th>
+                                    <th scope="col">Last IP</th>
+                                    <th scope="col">Used</th>
+                                    <th scope="col">Is&nbsp;Dynamic</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!--
+                                <tr v-for="(pool, interface_id) in pools">
+                                    <td width="1%"><interface-show :id="interface_id"></interface-show></td>
+                                    <td>
+                                        <ip-address-input v-model="pool.first_ip"></ip-address-input>
+                                    </td>
+                                    <td>
+                                        <ip-address-input v-model="pool.last_ip"></ip-address-input>
+                                    </td>
+                                    <td>
+                                        
+                                    </td>
+                                    <td width="1%">
+                                        <input type="checkbox" vylue="1" v-model="pool.is_dynamic">
+                                    </td>
+                                </tr>
+                                -->
+                                <tr v-for="(pool, interface_id) in pools">
+                                    <td width="1%"><interface-show :id="interface_id"></interface-show></td>
+                                    <td>
+                                        {{ pool.first_ip }}
+                                    </td>
+                                    <td>
+                                        {{ pool.last_ip }}
+                                    </td>
+                                    <td :title="'Available: ' + pool.available + '\\nAllocated: ' + pool.allocated">
+                                        {{ Math.round(pool.allocated / pool.available * 100)  }}%
+                                    </td>
+                                    <td width="1%">
+                                        {{ pool.is_dynamic ? 'Dynamic' : 'Static' }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        + Add new (TODO)
+                    </div>
+                </modal>
+            `,
+            methods: {
+                Open(){
+                    this.visible = true;
+                },
+                Close(){
+                    this.visible = false;
+                    this.$emit("closed");
+                },
+
+                Remove(interface) {
+                    this.$store.dispatch('DHCP_POOL_REMOVE', interface);
+                },
+                Push(input) {
+                    this.$store.dispatch('DHCP_POOL_PUSH', input);
                 }
             }
         }
