@@ -43,12 +43,20 @@
         background:#ffc107
     }
 
-    &.rip {
-        background:#dc3545
+    &.lldp {
+        background:#979694
     }
     
     &.tcp {
         background:rgb(109, 208, 132)
+    }
+
+    &.rip {
+        background:#dc3545
+    }
+
+    &.dhcp {
+        background:#67e9f1
     }
 
     &.udp {

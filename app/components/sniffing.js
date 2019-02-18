@@ -32,9 +32,11 @@ Vue.component('sniffing', {
                             @click="properties_modal = packet"
                             :class="{
                                 'arp': 'arp' in packet,
-                                'rip': 'rip' in packet,
+                                'lldp': 'lldp' in packet,
                                 'tcp': 'tcp' in packet,
-                                'udp': !('rip' in packet) && 'udp' in packet,
+                                'rip': 'rip' in packet,
+                                'dhcp': 'dhcp' in packet,
+                                'udp': !('rip' in packet) && !('dhcp' in packet) && 'udp' in packet,
                             }"
                             v-if="!only_known || only_known && ('arp' in packet || 'lldp' in packet || 'ip' in packet)"
                         >
@@ -56,6 +58,9 @@ Vue.component('sniffing', {
                                         
                                         <template v-if="'rip' in packet">
                                             <span class="ml-3">RIPv2 {{ packet.rip.cmd_type}}</span>
+                                        </template>
+                                        <template v-if="'dhcp' in packet">
+                                            <span class="ml-3">DHCP {{ packet.dhcp.message_type }} &bull; {{ packet.dhcp.transaction_id }}</span>
                                         </template>
                                     </template>
                                 </td>
@@ -169,7 +174,7 @@ Vue.component('sniffing', {
             template: `
                 <modal v-if="visible" v-on:close="Close()">
                     <div slot="header">
-                        <h1 class="mb-0"> Packet properties </h1>
+                        <h1 class="mb-0"> Properties </h1>
                     </div>
                     <div slot="body" class="form-horizontal">
                         <table class="table mb-0">
@@ -216,6 +221,15 @@ Vue.component('sniffing', {
                             <template v-if="'rip' in data">
                                 <tr><th>Command</th><td>{{ data.rip.cmd_type }}</td></tr>
                                 <tr><th colspan=2>Routes:</th></tr>
+                            </template>
+
+                            <template v-if="'dhcp' in data">
+                                <tr><th>Operation Code</th><td>{{ data.dhcp.operation_code }}</td></tr>
+                                <tr><th>Transaction ID</th><td>{{ data.dhcp.transaction_id }}</td></tr>
+                                <tr><th>Client IP</th><td>{{ data.dhcp.client_ip }}</td></tr>
+                                <tr><th>Server IP</th><td>{{ data.dhcp.server_ip }}</td></tr>
+                                <tr><th>Client Mac</th><td>{{ data.dhcp.client_mac }}</td></tr>
+                                <tr><th>Message Type</th><td>{{ data.dhcp.message_type }}</td></tr>
                             </template>
                         </table>
 

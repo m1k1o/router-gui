@@ -102,12 +102,20 @@
   background: #ffc107;
 }
 
-.sniffing.rip {
-  background: #dc3545;
+.sniffing.lldp {
+  background: #979694;
 }
 
 .sniffing.tcp {
   background: #6dd084;
+}
+
+.sniffing.rip {
+  background: #dc3545;
+}
+
+.sniffing.dhcp {
+  background: #67e9f1;
 }
 
 .sniffing.udp {
