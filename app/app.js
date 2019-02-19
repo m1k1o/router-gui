@@ -2,6 +2,8 @@ const app = new Vue({
     el: '#app',
     store,
     data: {
+        generator_modal: false,
+
         api_settings: false,
         api_hostname: "localhost",
         api_port: "5000",
@@ -17,6 +19,8 @@ const app = new Vue({
     template: `
         <div class="container mt-3">
             <div class="float-right btn-group">
+                <button class="btn btn-primary" v-on:click="generator_modal = true">Packet Generator</button>
+                
                 <button class="btn btn-success" v-on:click="DefaultSettings();" v-if="running">Default Settings</button>
                 <button class="btn btn-info" v-on:click="api_settings = true" v-if="!running">API Settings</button>
                 <button class="btn btn-danger" v-on:click="Stop();" v-if="running">Pause Requests</button>
@@ -32,6 +36,11 @@ const app = new Vue({
             <lldp></lldp>
             <sniffing></sniffing>
             <dhcp></dhcp>
+            
+            <generator_modal
+                :opened="generator_modal"
+                @closed="generator_modal = false"
+            ></generator_modal>
             
             <modal v-if="api_settings" v-on:close="api_settings = false">
                 <div slot="header">
