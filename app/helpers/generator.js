@@ -27,7 +27,7 @@ Vue.component("generator_modal", {
             <div slot="header">
                 <h1 class="mb-3"> Generator </h1>
                 <div v-if="interface_id != null">
-                    <div class="float-left eth mr-3"><img src="images/eth.png"><span class="id">{{ interface_id }}</span></div>
+                    <interface-show :id="interface_id" class="float-left mr-3"></interface-show>
                     <span v-bind:title="interface.description">{{ interface.friendly_name }}</span><br><small v-bind:title="interface.name">{{ interface.mac }}</small>
                 </div>
             </div>
