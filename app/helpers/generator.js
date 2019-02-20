@@ -109,6 +109,7 @@ Vue.component("generator_modal", {
                     DestinationHwAddress: null,
                     SourceAddress: null,
                     DestinationAddress: null,
+                    TimeToLive: 128,
                     SourcePort: null,
                     DestinationPort: null,
                     Payload: null
@@ -183,6 +184,12 @@ Vue.component("generator_modal", {
                                 </div>
                             </div>
                             
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">TimeToLive</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" v-model="data.TimeToLive" />
                         </div>
                     </div>
                     <hr>
