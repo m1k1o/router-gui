@@ -33,6 +33,11 @@ Vue.component("generator_modal", {
             DestinationAddress: null,
             TimeToLive: null
         },
+        tcp: {
+            SourcePort: null,
+            DestinationPort: null,
+            Flags: null
+        },
         udp: {
             SourcePort: null,
             DestinationPort: null
@@ -142,7 +147,7 @@ Vue.component("generator_modal", {
                     v-if="component_type == 'tcp'"
 
                     :interface_id="interface_id"
-                    :protocol="'UDP'"
+                    :protocol="'TCP'"
                     :data="Object.values({ ...ethernet, ...ip, ...tcp, payload })"
                 ></send_gen>
             </div>
@@ -352,7 +357,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Target MAC</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="TargetHardwareAddress" placeholder="0.0.0.0" />
+                            <input type="text" class="form-control" v-model="TargetHardwareAddress" />
                         </div>
                     </div>
                     <div class="form-group row">
@@ -459,6 +464,18 @@ Vue.component("generator_modal", {
         'tcp_gen': {
             props: ['value'],
 
+            data: () => ({
+                flags: {
+                    'CWR': 1 << 7,
+                    'ECN': 1 << 6,
+                    'Urg': 1 << 5,
+                    'Ack': 1 << 4,
+                    'Psh': 1 << 3,
+                    'Rst': 1 << 2,
+                    'Syn': 1 << 1,
+                    'Fin': 1 << 0,
+                }
+            }),
             computed: {
                 SourcePort: {
                     get() {
@@ -477,6 +494,15 @@ Vue.component("generator_modal", {
                         this.value.DestinationPort = newValue;
                         this.$emit('input', this.value);
                     }
+                },
+                Flags: {
+                    get() {
+                        return this.value.Flags;
+                    },
+                    set(newValue) {
+                        this.value.Flags = newValue;
+                        this.$emit('input', this.value);
+                    }
                 }
             },
             template: `
@@ -493,8 +519,28 @@ Vue.component("generator_modal", {
                             <input type="text" class="form-control" v-model="DestinationPort" />
                         </div>
                     </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Flags</label>
+                        <div class="col-sm-8">
+                            <div class="btn-group d-flex mt-1">
+                                <button
+                                    v-for="(mask, flag) in flags"
+                                    v-bind:class="GetFlag(mask) ? 'btn btn-success btn-sm w-100': 'btn btn-danger btn-sm w-100'"
+                                    v-on:click="ToggleFlag(mask)"
+                                >{{ flag }}</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            `
+            `,
+            methods: {
+                GetFlag(mask) {
+                    return (this.value.Flags & mask) != 0
+                },
+                ToggleFlag(mask) {
+                    this.value.Flags ^= mask;
+                }
+            }
         },
         'udp_gen': {
             props: ['value'],
