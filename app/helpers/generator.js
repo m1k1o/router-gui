@@ -26,7 +26,7 @@ Vue.component("generator_modal", {
             Operation: 1,
             SenderHardwareAddress: null,
             SenderProtocolAddress: null,
-            TargetHardwareAddress: "0.0.0.0",
+            TargetHardwareAddress: "00:00:00:00:00:00",
             TargetProtocolAddress: null
         },
         icmp: {
@@ -359,7 +359,7 @@ Vue.component("generator_modal", {
                     return Object.values({ ...this.ethernet, ...this.arp, });
                     
                 case 'ICMP':
-                    return Object.values({ ...this.ethernet, ...this.ip, ...this.icmp });
+                    return Object.values({ ...this.ethernet, ...this.ip, ...this.icmp, payload: this.payload });
 
                 case 'TCP':
                     return Object.values({ ...this.ethernet, ...this.ip, ...this.tcp, payload: this.payload });
