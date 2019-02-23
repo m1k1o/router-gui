@@ -16,16 +16,17 @@ Vue.component("generator_modal", {
 
         interface_id: null,
         component_type: false,
-        
+        show_expert_settings: false,
+
         ethernet: {
             SourceHwAddress: null,
             DestinationHwAddress: null
         },
         arp: {
-            Operation: null,
+            Operation: 1,
             SenderHardwareAddress: null,
             SenderProtocolAddress: null,
-            TargetHardwareAddress: null,
+            TargetHardwareAddress: "0.0.0.0",
             TargetProtocolAddress: null
         },
         ip: {
@@ -36,11 +37,26 @@ Vue.component("generator_modal", {
         tcp: {
             SourcePort: null,
             DestinationPort: null,
-            Flags: null
+            Flags: 0
         },
         udp: {
             SourcePort: null,
             DestinationPort: null
+        },
+        rip: {
+            CommandType: 1,
+            Version: 2,
+            
+            Routes: []  
+        },
+        dhcp: {
+            OperationCode: 1,
+            TransactionID: null,
+            YourClientIPAddress: null,
+            NextServerIPAddress: null,
+            ClientMACAddress: null,
+            
+            Options: []
         },
         payload: null
     }),
@@ -58,6 +74,7 @@ Vue.component("generator_modal", {
                     <span v-bind:title="interface.description">{{ interface.friendly_name }}</span><br><small v-bind:title="interface.name">{{ interface.mac }}</small>
                 </div>
             </div>
+
             <div slot="body" class="form-horizontal" v-if="component_type === false">
                 <div class="form-group row">
                     <label class="col-sm-4 col-form-label">Interface</label>
@@ -71,91 +88,227 @@ Vue.component("generator_modal", {
                     <div class="col-sm-8">
                         <div class="form-group row">
                             <div class="col-sm-6">
-                                <button v-on:click="component_type = 'arp'" class="btn btn-primary btn-block">ARP</button>
+                                <button v-on:click="component_type = 'ARP'" class="btn btn-primary btn-block">ARP</button>
                             </div>
                             <div class="col-sm-6">
-                                <button v-on:click="/*component_type = 'icmp'*/" class="btn btn-primary btn-block disabled">ICMP</button>
-                            </div>
-                        </div>
-
-                        <div class="form-group row">
-                            <div class="col-sm-6">
-                                <button v-on:click="component_type = 'tcp'" class="btn btn-primary btn-block">TCP</button>
-                            </div>
-                            <div class="col-sm-6">
-                                <button v-on:click="component_type = 'udp'" class="btn btn-primary btn-block">UDP</button>
+                                <button v-on:click="/*component_type = 'ICMP'*/" class="btn btn-primary btn-block disabled">ICMP</button>
                             </div>
                         </div>
 
                         <div class="form-group row">
                             <div class="col-sm-6">
-                                <button v-on:click="/*component_type = 'rip'*/" class="btn btn-primary btn-block disabled">RIP</button>
+                                <button v-on:click="component_type = 'TCP'" class="btn btn-primary btn-block">TCP</button>
                             </div>
                             <div class="col-sm-6">
-                                <button v-on:click="/*component_type = 'dhcp'*/" class="btn btn-primary btn-block disabled">DHCP</button>
+                                <button v-on:click="component_type = 'UDP'" class="btn btn-primary btn-block">UDP</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group row">
+                            <div class="col-sm-6">
+                                <button v-on:click="component_type = 'RIP'" class="btn btn-primary btn-block">RIP</button>
+                            </div>
+                            <div class="col-sm-6">
+                                <button v-on:click="component_type = 'DHCP'" class="btn btn-primary btn-block">DHCP</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div slot="body" class="form-horizontal" v-if="component_type == 'arp'">
-                <eth_gen v-model="ethernet" :interface_mac="interface.mac"></eth_gen>
+            <div v-else slot="body" class="form-horizontal">
+                <h2>{{ component_type }}</h2>
+                <div v-if="component_type == 'ARP'">
+                    <eth_gen v-model="ethernet"
+                        :src="{
+                            value: interface.mac,
+                            text: 'Use Interface MAC',
+                            default: true
+                        }"
+                        
+                        :dst="{
+                            value: 'FF:FF:FF:FF:FF:FF',
+                            text: 'Use Broadcast',
+                            default: true
+                        }"
+                    ></eth_gen>
+                    <hr>
+                    <arp_gen v-model="arp"
+                        :interface_mac="interface.mac"
+                        :interface_ip="interface.ip"
+                    ></arp_gen>
+                </div>
+                <div v-if="component_type == 'ICMP'">
+                    not implemented
+                </div>
+                <div v-if="component_type == 'TCP' || component_type == 'UDP'">
+                    <eth_gen v-model="ethernet"
+                        :src="{
+                            value: interface.mac,
+                            text: 'Use Interface MAC',
+                            default: true
+                        }"
+                    ></eth_gen>
+                    <hr>
+                    <ip_gen v-model="ip"
+                        :src="{
+                            value: interface.ip,
+                            text: 'Use Interface IP',
+                            default: true
+                        }"
+
+                        :arp_interface_id="interface_id"
+                        @arp:mac="ethernet.DestinationHwAddress = $event"
+                    ></ip_gen>
+                    <hr>
+                    <udp_gen v-model="udp"
+                        v-if="component_type == 'UDP'"
+                    ></udp_gen>
+                    <tcp_gen v-model="tcp"
+                        v-if="component_type == 'TCP'"
+                    ></tcp_gen>
+                    <hr>
+                    <payload_gen v-model="payload" ></payload_gen>
+                </div>
+                <div v-if="component_type == 'RIP'">
+                    <template v-if="!show_expert_settings">
+                        <div class="list-group-item d-flex my-3">
+                            <div class="w-100">
+                                {{ ip.SourceAddress }}:{{ udp.SourcePort }} => <b>{{ ip.DestinationAddress }}:{{ udp.DestinationPort }}</b><br>
+                                <small><i>{{ ethernet.SourceHwAddress }} => {{ ethernet.DestinationHwAddress }}</i></small>
+                            </div>
+                            <div class="mt-2">
+                                <button class="btn btn-outline-secondary" @click="show_expert_settings = true;"> Edit </button>
+                            </div>
+                        </div>
+                    </template>
+                    <div class="list-group-item mb-3" v-show="show_expert_settings">
+                        <div class="text-right mb-3">
+                            <button class="btn btn-outline-secondary" @click="show_expert_settings = false;"> Hide </button>
+                        </div>
+                        <eth_gen v-model="ethernet"
+                            :src="{
+                                value: interface.mac,
+                                text: 'Use Interface MAC',
+                                default: true
+                            }"
+                            
+                            :dst="{
+                                value: '01:00:5E:00:00:09',
+                                text: 'Use RIPv2 Multicast',
+                                default: true
+                            }"
+                        ></eth_gen>
+                        <hr>
+                        <ip_gen v-model="ip"
+                            :src="{
+                                value: interface.ip,
+                                text: 'Use Interface IP',
+                                default: true
+                            }"
+
+                            :dst="{
+                                value: '224.0.0.9',
+                                text: 'Use RIPv2 Multicast',
+                                default: true
+                            }"
+
+                            :ttl="{
+                                value: 1,
+                                text: '1 for a packet sent to the Local Network Control Block',
+                                default: true
+                            }"
+
+                            :arp_interface_id="interface_id"
+                            @arp:mac="ethernet.DestinationHwAddress = $event"
+                        ></ip_gen>
+                        <hr>
+                        <udp_gen v-model="udp"
+                            :src="{
+                                value: '520',
+                                text: 'Use RIPv2 Port',
+                                default: true
+                            }"
+
+                            :dst="{
+                                value: '520',
+                                text: 'Use RIPv2 Port',
+                                default: true
+                            }"
+                        ></udp_gen>
+                    </div>
+                    <rip_gen v-model="rip"></rip_gen>
+                </div>
+                <div v-if="component_type == 'DHCP'">
+                    <template v-if="!show_expert_settings">
+                        <div class="list-group-item d-flex my-3">
+                            <div class="w-100">
+                                {{ ip.SourceAddress }}:{{ udp.SourcePort }} => <b>{{ ip.DestinationAddress }}:{{ udp.DestinationPort }}</b><br>
+                                <small><i>{{ ethernet.SourceHwAddress }} => {{ ethernet.DestinationHwAddress }}</i></small>
+                            </div>
+                            <div class="mt-2">
+                                <button class="btn btn-outline-secondary" @click="show_expert_settings = true;"> Edit </button>
+                            </div>
+                        </div>
+                    </template>
+                    <div class="list-group-item mb-3" v-show="show_expert_settings">
+                        <div class="text-right mb-3">
+                            <button class="btn btn-outline-secondary" @click="show_expert_settings = false;"> Hide </button>
+                        </div>
+                        <eth_gen v-model="ethernet"
+                            :src="{
+                                value: interface.mac,
+                                text: 'Use Interface MAC',
+                                default: true
+                            }"
+                            
+                            :dst="{
+                                value: 'FF:FF:FF:FF:FF:FF',
+                                text: 'Use Broadcast',
+                                default: true
+                            }"
+                        ></eth_gen>
+                        <hr>
+                        <ip_gen v-model="ip"
+                            :src="{
+                                value: interface.ip,
+                                text: 'Use Interface IP',
+                                default: true
+                            }"
+
+                            :dst="{
+                                value: '255.255.255.255',
+                                text: 'Use Broadcast',
+                                default: true
+                            }"
+
+                            :arp_interface_id="interface_id"
+                            @arp:mac="ethernet.DestinationHwAddress = $event"
+                        ></ip_gen>
+                        <hr>
+                        <udp_gen v-model="udp"
+                            :src="{
+                                value: '67',
+                                text: 'DHCP Server',
+                                default: true
+                            }"
+
+                            :dst="{
+                                value: '68',
+                                text: 'DHCP Client',
+                                default: true
+                            }"
+                        ></udp_gen>
+                    </div>
+                    <dhcp_gen v-model="dhcp"
+                        :interface_ip="interface.ip"
+                    ></dhcp_gen>
+                </div>
                 <hr>
-                <arp_gen v-model="arp"
-                    :interface_mac="interface.mac"
-                    :interface_ip="interface.ip"
-                ></arp_gen>
-                
                 <send_gen
                     :interface_id="interface_id"
-                    :protocol="'ARP'"
-                    :data="Object.values({ ...ethernet, ...arp })"
+                    :protocol="component_type"
+                    :data="ExportData()"
                 ></send_gen>
-            </div>
-            <div slot="body" class="form-horizontal" v-if="component_type == 'icmp'">
-                not implemented
-            </div>
-            <div slot="body" class="form-horizontal" v-if="component_type == 'tcp' || component_type == 'udp'">
-                <eth_gen v-model="ethernet"
-                    :interface_mac="interface.mac"
-                ></eth_gen>
-                <hr>
-                <ip_gen v-model="ip"
-                    :interface_ip="interface.ip"
-
-                    :arp_interface_id="interface_id"
-                    @arp:mac="ethernet.DestinationHwAddress = $event"
-                ></ip_gen>
-                <hr>
-                <udp_gen v-model="udp"
-                    v-if="component_type == 'udp'"
-                ></udp_gen>
-                <tcp_gen v-model="tcp"
-                    v-if="component_type == 'tcp'"
-                ></tcp_gen>
-                <hr>
-                <payload_gen v-model="payload" ></payload_gen>
-                <hr>
-                <send_gen
-                    v-if="component_type == 'udp'"
-
-                    :interface_id="interface_id"
-                    :protocol="'UDP'"
-                    :data="Object.values({ ...ethernet, ...ip, ...udp, payload })"
-                ></send_gen>
-                <send_gen
-                    v-if="component_type == 'tcp'"
-
-                    :interface_id="interface_id"
-                    :protocol="'TCP'"
-                    :data="Object.values({ ...ethernet, ...ip, ...tcp, payload })"
-                ></send_gen>
-            </div>
-            <div slot="body" class="form-horizontal" v-if="component_type == 'rip'">
-                not implemented
-            </div>
-            <div slot="body" class="form-horizontal" v-if="component_type == 'dhcp'">
-                not implemented
             </div>
             
             <div slot="footer" v-if="component_type !== false">
@@ -173,14 +326,46 @@ Vue.component("generator_modal", {
         },
         Toggle(interface) {
             this.$store.dispatch('SERVICE_TOGGLE', { interface, service: this.service_name });
+        },
+        ExportData() {
+            switch(this.component_type) {
+                case 'ARP':
+                    return Object.values({ ...this.ethernet, ...this.arp, });
+                    
+                case 'ICMP':
+                    return Object.values({ ...this.ethernet, ...this.icmp });
+
+                case 'TCP':
+                    return Object.values({ ...this.ethernet, ...this.ip, ...this.tcp, payload: this.payload });
+                    
+                case 'UDP':
+                    return Object.values({ ...this.ethernet, ...this.ip, ...this.udp, payload: this.payload });
+                
+                case 'RIP':
+                    return [...Object.values({ ...this.ethernet, ...this.ip, ...this.udp,
+                        CommandType: this.rip.CommandType,
+                        Version: this.rip.Version
+                    }), ...this.rip.Routes.flatMap(x => Object.values(x))]
+                    
+                case 'DHCP':
+                    return [...Object.values({ ...this.ethernet, ...this.ip, ...this.udp,
+                        OperationCode: this.dhcp.OperationCode,
+                        TransactionID: this.dhcp.TransactionID,
+                        YourClientIPAddress: this.dhcp.YourClientIPAddress,
+                        NextServerIPAddress: this.dhcp.NextServerIPAddress,
+                        ClientMACAddress: this.dhcp.ClientMACAddress,
+                    }), ...Object.entries(this.dhcp.Options).flatMap(([key, value]) => [key, value])]
+            
+            }
         }
     },
     components: {
         'eth_gen': {
-            props: ['value', 'interface_mac'],
+            props: ['value', 'src', 'dst'],
             
             data: () => ({
-                use_interface_mac: true
+                use_src: false,
+                use_dst: false
             }),
             computed: {
                 SourceHwAddress: {
@@ -203,28 +388,50 @@ Vue.component("generator_modal", {
                 }
             },
             watch: {
-                use_interface_mac: {
+                use_src: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.SourceHwAddress = this.interface_mac, 0)
+                        !newVal || setTimeout(() => this.SourceHwAddress = this.src.value, 0)
+                    }
+                },
+                use_dst: {
+                    immediate: true,
+                    handler(newVal) {
+                        !newVal || setTimeout(() => this.DestinationHwAddress = this.dst.value, 0)
                     }
                 }
             },
+            mounted() {
+                if(this.src && this.src.default) {
+                    this.use_src = true;
+                } else {
+                    this.SourceHwAddress = null;
+                }
+
+                if(this.dst && this.dst.default) {
+                    this.use_dst = true;
+                } else {
+                    this.DestinationHwAddress = null;
+                }
+            },
             template: `
-                <div>
+                <div class="form-group">
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Source MAC</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="SourceHwAddress" v-bind:readonly="use_interface_mac && interface_mac" />
-                            <label class="form-check form-control-plaintext" v-if="interface_mac">
-                                <input type="checkbox" value="1" v-model="use_interface_mac" class="form-check-input"> Use Interface MAC
+                            <input type="text" class="form-control" v-model="SourceHwAddress" v-bind:readonly="use_src && src" />
+                            <label class="form-check form-control-plaintext" v-if="src">
+                                <input type="checkbox" value="1" v-model="use_src" class="form-check-input"> {{ src.text }}
                             </label>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Destination MAC</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="DestinationHwAddress" />
+                            <input type="text" class="form-control" v-model="DestinationHwAddress" v-bind:readonly="use_dst && dst" />
+                            <label class="form-check form-control-plaintext" v-if="dst">
+                                <input type="checkbox" value="1" v-model="use_dst" class="form-check-input"> {{ dst.text }}
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -240,29 +447,8 @@ Vue.component("generator_modal", {
                 operations: {
                     1: 'Request',
                     2: 'Response',
-                    3: 'RequestReverse',
-                    4: 'ReplyReverse',
-                    5: 'DRARPRequest',
-                    6: 'DRARPReply',
-                    7: 'DRARPError',
-                    8: 'InARPRequest',
-                    9: 'InARPReply',
-                    10: 'ARPNAK',
-                    11: 'MARSRequest',
-                    12: 'MARSMulti',
-                    13: 'MARSMServ',
-                    14: 'MARSJoin',
-                    15: 'MARSLeave',
-                    16: 'MARSNAK',
-                    17: 'MARSUnserv',
-                    18: 'MARSSJoin',
-                    19: 'MARSSLeave',
-                    20: 'MARSGrouplistRequest',
-                    21: 'MARSGrouplistReply',
-                    22: 'MARSRedirectMap',
-                    23: 'MaposUnarp',
-                    24: 'OP_EXP1',
-                    25: 'OP_EXP2'
+                    3: 'Request Reverse',
+                    4: 'Reply Reverse'
                 }
             }),
             computed: {
@@ -327,7 +513,7 @@ Vue.component("generator_modal", {
                 }
             },
             template: `
-                <div>
+                <div class="form-group">
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Operation</label>
                         <div class="col-sm-8">
@@ -370,10 +556,13 @@ Vue.component("generator_modal", {
             `
         },
         'ip_gen': {
-            props: ['value', 'interface_ip', 'arp_interface_id'],
+            props: ['value', 'src', 'dst', 'ttl', 'arp_interface_id'],
             
             data: () => ({
-                use_interface_ip: true,
+                use_src: false,
+                use_dst: false,
+                use_ttl: false,
+
                 arp_is_lookingup: false
             }),
             computed: {
@@ -406,40 +595,80 @@ Vue.component("generator_modal", {
                 },
             },
             watch: {
-                use_interface_ip: {
+                use_src: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.SourceAddress = this.interface_ip, 0)
+                        !newVal || setTimeout(() => this.SourceAddress = this.src.value, 0)
+                    }
+                },
+                use_dst: {
+                    immediate: true,
+                    handler(newVal) {
+                        !newVal || setTimeout(() => this.DestinationAddress = this.dst.value, 0)
+                    }
+                },
+                use_ttl: {
+                    immediate: true,
+                    handler(newVal) {
+                        !newVal || setTimeout(() => this.TimeToLive = this.ttl.value, 0)
                     }
                 }
             },
+            mounted() {
+                if(this.src && this.src.default) {
+                    this.use_src = true;
+                } else {
+                    this.SourceAddress = null;
+                }
+
+                if(this.dst && this.dst.default) {
+                    this.use_dst = true;
+                } else {
+                    this.DestinationAddress = null;
+                }
+
+                if(this.ttl && this.ttl.default) {
+                    this.use_ttl = true;
+                } else {
+                    this.TimeToLive = 255;
+                }
+            },
             template: `
-                <div>
+                <div class="form-group">
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Source IP</label>
                         <div class="col-sm-8">
-                            <ip-address-input v-model="SourceAddress" v-bind:readonly="use_interface_ip && interface_ip" /></ip-address-input>
-                            <label class="form-check form-control-plaintext" v-if="interface_ip">
-                                <input type="checkbox" value="1" v-model="use_interface_ip" class="form-check-input"> Use Interface IP
+                            <ip-address-input v-model="SourceAddress" v-bind:readonly="use_src && src" /></ip-address-input>
+                            <label class="form-check form-control-plaintext" v-if="src">
+                                <input type="checkbox" value="1" v-model="use_src" class="form-check-input"> {{ src.text }}
                             </label>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Destination IP</label>
                         <div class="col-sm-8">
-                            <ip-address-input v-if="!arp_interface_id" v-model="DestinationAddress"></ip-address-input>
-                            <div class="input-group mb-3" v-else>
-                                <ip-address-input v-model="DestinationAddress"></ip-address-input>
+                            <ip-address-input v-if="!arp_interface_id" v-model="DestinationAddress" v-bind:readonly="use_dst && dst"></ip-address-input>
+                            <div class="input-group" v-else>
+                                <ip-address-input v-model="DestinationAddress" v-bind:readonly="use_dst && dst"></ip-address-input>
                                 <div class="input-group-append">
-                                    <button class="btn btn-outline-secondary" @click="!arp_is_lookingup && ARP()" v-bind:class="{'disabled': arp_is_lookingup}"> {{ arp_is_lookingup ? 'Processing...' : 'ARP Request' }}</button>
+                                    <button class="btn btn-outline-secondary" @click="!arp_is_lookingup && !use_dst && ARP()" v-bind:class="{'disabled': arp_is_lookingup || use_dst}"> {{ arp_is_lookingup ? 'Processing...' : 'ARP Request' }}</button>
                                 </div>
                             </div>
+                            <label class="form-check form-control-plaintext" v-if="dst">
+                                <input type="checkbox" value="1" v-model="use_dst" class="form-check-input"> {{ dst.text }}
+                            </label>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">TimeToLive</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="TimeToLive" />
+                        <div class="col-sm-8 input-group">
+                            <input type="text" class="form-control" v-model="TimeToLive" v-bind:readonly="use_ttl && ttl" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">hops</span>
+                            </div>
+                            <label class="form-check form-control-plaintext" v-if="ttl">
+                                <input type="checkbox" value="1" v-model="use_ttl" class="form-check-input"> {{ ttl.text }}
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -458,7 +687,7 @@ Vue.component("generator_modal", {
                     .finally(() => {
                         this.arp_is_lookingup = false
                     });
-                },
+                }
             }
         },
         'tcp_gen': {
@@ -506,17 +735,15 @@ Vue.component("generator_modal", {
                 }
             },
             template: `
-                <div>
+                <div class="form-group">
                     <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Source Port</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="SourcePort" />
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Destination Port</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="DestinationPort" />
+                        <label class="col-sm-4 col-form-label">Ports</label>
+                        <div class="col-sm-8 input-group">
+                            <input type="text" class="form-control" v-model="SourcePort" placeholder="Source" />
+                            <div class="input-group-prepend input-group-append">
+                                <button class="btn input-group-text" @click="Toggle()" title="Toggle">=&gt;</button>
+                            </div>
+                            <input type="text" class="form-control" v-model="DestinationPort" placeholder="Destination" />
                         </div>
                     </div>
                     <div class="form-group row">
@@ -534,6 +761,11 @@ Vue.component("generator_modal", {
                 </div>
             `,
             methods: {
+                Toggle(){
+                    var src_port = this.SourcePort;
+                    this.SourcePort = this.DestinationPort;
+                    this.DestinationPort = src_port;
+                },
                 GetFlag(mask) {
                     return (this.value.Flags & mask) != 0
                 },
@@ -543,8 +775,12 @@ Vue.component("generator_modal", {
             }
         },
         'udp_gen': {
-            props: ['value'],
+            props: ['value', 'src', 'dst'],
 
+            data: () => ({
+                use_src: false,
+                use_dst: false
+            }),
             computed: {
                 SourcePort: {
                     get() {
@@ -565,22 +801,440 @@ Vue.component("generator_modal", {
                     }
                 }
             },
+            watch: {
+                use_src: {
+                    immediate: true,
+                    handler(newVal) {
+                        !newVal || setTimeout(() => this.SourcePort = this.src.value, 0)
+                    }
+                },
+                use_dst: {
+                    immediate: true,
+                    handler(newVal) {
+                        !newVal || setTimeout(() => this.DestinationPort = this.dst.value, 0)
+                    }
+                }
+            },
+            mounted() {
+                if(this.src && this.src.default) {
+                    this.use_src = true;
+                } else {
+                    this.SourcePort = null;
+                }
+
+                if(this.dst && this.dst.default) {
+                    this.use_dst = true;
+                } else {
+                    this.DestinationPort = null;
+                }
+            },
             template: `
-                <div>
+                <div class="form-group">
                     <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Source Port</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="SourcePort" />
+                        <label class="col-sm-4 col-form-label">Ports</label>
+                        <div class="col-sm-8 input-group">
+                            <input type="text" class="form-control" v-model="SourcePort" placeholder="Source" v-bind:readonly="use_src && src" />
+                            <div class="input-group-prepend input-group-append">
+                                <button class="btn input-group-text" @click="Toggle()" title="Toggle">=&gt;</button>
+                            </div>
+                            <input type="text" class="form-control" v-model="DestinationPort" placeholder="Destination" v-bind:readonly="use_dst && dst" />
                         </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Destination Port</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="DestinationPort" />
+
+                        <div class="col-sm-4"></div>
+                        <div class="col-sm-4">
+                            <label class="form-check form-control-plaintext" v-if="src">
+                                <input type="checkbox" value="1" v-model="use_src" class="form-check-input"> {{ src.text }}
+                            </label>
+                        </div>
+                        <div class="col-sm-4">
+                            <label class="form-check form-control-plaintext" v-if="dst">
+                                <input type="checkbox" value="1" v-model="use_dst" class="form-check-input"> {{ dst.text }}
+                            </label>
                         </div>
                     </div>
                 </div>
-            `
+            `,
+            methods: {
+                Toggle(){
+                    var src_port = this.SourcePort;
+                    this.SourcePort = this.DestinationPort;
+                    this.DestinationPort = src_port;
+
+                    if (this.SourcePort != this.DestinationPort) {
+                        this.use_src = false
+                        this.use_dst = false
+                    }
+                }
+            }
+        },
+        'rip_gen': {
+            props: ['value'],
+
+            data: () => ({
+                route: null,
+                route_id: null,
+
+                command_types: {
+                    1: 'Request',
+                    2: 'Response'
+                },
+                versions: {
+                    0: 'Must be Discarded',
+                    1: '1',
+                    2: '2'
+                },
+                afis: {
+                    0: 'Unspecified',
+                    2: 'IP',
+                    65535: 'Authentication present'
+                }
+            }),
+            computed: {
+                CommandType: {
+                    get() {
+                        return this.value.CommandType;
+                    },
+                    set(newValue) {
+                        this.value.CommandType = newValue;
+                        this.$emit('input', this.value);
+                    }
+                },
+                Version: {
+                    get() {
+                        return this.value.Version;
+                    },
+                    set(newValue) {
+                        this.value.Version = newValue;
+                        this.$emit('input', this.value);
+                    }
+                },
+                Routes: {
+                    get() {
+                        return this.value.Routes;
+                    },
+                    set(newValue) {
+                        this.value.Routes = newValue;
+                        this.$emit('input', this.value);
+                    }
+                }
+            },
+            template: `
+                <div class="form-group">
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Command Type</label>
+                        <div class="col-sm-8">
+                            <select class="form-control" v-model="CommandType">
+                                <option v-for="(command_type, id) in command_types" :value="id">{{ command_type }}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!--
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Version</label>
+                        <div class="col-sm-8">
+                            <select class="form-control" v-model="Version">
+                                <option v-for="(version, id) in versions" :value="id">{{ version }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    -->
+
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Routes</label>
+                        <div class="col-sm-8">
+                            <button class="btn btn-info" @click="Open()">+ Add Route</button>
+                        </div>
+                    </div>
+
+                    <ul v-if="Routes.length > 0" class="list-group list-group-flush">
+                        <li class="list-group-item d-flex" v-for="(route, id) in Routes">
+                            <span class="w-100">
+                                <strong>{{ route.IP || '--unspecified--' }}</strong><br><small>{{ route.Mask || '--unspecified--' }}</small>
+                            </span>
+                            <span class="w-100">
+                                <span>via {{ route.NextHopIP || '--unspecified--' }}</span><br><small>metric <strong>{{ route.Metric || '--unspecified--' }}</strong></small>
+                            </span>
+                            <div class="btn-group my-2">
+                                <button class="btn btn-info btn-sm" @click="Open(id)">Edit</button>
+                                <button class="btn btn-danger btn-sm" @click="Remove(id)">Remove</button>
+                            </div>
+                        </li>
+                    </ul>
+
+                    <modal v-if="route" v-on:close="Close()">
+                        <div slot="header">
+                            <h1 class="mb-0"> RIP Route </h1>
+                        </div>
+                        <div slot="body" class="form-horizontal">
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Address Family ID</label>
+                                <div class="col-sm-8">
+                                    <select class="form-control" v-model="route.AFI">
+                                        <option v-for="(afi, id) in afis" :value="id">{{ afi }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Route Tag</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" v-model="route.Tag" />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">IP Address</label>
+                                <div class="col-sm-8">
+                                    <ip-address-input v-model="route.IP"></ip-address-input>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Mask</label>
+                                <div class="col-sm-8">
+                                    <ip-mask-input v-model="route.Mask"></ip-mask-input>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Next Hop IP</label>
+                                <div class="col-sm-8">
+                                    <ip-address-input v-model="route.NextHopIP"></ip-address-input>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-4 col-form-label">Metric</label>
+                                <div class="col-sm-8">
+                                    <input type="text" class="form-control" v-model="route.Metric" />
+                                </div>
+                            </div>
+                        </div>
+                        <div slot="footer">
+                            <button v-on:click="Action()" class="btn btn-success"> Save Changes </button>
+                            <button v-on:click="Close()" class="btn btn-secondary">Cancel</button>
+                        </div>
+                    </modal>
+                </div>
+            `,
+            methods: {
+                Open(route_id = null) {
+                    if (route_id !== null) {
+                        this.$set(this, 'route', { ...this.value.Routes[route_id] })
+                        this.route_id = route_id;
+                    } else {
+                        this.$set(this, 'route', {
+                            AFI: 2,
+                            Tag: null,
+                            IP: null,
+                            Mask: null,
+                            NextHopIP: null,
+                            Metric: null
+                        })
+                        this.route_id = null;
+                    }
+                },
+                Action() {
+                    if (this.route_id !== null) {
+                        this.$set(this.value.Routes, this.route_id, this.route)
+                    } else {
+                        this.value.Routes.push(this.route)
+                    }
+
+                    this.$emit('input', this.value);
+                    this.Close();
+                },
+                Close() {
+                    this.route = null
+                    this.route_id = null
+                },
+                Remove(id) {
+                    this.$delete(this.value.Routes, id)
+                }
+            }
+        },
+        'dhcp_gen': {
+            props: ['value', 'interface_ip'],
+
+            data: () => ({
+                use_interface_ip: true,
+
+                operation_codes: {
+                    1: 'BOOT REQUEST',
+                    2: 'BOOT REPLY'
+                },
+                message_types: {
+                    1: 'DISCOVER',
+                    2: 'OFFER',
+                    3: 'REQUEST',
+                    4: 'DECLINE',
+                    5: 'ACK',
+                    6: 'NAK',
+                    7: 'RELEASE'
+                },
+                options: {
+                    1: {
+                        name: 'SubnetMask',
+                    },
+                    3: {
+                        name: 'Router',
+                    },
+                    6: {
+                        name: 'DomainNameServer',
+                    },
+                    50: {
+                        name: 'RequestedIPAddress',
+                    },
+                    51: {
+                        name: 'IPAddressLeaseTime',
+                    },
+                    53: {
+                        name: 'MessageType',
+                    },
+                    54: {
+                        name: 'ServerIdentifier',
+                    },
+                    55: {
+                        name: 'ParameterRequestList',
+                    },
+                    58: {
+                        name: 'RenewalTimeValue',
+                    },
+                    59: {
+                        name: 'RebindingTimeValue',
+                    },
+                    61: {
+                        name: 'ClientIdentifier',
+                    }
+                }
+            }),
+            computed: {
+                OperationCode: {
+                    get() {
+                        return this.value.OperationCode;
+                    },
+                    set(newValue) {
+                        this.value.OperationCode = newValue;
+                        this.$emit('input', this.value);
+                    }
+                },
+                TransactionID: {
+                    get() {
+                        return this.value.TransactionID;
+                    },
+                    set(newValue) {
+                        this.value.TransactionID = newValue;
+                        this.$emit('input', this.value);
+                    }
+                },
+                YourClientIPAddress: {
+                    get() {
+                        return this.value.YourClientIPAddress;
+                    },
+                    set(newValue) {
+                        this.value.YourClientIPAddress = newValue;
+                        this.$emit('input', this.value);
+                    }
+                },
+                NextServerIPAddress: {
+                    get() {
+                        return this.value.NextServerIPAddress;
+                    },
+                    set(newValue) {
+                        this.value.NextServerIPAddress = newValue;
+                        this.$emit('input', this.value);
+                    }
+                },
+                ClientMACAddress: {
+                    get() {
+                        return this.value.ClientMACAddress;
+                    },
+                    set(newValue) {
+                        this.value.ClientMACAddress = newValue;
+                        this.$emit('input', this.value);
+                    }
+                },
+                Options: {
+                    get() {
+                        return this.value.Options;
+                    },
+                    set(newValue) {
+                        this.value.Options = newValue;
+                        this.$emit('input', this.value);
+                    }
+                }
+            },
+            watch: {
+                use_interface_ip: {
+                    immediate: true,
+                    handler(newVal) {
+                        !newVal || setTimeout(() => this.NextServerIPAddress = this.interface_ip, 0)
+                    }
+                }
+            },
+            template: `
+                <div class="form-group">
+                    <h3> BOOTP </h3>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Operation Code</label>
+                        <div class="col-sm-8 input-group">
+                            <select class="form-control" v-model="OperationCode">
+                                <option v-for="(operation_code, id) in operation_codes" :value="id">{{ operation_code }}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Transaction ID</label>
+                        <div class="col-sm-8 input-group">
+                            <input type="text" class="form-control" v-model="TransactionID" />
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-secondary" @click="RandomTransactionID()"> Random </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">(New) Client IP</label>
+                        <div class="col-sm-8 input-group">
+                            <ip-address-input v-model="YourClientIPAddress"></ip-address-input>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Next Server IP</label>
+                        <div class="col-sm-8">
+                            <ip-address-input v-model="NextServerIPAddress" v-bind:readonly="use_interface_ip && interface_ip" /></ip-address-input>
+                            <label class="form-check form-control-plaintext" v-if="interface_ip">
+                                <input type="checkbox" value="1" v-model="use_interface_ip" class="form-check-input"> Use Interface IP
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Client MAC</label>
+                        <div class="col-sm-8 input-group">
+                            <input type="text" class="form-control" v-model="ClientMACAddress" />
+                        </div>
+                    </div>
+
+                    <hr>
+                    <h3> DHCP Options </h3>
+                    <div class="form-group row" v-for="(option, id) in options">
+                        <label class="col-sm-4 col-form-label">{{ option.name }}</label>
+                        <div class="col-sm-8 input-group">
+                            <input type="text" class="form-control" v-model="Options[id]" />
+                            <div class="input-group-append" v-if="typeof Options[id] != 'undefined'">
+                                <button class="btn btn-outline-danger" @click="$delete(Options, id)"> X </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            methods: {
+                RandomTransactionID() {
+                    if (window && window.crypto && window.crypto.getRandomValues && Uint32Array) {
+                        var o = new Uint32Array(1);
+                        window.crypto.getRandomValues(o);
+                        this.TransactionID = o[0];
+                    } else {
+                        console.warn('Falling back to pseudo-random client seed');
+                        this.TransactionID = Math.floor(Math.random() * Math.pow(2, 32));
+                    }
+                }
+            }
         },
         'payload_gen': {
             props: ['value'],
@@ -596,7 +1250,7 @@ Vue.component("generator_modal", {
                 }
             },
             template: `
-                <div>
+                <div class="form-group">
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">String Payload<br><small><i>optional</i></small></label>
                         <div class="col-sm-8">
@@ -615,7 +1269,7 @@ Vue.component("generator_modal", {
                 interval: null
             }),
             template: `
-                <div>
+                <div class="form-group">
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label form-control-plaintext text-right">
                             Repeat <input type="checkbox" value="1" v-model="active" class="ml-1">
