@@ -944,6 +944,7 @@ Vue.component("generator_modal", {
                         <label class="col-sm-4 col-form-label">Routes</label>
                         <div class="col-sm-8">
                             <button class="btn btn-info" @click="Open()">+ Add Route</button>
+                            <button class="btn btn-warning" @click="Random()">+ Random Route</button>
                         </div>
                     </div>
 
@@ -1014,6 +1015,18 @@ Vue.component("generator_modal", {
                 </div>
             `,
             methods: {
+                Random() {
+                    var octets = [248, 240, 224, 192, 128, 0];
+                    var octet = octets[Math.floor(Math.random()*octets.length)];
+
+                    var IP = (Math.floor(Math.random() * 255) + 1)+"."+(Math.floor(Math.random() * 255) + 0)+"."+(Math.floor(Math.random() * 255) + 0)+"."+(Math.floor(Math.random() * 255) + 0);
+                    var Mask = "255.255." + (Math.random() < 0.5 ? "255."+octet : octet+".0");
+                    var NextHopIP = "0.0.0.0";
+                    var Metric = Math.random() < 0.2 ? 16 : Math.floor(Math.random()*15)
+
+                    this.value.Routes.push({ AFI: 2, Tag: 0, IP, Mask, NextHopIP, Metric })
+                    this.$emit('input', this.value);
+                },
                 Open(route_id = null) {
                     if (route_id !== null) {
                         this.$set(this, 'route', { ...this.value.Routes[route_id] })
