@@ -94,7 +94,7 @@
   background: #ccc;
 }
 
-.form-horizontal > *:last-child {
+.form-horizontal *:last-child {
   margin-bottom: 0;
 }
 
