@@ -4,6 +4,9 @@ const app = new Vue({
     data: {
         generator_modal: false,
 
+        api_max_tries: 5,
+        api_tries: 0,
+
         api_settings: false,
         api_hostname: "localhost",
         api_port: "5000",
@@ -59,6 +62,12 @@ const app = new Vue({
                             <input type="text" class="form-control" v-model="api_port">
                         </div>
                     </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Max Tries</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" v-model="api_max_tries">
+                        </div>
+                    </div>
                 </div>
             </modal>
             
@@ -101,6 +110,11 @@ const app = new Vue({
             if(!this.running) return;
             clearInterval(this.update_interval);
             this.$store.commit('STOP')
+        },
+        ApiError() {
+            if (this.api_tries++ > this.api_max_tries) {
+                this.Stop();
+            }
         }
     },
     mounted(){
@@ -123,9 +137,11 @@ function ajax(model, controller, body = null) {
         }
         
         console.log("Error Occured.");
+        app.api_tries = 0;
         app.Push(response.error);
         throw response.error;
     }, (err) => {
+        app.ApiError();
         app.Push(err.toString());
         throw err.toString();
     });
