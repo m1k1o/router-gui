@@ -29,6 +29,11 @@ Vue.component("generator_modal", {
             TargetHardwareAddress: "0.0.0.0",
             TargetProtocolAddress: null
         },
+        icmp: {
+            TypeCode: 0,
+            ID: null,
+            Sequence: null
+        },
         ip: {
             SourceAddress: null,
             DestinationAddress: null,
@@ -44,7 +49,7 @@ Vue.component("generator_modal", {
             DestinationPort: null
         },
         rip: {
-            CommandType: 1,
+            CommandType: 2,
             Version: 2,
             
             Routes: []  
@@ -91,7 +96,7 @@ Vue.component("generator_modal", {
                                 <button v-on:click="component_type = 'ARP'" class="btn btn-primary btn-block">ARP</button>
                             </div>
                             <div class="col-sm-6">
-                                <button v-on:click="/*component_type = 'ICMP'*/" class="btn btn-primary btn-block disabled">ICMP</button>
+                                <button v-on:click="component_type = 'ICMP'" class="btn btn-primary btn-block">ICMP</button>
                             </div>
                         </div>
 
@@ -138,7 +143,28 @@ Vue.component("generator_modal", {
                     ></arp_gen>
                 </div>
                 <div v-if="component_type == 'ICMP'">
-                    not implemented
+                    <eth_gen v-model="ethernet"
+                        :src="{
+                            value: interface.mac,
+                            text: 'Use Interface MAC',
+                            default: true
+                        }"
+                    ></eth_gen>
+                    <hr>
+                    <ip_gen v-model="ip"
+                        :src="{
+                            value: interface.ip,
+                            text: 'Use Interface IP',
+                            default: true
+                        }"
+
+                        :arp_interface_id="interface_id"
+                        @arp:mac="ethernet.DestinationHwAddress = $event"
+                    ></ip_gen>
+                    <hr>
+                    <icmp_gen v-model="icmp"></icmp_gen>
+                    <hr>
+                    <payload_gen v-model="payload" ></payload_gen>
                 </div>
                 <div v-if="component_type == 'TCP' || component_type == 'UDP'">
                     <eth_gen v-model="ethernet"
@@ -333,7 +359,7 @@ Vue.component("generator_modal", {
                     return Object.values({ ...this.ethernet, ...this.arp, });
                     
                 case 'ICMP':
-                    return Object.values({ ...this.ethernet, ...this.icmp });
+                    return Object.values({ ...this.ethernet, ...this.ip, ...this.icmp });
 
                 case 'TCP':
                     return Object.values({ ...this.ethernet, ...this.ip, ...this.tcp, payload: this.payload });
@@ -550,6 +576,138 @@ Vue.component("generator_modal", {
                         <label class="col-sm-4 col-form-label">Target IP</label>
                         <div class="col-sm-8">
                             <ip-address-input v-model="TargetProtocolAddress" /></ip-address-input>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        'icmp_gen': {
+            props: ['value'],
+            
+            data: () => ({
+                type_codes: {
+                    "Echo Reply": 0,
+                    "Echo": 2048,
+
+                    "Timestamp": 3328,
+                    "Timestamp Reply": 3584,
+
+                    "Destination Unreachable": {
+                        768: "Net Unreachable",
+                        769: "Host Unreachable",
+                        770: "Protocol Unreachable",
+                        771: "Port Unreachable",
+                        772: "Fragmentation Needed and Don't Fragment was Set",
+                        773: "Source Route Failed",
+                        774: "Destination Network Unknown",
+                        775: "Destination Host Unknown",
+                        776: "Source Host Isolated",
+                        777: "Communication with Destination Network is Administratively Prohibited",
+                        778: "Communication with Destination Host is Administratively Prohibited",
+                        779: "Destination Network Unreachable for Type of Service",
+                        780: "Destination Host Unreachable for Type of Service",
+                        781: "Communication Administratively Prohibited",
+                        782: "Host Precedence Violation",
+                        783: "Precedence cutoff in effect"
+                    },
+                    "Redirect": {
+                        1280: "Redirect Datagram for the Network (or subnet)",
+                        1281: "Redirect Datagram for the Host",
+                        1282: "Redirect Datagram for the Type of Service and Network",
+                        1283: "Redirect Datagram for the Type of Service and Host"
+                    },
+                    "Router Advertisement": {
+                        2304: "Normal router advertisement",
+                        //: "Does not route common traffic"
+                    },
+                    "Router Solicitation": {
+                        2560: "Router Advertisement"
+                    },
+                    "Time Exceeded": {
+                        2816: "Time to Live exceeded in Transit",
+                        //: "Fragment Reassembly Time Exceeded"
+                    },
+                    "Parameter Problem": {
+                        3072: "Pointer indicates the error",
+                        3073: "Missing a Required Option",
+                        3074: "Bad Length"
+                    },
+                    "Photuris": {
+                        9728: "Bad SPI",
+                        9729: "Authentication Failed",
+                        9730: "Decompression Failed",
+                        9731: "Decryption Failed",
+                        9732: "Need Authentication",
+                        9733: "Need Authorization"
+                    },
+                    /*
+                    "Extended Echo Request": {
+                        //: "No Error"
+                    },
+                    "Extended Echo Reply": {
+                        //: "No Error",
+                        //: "Malformed Query",
+                        //: "No Such Interface",
+                        //: "No Such Table Entry",
+                        //: "Multiple Interfaces Satisfy Query"
+                    }
+                    */
+                }
+            }),
+            computed: {
+                TypeCode: {
+                    get() {
+                        return this.value.TypeCode;
+                    },
+                    set(newValue) {
+                        this.value.TypeCode = newValue;
+                        this.$emit('input', this.value);
+                    }
+                },
+                ID: {
+                    get() {
+                        return this.value.ID;
+                    },
+                    set(newValue) {
+                        this.value.ID = newValue;
+                        this.$emit('input', this.value);
+                    }
+                },
+                Sequence: {
+                    get() {
+                        return this.value.Sequence;
+                    },
+                    set(newValue) {
+                        this.value.Sequence = newValue;
+                        this.$emit('input', this.value);
+                    }
+                }
+            },
+            template: `
+                <div class="form-group">
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Type Code</label>
+                        <div class="col-sm-8">
+                            <select class="form-control" v-model="TypeCode">
+                                <template v-for="(codes, type) in type_codes">
+                                    <option v-if="typeof codes !== 'object'" :value="codes">{{ type }}</option>
+                                    <optgroup v-else :label="type">
+                                        <option v-for="(code, id) in codes" :value="id">{{ code }}</option>
+                                    </optgroup>
+                                </template>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">ID</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" v-model="ID" />
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Sequence</label>
+                        <div class="col-sm-8">
+                            <input type="text" class="form-control" v-model="Sequence" />
                         </div>
                     </div>
                 </div>
