@@ -264,11 +264,10 @@ Vue.component('routing', {
                 Action(){
                     this.is_lookingup = true
                     
-                    ajax("Routing", "Lookup", [
-                        this.ip
-                    ])
+                    ajax("Routing", "Lookup", {
+                        ip: this.ip
+                    })
                     .then((response) => {
-                        console.log(response);
                         if(typeof response.found !== 'undefined' && response.found === false) {
                             this.found = false;
                             return;

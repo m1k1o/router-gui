@@ -835,12 +835,12 @@ Vue.component("generator_modal", {
                 ARP() {
                     this.arp_is_lookingup = true
                     
-                    ajax("ARP", "Lookup", [
-                        this.arp_interface_id,
-                        this.DestinationAddress
-                    ])
-                    .then((response) => {
-                        this.$emit('arp:mac', response.mac);
+                    ajax("ARP", "Lookup", {
+                        interface: this.arp_interface_id,
+                        ip: this.DestinationAddress
+                    })
+                    .then(({ mac }) => {
+                        this.$emit('arp:mac', mac);
                     }, () => {})
                     .finally(() => {
                         this.arp_is_lookingup = false
@@ -1482,6 +1482,7 @@ Vue.component("generator_modal", {
                     })
                 },
                 Send() {
+                    // TODO: REFACTOR
                     return ajax("Generator", "Send", [
                         this.interface_id,
                         this.protocol,

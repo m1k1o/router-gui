@@ -277,12 +277,12 @@ Vue.component('arp', {
                 Action(){
                     this.is_lookingup = true
                     
-                    ajax("ARP", "Lookup", [
-                        this.interface,
-                        this.ip
-                    ])
-                    .then((response) => {
-                        this.mac = response.mac || '--unknown--';
+                    ajax("ARP", "Lookup", {
+                        interface: this.interface,
+                        ip: this.ip
+                    })
+                    .then(({ mac }) => {
+                        this.mac = mac || '--unknown--';
                     }, () => {})
                     .finally(() => {
                         this.is_lookingup = false

@@ -266,7 +266,7 @@ Vue.component('dhcp', {
                 new_visible: false,
 
                 new_pool: {
-                    interface_id: null,
+                    interface: null,
                     first_ip: null,
                     last_ip: null,
                     is_dynamic: true
@@ -296,8 +296,8 @@ Vue.component('dhcp', {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="(pool, interface_id) in pools">
-                                        <td width="1%"><interface-show :id="interface_id"></interface-show></td>
+                                    <tr v-for="(pool, interface) in pools">
+                                        <td width="1%"><interface-show :id="interface"></interface-show></td>
                                         <td>
                                             {{ pool.first_ip }}
                                         </td>
@@ -308,11 +308,11 @@ Vue.component('dhcp', {
                                             {{ Math.round(pool.allocated / pool.available * 100)  }}%
                                         </td>-->
                                         <td width="1%">
-                                            <button v-if="pool.is_dynamic" class="btn btn-info btn-sm" type="button" v-on:click="Toggle(interface_id)">Dynamic</button>
-                                            <button v-else class="btn btn-info btn-sm" type="button" v-on:click="Toggle(interface_id)">Static</button>
+                                            <button v-if="pool.is_dynamic" class="btn btn-info btn-sm" type="button" v-on:click="Toggle(interface)">Dynamic</button>
+                                            <button v-else class="btn btn-info btn-sm" type="button" v-on:click="Toggle(interface)">Static</button>
                                         </td>
                                         <td width="1%">
-                                            <button class="btn btn-danger btn-sm btn-block" type="button" v-on:click="Remove(interface_id)">Remove</button>
+                                            <button class="btn btn-danger btn-sm btn-block" type="button" v-on:click="Remove(interface)">Remove</button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -324,7 +324,7 @@ Vue.component('dhcp', {
                             <div class="form-group row">
                                 <label class="col-sm-4 col-form-label">Interface</label>
                                 <div class="col-sm-8">
-                                    <interface-input v-model="new_pool.interface_id"></interface-input>
+                                    <interface-input v-model="new_pool.interface"></interface-input>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -374,7 +374,7 @@ Vue.component('dhcp', {
                 NewOpen(){
                     this.new_visible = true;
 
-                    this.new_pool.interface_id = null;
+                    this.new_pool.interface = null;
                     this.new_pool.first_ip = null;
                     this.new_pool.last_ip = null;
                     this.new_pool.is_dynamic = true;

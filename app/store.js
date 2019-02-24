@@ -163,8 +163,8 @@ const store = new Vuex.Store({
                 }
             }
         },
-        DHCP_POOL_TOGGLE(state, { interface_id, is_dynamic }) {
-            state.dhcp.pools[interface_id].is_dynamic = is_dynamic;
+        DHCP_POOL_TOGGLE(state, { interface, is_dynamic }) {
+            state.dhcp.pools[interface].is_dynamic = is_dynamic;
         },
         DHCP_POOL_REMOVE(state, id) {
             Vue.delete(state.dhcp.pools, id);
@@ -186,144 +186,102 @@ const store = new Vuex.Store({
             .then((data) => commit('INITIALIZE', data));
         },
 
-        INTERFACE_EDIT({commit}, input) {
-            return ajax("Interfaces", "Edit", [
-                input.id,
-                input.ip,
-                input.mask
-            ]).then((interface) => {
-                commit('INTERFACE_EDIT', { id: input.id, ...interface });
-            });
-        },
-        INTERFACE_TOGGLE({commit}, id) {
-            return ajax("Interfaces", "Toggle", id).then((interface) => {
+        INTERFACE_EDIT({commit}, { id, ip, mask }) {
+            return ajax("Interfaces", "Edit", { id, ip, mask }).then((interface) => {
                 commit('INTERFACE_EDIT', { id, ...interface });
             });
         },
-        SERVICE_TOGGLE({commit}, input) {
-            return ajax("Interfaces", "ToggleService", [
-                input.interface,
-                input.service
-            ]).then((response) => {
+        INTERFACE_TOGGLE({commit}, id) {
+            return ajax("Interfaces", "Toggle", { id }).then((interface) => {
+                commit('INTERFACE_EDIT', { id, ...interface });
+            });
+        },
+        SERVICE_TOGGLE({commit}, { interface, service }) {
+            return ajax("Interfaces", "ToggleService", { interface, service }).then((response) => {
                 commit('SERVICE_TOGGLE', response);
             });
         },
         
-        ARP_FLUSH({commit}, input) {
+        ARP_FLUSH({commit}) {
             return ajax("ARP", "Flush").then(({ success }) => {
                 commit('ARP_FLUSH');
             });
         },
-        ARP_TIMERS({commit}, input) {
-            return ajax("ARP", "Timers", [
-                input.cache_timeout,
-                input.request_timeout,
-                input.request_interval
-            ]).then((timers) => {
+        ARP_TIMERS({commit}, { cache_timeout, request_timeout, request_interval }) {
+            return ajax("ARP", "Timers", { cache_timeout, request_timeout, request_interval }).then((timers) => {
                 commit('ARP_TIMERS', timers);
             });
         },
-        ARP_PROXY({commit}, input) {
-            return ajax("ARP", "Proxy", [
-                input.enabled.toString(),
-            ]).then((proxy) => {
+        ARP_PROXY({commit}, { enabled }) {
+            return ajax("ARP", "Proxy", { enabled }).then((proxy) => {
                 commit('ARP_PROXY', proxy);
             });
         },
 
-        RIP_TIMERS({commit}, input) {
-            return ajax("RIP", "Timers", [
-                input.update_timer,
-                input.invalid_timer,
-                input.hold_timer,
-                input.flush_timer
-            ]).then((timers) => {
+        RIP_TIMERS({commit}, { update_timer, invalid_timer, hold_timer, flush_timer }) {
+            return ajax("RIP", "Timers", { update_timer, invalid_timer, hold_timer, flush_timer }).then((timers) => {
                 commit('RIP_TIMERS', timers);
             });
         },
 
-        ROUTING_STATIC_ADD({commit}, input) {
-            return ajax("Routing", "AddStatic", [
-                input.ip,
-                input.mask,
-                input.next_hop_ip,
-                input.interface
-            ]).then((entry) => {
+        ROUTING_STATIC_ADD({commit}, { ip, mask, next_hop_ip, interface }) {
+            return ajax("Routing", "AddStatic", { ip, mask, next_hop_ip, interface }).then((entry) => {
                 commit('ROUTING_ENTRY_ADD', entry);
             });
         },
         ROUTING_STATIC_REMOVE({state, commit}, id) {
-            return ajax("Routing", "RemoveStatic", [
-                state.routing.table[id].ip,
-                state.routing.table[id].mask
-            ]).then(() => {
+            return ajax("Routing", "RemoveStatic", {
+                ip: state.routing.table[id].ip,
+                mask: state.routing.table[id].mask
+            }).then(() => {
                 commit('ROUTING_ENTRY_REMOVE', id);
             });
         },
 
-        LLDP_SETTINGS({commit}, input) {
-            return ajax("LLDP", "Settings", [
-                input.adv_interval,
-                input.time_to_live,
-                input.system_name,
-                input.system_description,
-            ]).then((response) => {
+        LLDP_SETTINGS({commit}, { adv_interval, time_to_live, system_name, system_description }) {
+            return ajax("LLDP", "Settings", { adv_interval, time_to_live, system_name, system_description }).then((response) => {
                 commit('LLDP_SETTINGS', response);
             });
         },
         
         SNIFFING_INTERFACE({commit}, interface) {
-            return ajax("Sniffing", "Interface", String(interface)).then(({ interface }) => {
+            return ajax("Sniffing", "Interface", { interface }).then(({ interface }) => {
                 commit('SNIFFING_INTERFACE', interface);
             });
         },
         
-        DHCP_TIMERS({commit}, input) {
-            return ajax("DHCP", "Timers", [
-                input.lease_timeout,
-                input.offer_timeout,
-                input.renewal_timeout,
-                input.rebinding_timeout
-            ]).then((timers) => {
+        DHCP_TIMERS({commit}, { lease_timeout, offer_timeout, renewal_timeout, rebinding_timeout }) {
+            return ajax("DHCP", "Timers", { lease_timeout, offer_timeout, renewal_timeout, rebinding_timeout }).then((timers) => {
                 commit('DHCP_TIMERS', timers);
             });
         },
-        DHCP_STATIC_ADD({commit}, input) {
-            return ajax("DHCP", "AddStatic", [
-                input.mac,
-                input.interface,
-                input.ip
-            ]).then((entry) => {
+        DHCP_STATIC_ADD({commit}, { mac, interface, ip }) {
+            return ajax("DHCP", "AddStatic", { mac, interface, ip }).then((entry) => {
                 commit('DHCP_ENTRY_ADD', entry);
             });
         },
         DHCP_STATIC_REMOVE({state, commit}, id) {
-            return ajax("DHCP", "RemoveStatic", [
-                state.dhcp.table[id].mac,
-                state.dhcp.table[id].interface
-            ]).then(() => {
+            return ajax("DHCP", "RemoveStatic", {
+                mac: state.dhcp.table[id].mac,
+                interface: state.dhcp.table[id].interface
+            }).then(() => {
                 commit('DHCP_ENTRY_REMOVE', id);
             });
         },
 
-        DHCP_POOL_ADD({commit}, input) {
-            return ajax("DHCP", "PoolAdd", [
-                input.interface_id,
-                input.first_ip,
-                input.last_ip,
-                input.is_dynamic
-            ]).then((entry) => {
+        DHCP_POOL_ADD({commit}, { interface, first_ip, last_ip, is_dynamic }) {
+            return ajax("DHCP", "PoolAdd", { interface, first_ip, last_ip, is_dynamic }).then((entry) => {
                 commit('DHCP_POOL_ADD', entry);
             });
         },
-        DHCP_POOL_TOGGLE({commit}, interface_id) {
-            return ajax("DHCP", "PoolToggle", interface_id).then(({ is_dynamic }) => {
-                commit('DHCP_POOL_TOGGLE', { interface_id, is_dynamic });
+        DHCP_POOL_TOGGLE({commit}, interface) {
+            return ajax("DHCP", "PoolToggle", { interface }).then(({ is_dynamic }) => {
+                commit('DHCP_POOL_TOGGLE', { interface, is_dynamic });
             });
         },
-        DHCP_POOL_REMOVE({commit}, interface_id) {
-            return ajax("DHCP", "PoolRemove", interface_id).then(() => {
-                commit('DHCP_POOL_REMOVE', interface_id);
+        DHCP_POOL_REMOVE({commit}, interface) {
+            return ajax("DHCP", "PoolRemove", { interface }).then(() => {
+                commit('DHCP_POOL_REMOVE', interface);
             });
         }
 

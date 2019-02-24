@@ -122,7 +122,12 @@ const app = new Vue({
     }
 });
 
+// TODO: REFACTOR
 function ajax(model, controller, body = null) {
+    if (body != null && typeof body == 'object') {
+        body = Object.values(body);
+    }
+    
     if (body != null && Array.isArray(body)) {
         body = body.join("\n");
     }
