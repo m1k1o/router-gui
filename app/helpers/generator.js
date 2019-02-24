@@ -356,31 +356,22 @@ Vue.component("generator_modal", {
         ExportData() {
             switch(this.component_type) {
                 case 'ARP':
-                    return Object.values({ ...this.ethernet, ...this.arp, });
+                    return { ethernet: this.ethernet, arp: this.arp, }
                     
                 case 'ICMP':
-                    return Object.values({ ...this.ethernet, ...this.ip, ...this.icmp, payload: this.payload });
+                    return { ethernet: this.ethernet, ip: this.ip, icmp: this.icmp, payload: this.payload }
 
                 case 'TCP':
-                    return Object.values({ ...this.ethernet, ...this.ip, ...this.tcp, payload: this.payload });
+                    return { ethernet: this.ethernet, ip: this.ip, tcp: this.tcp, payload: this.payload }
                     
                 case 'UDP':
-                    return Object.values({ ...this.ethernet, ...this.ip, ...this.udp, payload: this.payload });
+                    return { ethernet: this.ethernet, ip: this.ip, udp: this.udp, payload: this.payload }
                 
                 case 'RIP':
-                    return [...Object.values({ ...this.ethernet, ...this.ip, ...this.udp,
-                        CommandType: this.rip.CommandType,
-                        Version: this.rip.Version
-                    }), ...this.rip.Routes.flatMap(x => Object.values(x))]
+                    return { ethernet: this.ethernet, ip: this.ip, udp: this.udp, rip: this.rip }
                     
                 case 'DHCP':
-                    return [...Object.values({ ...this.ethernet, ...this.ip, ...this.udp,
-                        OperationCode: this.dhcp.OperationCode,
-                        TransactionID: this.dhcp.TransactionID,
-                        YourClientIPAddress: this.dhcp.YourClientIPAddress,
-                        NextServerIPAddress: this.dhcp.NextServerIPAddress,
-                        ClientMACAddress: this.dhcp.ClientMACAddress,
-                    }), ...Object.entries(this.dhcp.Options).flatMap(([key, value]) => [key, value])]
+                    return { ethernet: this.ethernet, ip: this.ip, udp: this.udp, dhcp: this.dhcp}
             
             }
         }
@@ -1483,11 +1474,11 @@ Vue.component("generator_modal", {
                 },
                 Send() {
                     // TODO: REFACTOR
-                    return ajax("Generator", "Send", [
-                        this.interface_id,
-                        this.protocol,
-                        ...Object.values(this.data)
-                    ])
+                    return ajax("Generator", "Send", {
+                        interface: this.interface_id,
+                        protocol: this.protocol,
+                        ...this.data
+                    })
                 }
             }
         }
