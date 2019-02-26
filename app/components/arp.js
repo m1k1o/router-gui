@@ -22,10 +22,10 @@ Vue.component('arp', {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(row, id) in entries" v-bind:class="{'table-success': row.cache_timeout == timers.cache_timeout || row.cache_timeout == timers.cache_timeout-1, 'table-active': row.cache_timeout <= 2}">
-                        <td>{{ row.mac }}</td>
-                        <td>{{ row.ip }}</td>
-                        <td>{{ row.cache_timeout }}</td>
+                    <tr v-for="(row, id) in entries" v-bind:class="{'table-success': row.expires_in == timers.cache_timeout || row.expires_in == timers.cache_timeout-1, 'table-active': row.expires_in <= 2}">
+                        <td>{{ row.physical_address }}</td>
+                        <td>{{ row.ip_address }}</td>
+                        <td>{{ row.expires_in }}</td>
                     </tr>
                 </tbody>
             </table>

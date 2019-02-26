@@ -25,53 +25,50 @@ Vue.component('sniffing', {
                         <th></th>
                     </thead>
                     <tbody>
-                        <template v-for="packet in data" >
+                        <template v-for="packet in data">
                         <tr
                             class="sniffing"
                             style="cursor:pointer;"
                             @click="properties_modal = packet"
                             :class="{
-                                'arp': 'arp' in packet,
-                                'lldp': 'lldp' in packet,
-                                'tcp': 'tcp' in packet,
-                                'rip': 'rip' in packet,
-                                'dhcp': 'dhcp' in packet,
-                                'udp': !('rip' in packet) && !('dhcp' in packet) && 'udp' in packet,
+                                'arp': IsType(packet, 'ARP'),
+                                'lldp': IsType(packet, 'LLDP'),
+                                'tcp': IsType(packet, 'TCP', 1),
+                                'rip': IsType(packet, 'RIP', 2),
+                                'dhcp': IsType(packet, 'DHCP', 2),
+                                'udp': !IsType(packet, 'RIP', 2)  && !IsType(packet, 'DHCP', 2) && IsType(packet, 'UDP', 1)
                             }"
-                            v-if="!only_known || only_known && ('arp' in packet || 'lldp' in packet || 'ip' in packet)"
+                            v-if="!only_known || only_known && (IsType(packet, 'ARP') || IsType(packet, 'IP') || IsType(packet, 'LLDP'))"
                         >
-                            <td class="text-center" v-html="MAC(packet.eth.src_mac)"></td>
-                            <td class="text-center" v-html="MAC(packet.eth.dst_mac)"></td>
-                            <td>{{ packet.eth.type }}</td>
+                            <td class="text-center" v-html="MAC(packet.source_hw_address)"></td>
+                            <td class="text-center" v-html="MAC(packet.destination_hw_address)"></td>
+                            <td>{{ packet.ethernet_packet_type }}</td>
                             
-                            <template v-if="'ip' in packet">
-                                <td class="text-center" v-html="IP(packet.ip.src_ip)"></td>
-                                <td class="text-center" v-html="IP(packet.ip.dst_ip)"></td>
-                                <td>{{ packet.ip.protocol }}</td>
+                            <template v-if="IsType(packet, 'IP')">
+                                <td class="text-center" v-html="IP(Onion(packet).source_address)"></td>
+                                <td class="text-center" v-html="IP(Onion(packet).destination_address)"></td>
+                                <td>{{ Onion(packet).ip_protocol_type }}</td>
                                 
                                 <td>
-                                    <template v-if="'tcp' in packet">
-                                        <span class="ml-3">{{ packet.tcp.src_port }} => {{ packet.tcp.dst_port }}</span>
+                                    <template v-if="IsType(packet, 'TCP', 1) || IsType(packet, 'UDP', 1)">
+                                        <span class="ml-3">{{ Onion(packet, 1).source_port }} => {{ Onion(packet, 1).destination_port }}</span>
                                     </template>
-                                    <template v-else-if="'udp' in packet">
-                                        <span class="ml-3">{{ packet.udp.src_port }} => {{ packet.udp.dst_port }}</span>
-                                        
-                                        <template v-if="'rip' in packet">
-                                            <span class="ml-3">RIPv2 {{ packet.rip.cmd_type}}</span>
-                                        </template>
-                                        <template v-if="'dhcp' in packet">
-                                            <span class="ml-3">DHCP {{ packet.dhcp.message_type }} &bull; {{ packet.dhcp.transaction_id }}</span>
-                                        </template>
+                                    
+                                    <template v-if="IsType(packet, 'RIP', 2)">
+                                        <span class="ml-3">RIPv{{ Onion(packet, 2).version }} {{ Onion(packet, 2).command_type}}</span>
+                                    </template>
+                                    <template v-if="IsType(packet, 'DHCP', 2)">
+                                        <span class="ml-3">DHCP {{ Onion(packet, 2).message_type }} &bull; {{ Onion(packet, 2).transaction_id }}</span>
                                     </template>
                                 </td>
                             </template>
-                            <td colspan="4" v-else-if="'arp' in packet">
-                                <span class="ml-3">{{ packet.arp.op }}</span>
-                                <span class="ml-3" v-if="packet.arp.op == 'Request'"> Where is <strong>{{ packet.arp.target_ip }}</strong>? Tell <strong>{{ packet.arp.sender_ip }}</strong> </span>
-                                <span class="ml-3" v-else> <strong>{{ packet.arp.sender_ip }}</strong> is at <strong>{{ packet.arp.sender_mac }}</strong> </span>
+                            <td colspan="4" v-else-if="IsType(packet, 'ARP')">
+                                <span class="ml-3">{{ Onion(packet).operation }}</span>
+                                <span class="ml-3" v-if="Onion(packet).operation == 'Request'"> Where is <strong>{{ Onion(packet).target_protocol_address }}</strong>? Tell <strong>{{ Onion(packet).sender_protocol_address }}</strong> </span>
+                                <span class="ml-3" v-else> <strong>{{ Onion(packet).sender_protocol_address }}</strong> is at <strong>{{ Onion(packet).sender_hardware_address }}</strong> </span>
                             </td>
-                            <td colspan="4" v-else-if="'lldp' in packet">
-                                {{ packet.lldp.system_name }} &bull; {{ packet.lldp.port_description }}
+                            <td colspan="4" v-else-if="IsType(packet, 'LLDP')">
+                                <!--{{ packet.lldp.system_name }} &bull; {{ packet.lldp.port_description }}-->
                             </td>
                             <td colspan="4" v-else>
                                 --unknown--
@@ -81,7 +78,7 @@ Vue.component('sniffing', {
                     </tbody>
                 </table>
             </div>
-
+            
             <properties_modal
                 :packet="properties_modal"
 
@@ -137,6 +134,32 @@ Vue.component('sniffing', {
             
             return '<strong title="'+ip+'">my&nbsp;ip</strong>';
         },
+        // TODO: Refactor
+        IsType(packet, type, level = 0) {
+            do {
+                if ('payload_packet' in packet) {
+                    packet = packet.payload_packet;
+                }
+                else {
+                    return false;
+                }
+            } while (level-- > 0);
+            
+            return packet.type == type;
+        },
+        // TODO: Refactor
+        Onion(packet, level = 0) {
+            do {
+                if ('payload_packet' in packet) {
+                    packet = packet.payload_packet;
+                }
+                else {
+                    return null;
+                }
+            } while (level-- > 0);
+
+            return packet;
+        },
         Select(interface) {
             if(interface == ""){
                 interface = null;
@@ -164,7 +187,41 @@ Vue.component('sniffing', {
             computed: {
                 data() {
                     return this.packet;
-                }
+                },
+                layers() {
+                    var data = this.data;
+
+                    var resp = [data]
+                    while ('payload_packet' in data) {
+                        data = data.payload_packet;
+                        resp.push(data);
+                    }
+                    return resp;
+                },
+                rip() {
+                    var data = this.data;
+                    
+                    while ('payload_packet' in data) {
+                        data = data.payload_packet;
+                        
+                        if (data.type == "RIP") {
+                            return data;
+                        }
+                    }
+                    return null;
+                },
+                dhcp() {
+                    var data = this.data;
+                    
+                    while ('payload_packet' in data) {
+                        data = data.payload_packet;
+                        
+                        if (data.type == "DHCP") {
+                            return data;
+                        }
+                    }
+                    return null;
+                },
             },
             data() {
                 return {
@@ -178,62 +235,70 @@ Vue.component('sniffing', {
                     </div>
                     <div slot="body" class="form-horizontal">
                         <table class="table mb-0">
-                        
-                            <template v-if="'eth' in data">
-                                <tr style="border-top: 2px solid black;"><th>Source MAC</th><td>{{ data.eth.src_mac }}</td></tr>
-                                <tr><th>Destination MAC</th><td>{{ data.eth.dst_mac }}</td></tr>
-                                <tr style="border-bottom: 2px solid black;"><th>Ether Type</th><td>{{ data.eth.type }}</td></tr>
-                            </template>
+                            <template v-for="packet in layers">
+                                <template v-if="packet.type == 'Ethernet'">
+                                    <tr style="border-top: 2px solid black;"><th>Source MAC</th><td>{{ packet.source_hw_address }}</td></tr>
+                                    <tr><th>Destination MAC</th><td>{{ packet.destination_hw_address }}</td></tr>
+                                    <tr style="border-bottom: 2px solid black;"><th>Ether Type</th><td>{{ packet.ethernet_packet_type }}</td></tr>
+                                </template>
 
-                            <template v-if="'arp' in data">
-                                <tr><th>Operation</th><td>{{ data.arp.op }}</td></tr>
-                                <tr><th>Sender MAC</th><td>{{ data.arp.sender_mac }}</td></tr>
-                                <tr><th>Sender IP</th><td>{{ data.arp.sender_ip }}</td></tr>
-                                <tr><th>Target MAC</th><td>{{ data.arp.target_mac }}</td></tr>
-                                <tr style="border-bottom: 2px solid black;"><th>Target IP</th><td>{{ data.arp.target_ip }}</td></tr>
-                            </template>
+                                <template v-else-if="packet.type == 'ARP'">
+                                    <tr><th>Operation</th><td>{{ packet.operation }}</td></tr>
+                                    <tr><th>Sender MAC</th><td>{{ packet.sender_hardware_address }}</td></tr>
+                                    <tr><th>Sender IP</th><td>{{ packet.sender_protocol_address }}</td></tr>
+                                    <tr><th>Target MAC</th><td>{{ packet.target_hardware_address }}</td></tr>
+                                    <tr style="border-bottom: 2px solid black;"><th>Target IP</th><td>{{ packet.target_protocol_address }}</td></tr>
+                                </template>
 
-                            <template v-if="'lldp' in data">
-                                <tr><th>Chassis ID</th><td>{{ data.lldp.chassis_id }}</td></tr>
-                                <tr><th>Port ID</th><td>{{ data.lldp.port_id }}</td></tr>
-                                <tr><th>Time To Live</th><td>{{ data.lldp.time_to_live }}</td></tr>
-                                <tr><th>Port Description</th><td>{{ data.lldp.port_description }}</td></tr>
-                                <tr style="border-bottom: 2px solid black;"><th>System Name</th><td>{{ data.lldp.system_name }}</td></tr>
-                            </template>
+                                <template v-else-if="packet.type == 'LLDP'">
+                                    <!--
+                                    <tr><th>Chassis ID</th><td>{{ packet.chassis_id }}</td></tr>
+                                    <tr><th>Port ID</th><td>{{ packet.port_id }}</td></tr>
+                                    <tr><th>Time To Live</th><td>{{ packet.time_to_live }}</td></tr>
+                                    <tr><th>Port Description</th><td>{{ packet.port_description }}</td></tr>
+                                    <tr style="border-bottom: 2px solid black;"><th>System Name</th><td>{{ packet.system_name }}</td></tr>
+                                    -->
+                                </template>
 
-                            <template v-if="'ip' in data">
-                                <tr><th>Source IP</th><td>{{ data.ip.src_ip }}</td></tr>
-                                <tr><th>Destination IP</th><td>{{ data.ip.dst_ip }}</td></tr>
-                                <tr><th>Time To Live</th><td>{{ data.ip.ttl }}</td></tr>
-                                <tr style="border-bottom: 2px solid black;"><th>Protocol</th><td>{{ data.ip.protocol }}</td></tr>
-                            </template>
+                                <template v-else-if="packet.type == 'IP'">
+                                    <tr><th>Source IP</th><td>{{ packet.source_address }}</td></tr>
+                                    <tr><th>Destination IP</th><td>{{ packet.destination_address }}</td></tr>
+                                    <tr><th>Time To Live</th><td>{{ packet.time_to_live }}</td></tr>
+                                    <tr style="border-bottom: 2px solid black;"><th>Protocol</th><td>{{ packet.ip_protocol_type }}</td></tr>
+                                </template>
 
-                            <template v-if="'tcp' in data">
-                                <tr><th>Source Port</th><td>{{ data.tcp.src_port }}</td></tr>
-                                <tr style="border-bottom: 2px solid black;"><th>Destination Port</th><td>{{ data.tcp.dst_port }}</td></tr>
-                            </template>
+                                <template v-else-if="packet.type == 'TCP' || packet.type == 'UDP'">
+                                    <tr><th>Source Port</th><td>{{ packet.source_port }}</td></tr>
+                                    <tr style="border-bottom: 2px solid black;"><th>Destination Port</th><td>{{ packet.destination_port }}</td></tr>
+                                </template>
 
-                            <template v-if="'udp' in data">
-                                <tr><th>Source Port</th><td>{{ data.udp.src_port }}</td></tr>
-                                <tr style="border-bottom: 2px solid black;"><th>Destination Port</th><td>{{ data.udp.dst_port }}</td></tr>
-                            </template>
+                                <template v-else-if="packet.type == 'TCP'">
+                                    <!-- FLAGS -->
+                                </template>
 
-                            <template v-if="'rip' in data">
-                                <tr><th>Command</th><td>{{ data.rip.cmd_type }}</td></tr>
-                                <tr><th colspan=2>Routes:</th></tr>
-                            </template>
+                                <template v-else-if="packet.type == 'RIP'">
+                                    <tr><th>Command</th><td>{{ packet.command_type }}</td></tr>
+                                    <tr><th>Version</th><td>{{ packet.version }}</td></tr>
+                                    <tr><th colspan=2>Routes:</th></tr>
+                                </template>
 
-                            <template v-if="'dhcp' in data">
-                                <tr><th>Operation Code</th><td>{{ data.dhcp.operation_code }}</td></tr>
-                                <tr><th>Transaction ID</th><td>{{ data.dhcp.transaction_id }}</td></tr>
-                                <tr><th>Client IP</th><td>{{ data.dhcp.client_ip }}</td></tr>
-                                <tr><th>Server IP</th><td>{{ data.dhcp.server_ip }}</td></tr>
-                                <tr><th>Client Mac</th><td>{{ data.dhcp.client_mac }}</td></tr>
-                                <tr><th>Message Type</th><td>{{ data.dhcp.message_type }}</td></tr>
+                                <template v-else-if="packet.type == 'DHCP'">
+                                    <tr><th>Operation Code</th><td>{{ packet.operation_code }}</td></tr>
+                                    <tr><th>Transaction ID</th><td>{{ packet.transaction_id }}</td></tr>
+                                    <tr><th>Client IP</th><td>{{ packet.your_client_ip_address }}</td></tr>
+                                    <tr><th>Server IP</th><td>{{ packet.next_server_ip_address }}</td></tr>
+                                    <tr><th>Client Mac</th><td>{{ packet.client_mac_address }}</td></tr>
+                                    <tr><th>Message Type</th><td>{{ packet.message_type }}</td></tr>
+                                    <tr><th colspan="2">DHCP Options:</th></tr>
+                                </template>
+
+                                <template v-if="'payload_data' in packet">
+                                    <tr><th>Payload Data<br><i>base 64 encoded</i></th><td><textarea class="form-control form-control-plaintext" readonly rows="5">{{ packet.payload_data }}</textarea></td></tr>
+                                </template>
                             </template>
                         </table>
-
-                        <table class="table" v-if="'rip' in data">
+                        
+                        <table class="table" v-if="rip != null">
                             <thead>
                                 <tr>
                                     <th>AFI</th>
@@ -245,7 +310,7 @@ Vue.component('sniffing', {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="route in data.rip.routes" v-bind:class="{
+                                <tr v-for="route in rip.routes" v-bind:class="{
                                     'table-danger': route.metric == 16
                                 }">
                                     <td>{{ route.afi }}</td>
@@ -257,6 +322,9 @@ Vue.component('sniffing', {
                                 </tr>
                             </tbody>
                         </table>
+
+                        <pre v-if="dhcp != null">{{ dhcp.options }}</pre>
+
                         <!--
                         <pre>{{ data }}</pre>
                         -->

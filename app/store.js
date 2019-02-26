@@ -187,13 +187,13 @@ const store = new Vuex.Store({
         },
 
         INTERFACE_EDIT({commit}, { id, ip, mask }) {
-            return ajax("Interfaces", "Edit", { id, ip, mask }).then((interface) => {
-                commit('INTERFACE_EDIT', { id, ...interface });
+            return ajax("Interfaces", "Edit", { id, ip, mask }).then((response) => {
+                commit('INTERFACE_EDIT', response);
             });
         },
         INTERFACE_TOGGLE({commit}, id) {
-            return ajax("Interfaces", "Toggle", { id }).then((interface) => {
-                commit('INTERFACE_EDIT', { id, ...interface });
+            return ajax("Interfaces", "Toggle", { id }).then((response) => {
+                commit('INTERFACE_EDIT', response);
             });
         },
         SERVICE_TOGGLE({commit}, { interface, service }) {
@@ -203,7 +203,7 @@ const store = new Vuex.Store({
         },
         
         ARP_FLUSH({commit}) {
-            return ajax("ARP", "Flush").then(({ success }) => {
+            return ajax("ARP", "Table", { flush: true }).then((table) => {
                 commit('ARP_FLUSH');
             });
         },
@@ -244,9 +244,9 @@ const store = new Vuex.Store({
             });
         },
         
-        SNIFFING_INTERFACE({commit}, interface) {
-            return ajax("Sniffing", "Interface", { interface }).then(({ interface }) => {
-                commit('SNIFFING_INTERFACE', interface);
+        SNIFFING_INTERFACE({commit}, id) {
+            return ajax("Sniffing", "Interface", { id }).then(({ id }) => {
+                commit('SNIFFING_INTERFACE', id);
             });
         },
         
