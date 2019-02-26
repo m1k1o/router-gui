@@ -19,49 +19,49 @@ Vue.component("generator_modal", {
         show_expert_settings: false,
 
         ethernet: {
-            SourceHwAddress: null,
-            DestinationHwAddress: null
+            source_hw_address: null,
+            destination_hw_address: null
         },
         arp: {
-            Operation: 1,
-            SenderHardwareAddress: null,
-            SenderProtocolAddress: null,
-            TargetHardwareAddress: "00:00:00:00:00:00",
-            TargetProtocolAddress: null
+            operation: 1,
+            sender_hardware_address: null,
+            sender_protocol_address: null,
+            target_hardware_address: "00:00:00:00:00:00",
+            target_protocol_address: null
         },
         icmp: {
-            TypeCode: 0,
-            ID: null,
-            Sequence: null
+            type_code: 0,
+            id: null,
+            sequence: null
         },
         ip: {
-            SourceAddress: null,
-            DestinationAddress: null,
-            TimeToLive: null
+            source_address: null,
+            destination_address: null,
+            time_to_live: null
         },
         tcp: {
-            SourcePort: null,
-            DestinationPort: null,
-            Flags: 0
+            source_port: null,
+            destination_port: null,
+            flags: 0
         },
         udp: {
-            SourcePort: null,
-            DestinationPort: null
+            source_port: null,
+            destination_port: null
         },
         rip: {
-            CommandType: 2,
-            Version: 2,
+            command_type: 2,
+            version: 2,
             
-            Routes: []  
+            routes: []  
         },
         dhcp: {
-            OperationCode: 1,
-            TransactionID: null,
-            YourClientIPAddress: null,
-            NextServerIPAddress: null,
-            ClientMACAddress: null,
+            operation_code: 1,
+            transaction_id: null,
+            your_client_ip_address: null,
+            next_server_ip_address: null,
+            client_mac_address: null,
             
-            Options: []
+            options: []
         },
         payload: null
     }),
@@ -159,7 +159,7 @@ Vue.component("generator_modal", {
                         }"
 
                         :arp_interface_id="interface_id"
-                        @arp:mac="ethernet.DestinationHwAddress = $event"
+                        @arp:mac="ethernet.destination_hw_address = $event"
                     ></ip_gen>
                     <hr>
                     <icmp_gen v-model="icmp"></icmp_gen>
@@ -183,7 +183,7 @@ Vue.component("generator_modal", {
                         }"
 
                         :arp_interface_id="interface_id"
-                        @arp:mac="ethernet.DestinationHwAddress = $event"
+                        @arp:mac="ethernet.destination_hw_address = $event"
                     ></ip_gen>
                     <hr>
                     <udp_gen v-model="udp"
@@ -199,8 +199,8 @@ Vue.component("generator_modal", {
                     <template v-if="!show_expert_settings">
                         <div class="list-group-item d-flex my-3">
                             <div class="w-100">
-                                {{ ip.SourceAddress }}:{{ udp.SourcePort }} => <b>{{ ip.DestinationAddress }}:{{ udp.DestinationPort }}</b><br>
-                                <small><i>{{ ethernet.SourceHwAddress }} => {{ ethernet.DestinationHwAddress }}</i></small>
+                                {{ ip.source_address }}:{{ udp.source_port }} => <b>{{ ip.destination_address }}:{{ udp.destination_port }}</b><br>
+                                <small><i>{{ ethernet.source_hw_address }} => {{ ethernet.destination_hw_address }}</i></small>
                             </div>
                             <div class="mt-2">
                                 <button class="btn btn-outline-secondary" @click="show_expert_settings = true;"> Edit </button>
@@ -245,7 +245,7 @@ Vue.component("generator_modal", {
                             }"
 
                             :arp_interface_id="interface_id"
-                            @arp:mac="ethernet.DestinationHwAddress = $event"
+                            @arp:mac="ethernet.destination_hw_address = $event"
                         ></ip_gen>
                         <hr>
                         <udp_gen v-model="udp"
@@ -268,8 +268,8 @@ Vue.component("generator_modal", {
                     <template v-if="!show_expert_settings">
                         <div class="list-group-item d-flex my-3">
                             <div class="w-100">
-                                {{ ip.SourceAddress }}:{{ udp.SourcePort }} => <b>{{ ip.DestinationAddress }}:{{ udp.DestinationPort }}</b><br>
-                                <small><i>{{ ethernet.SourceHwAddress }} => {{ ethernet.DestinationHwAddress }}</i></small>
+                                {{ ip.source_address }}:{{ udp.source_port }} => <b>{{ ip.destination_address }}:{{ udp.destination_port }}</b><br>
+                                <small><i>{{ ethernet.source_hw_address }} => {{ ethernet.destination_hw_address }}</i></small>
                             </div>
                             <div class="mt-2">
                                 <button class="btn btn-outline-secondary" @click="show_expert_settings = true;"> Edit </button>
@@ -308,7 +308,7 @@ Vue.component("generator_modal", {
                             }"
 
                             :arp_interface_id="interface_id"
-                            @arp:mac="ethernet.DestinationHwAddress = $event"
+                            @arp:mac="ethernet.destination_hw_address = $event"
                         ></ip_gen>
                         <hr>
                         <udp_gen v-model="udp"
@@ -385,21 +385,21 @@ Vue.component("generator_modal", {
                 use_dst: false
             }),
             computed: {
-                SourceHwAddress: {
+                source_hw_address: {
                     get() {
-                        return this.value.SourceHwAddress;
+                        return this.value.source_hw_address;
                     },
                     set(newValue) {
-                        this.value.SourceHwAddress = newValue;
+                        this.value.source_hw_address = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                DestinationHwAddress: {
+                destination_hw_address: {
                     get() {
-                        return this.value.DestinationHwAddress;
+                        return this.value.destination_hw_address;
                     },
                     set(newValue) {
-                        this.value.DestinationHwAddress = newValue;
+                        this.value.destination_hw_address = newValue;
                         this.$emit('input', this.value);
                     }
                 }
@@ -408,13 +408,13 @@ Vue.component("generator_modal", {
                 use_src: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.SourceHwAddress = this.src.value, 0)
+                        !newVal || setTimeout(() => this.source_hw_address = this.src.value, 0)
                     }
                 },
                 use_dst: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.DestinationHwAddress = this.dst.value, 0)
+                        !newVal || setTimeout(() => this.destination_hw_address = this.dst.value, 0)
                     }
                 }
             },
@@ -422,13 +422,13 @@ Vue.component("generator_modal", {
                 if(this.src && this.src.default) {
                     this.use_src = true;
                 } else {
-                    this.SourceHwAddress = null;
+                    this.source_hw_address = null;
                 }
 
                 if(this.dst && this.dst.default) {
                     this.use_dst = true;
                 } else {
-                    this.DestinationHwAddress = null;
+                    this.destination_hw_address = null;
                 }
             },
             template: `
@@ -436,7 +436,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Source MAC</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="SourceHwAddress" v-bind:readonly="use_src && src" />
+                            <input type="text" class="form-control" v-model="source_hw_address" v-bind:readonly="use_src && src" />
                             <label class="form-check form-control-plaintext" v-if="src">
                                 <input type="checkbox" value="1" v-model="use_src" class="form-check-input"> {{ src.text }}
                             </label>
@@ -445,7 +445,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Destination MAC</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="DestinationHwAddress" v-bind:readonly="use_dst && dst" />
+                            <input type="text" class="form-control" v-model="destination_hw_address" v-bind:readonly="use_dst && dst" />
                             <label class="form-check form-control-plaintext" v-if="dst">
                                 <input type="checkbox" value="1" v-model="use_dst" class="form-check-input"> {{ dst.text }}
                             </label>
@@ -469,48 +469,48 @@ Vue.component("generator_modal", {
                 }
             }),
             computed: {
-                Operation: {
+                operation: {
                     get() {
-                        return this.value.Operation;
+                        return this.value.operation;
                     },
                     set(newValue) {
-                        this.value.Operation = newValue;
+                        this.value.operation = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                SenderHardwareAddress: {
+                sender_hardware_address: {
                     get() {
-                        return this.value.SenderHardwareAddress;
+                        return this.value.sender_hardware_address;
                     },
                     set(newValue) {
-                        this.value.SenderHardwareAddress = newValue;
+                        this.value.sender_hardware_address = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                SenderProtocolAddress: {
+                sender_protocol_address: {
                     get() {
-                        return this.value.SenderProtocolAddress;
+                        return this.value.sender_protocol_address;
                     },
                     set(newValue) {
-                        this.value.SenderProtocolAddress = newValue;
+                        this.value.sender_protocol_address = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                TargetHardwareAddress: {
+                target_hardware_address: {
                     get() {
-                        return this.value.TargetHardwareAddress;
+                        return this.value.target_hardware_address;
                     },
                     set(newValue) {
-                        this.value.TargetHardwareAddress = newValue;
+                        this.value.target_hardware_address = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                TargetProtocolAddress: {
+                target_protocol_address: {
                     get() {
-                        return this.value.TargetProtocolAddress;
+                        return this.value.target_protocol_address;
                     },
                     set(newValue) {
-                        this.value.TargetProtocolAddress = newValue;
+                        this.value.target_protocol_address = newValue;
                         this.$emit('input', this.value);
                     }
                 },
@@ -519,13 +519,13 @@ Vue.component("generator_modal", {
                 use_interface_mac: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.SenderHardwareAddress = this.interface_mac, 0)
+                        !newVal || setTimeout(() => this.sender_hardware_address = this.interface_mac, 0)
                     }
                 },
                 use_interface_ip: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.SenderProtocolAddress = this.interface_ip, 0)
+                        !newVal || setTimeout(() => this.sender_protocol_address = this.interface_ip, 0)
                     }
                 }
             },
@@ -534,7 +534,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Operation</label>
                         <div class="col-sm-8">
-                            <select class="form-control" v-model="Operation">
+                            <select class="form-control" v-model="operation">
                                 <option v-for="(operation, id) in operations" :value="id">{{ operation }}</option>
                             </select>
                         </div>
@@ -542,7 +542,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Sender MAC</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="SenderHardwareAddress" v-bind:readonly="use_interface_mac && interface_mac" />
+                            <input type="text" class="form-control" v-model="sender_hardware_address" v-bind:readonly="use_interface_mac && interface_mac" />
                             <label class="form-check form-control-plaintext" v-if="interface_mac">
                                 <input type="checkbox" value="1" v-model="use_interface_mac" class="form-check-input"> Use Interface MAC
                             </label>
@@ -551,7 +551,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Sender IP</label>
                         <div class="col-sm-8">
-                            <ip-address-input v-model="SenderProtocolAddress" v-bind:readonly="use_interface_ip && interface_ip" /></ip-address-input>
+                            <ip-address-input v-model="sender_protocol_address" v-bind:readonly="use_interface_ip && interface_ip" /></ip-address-input>
                             <label class="form-check form-control-plaintext" v-if="interface_ip">
                                 <input type="checkbox" value="1" v-model="use_interface_ip" class="form-check-input"> Use Interface IP
                             </label>
@@ -560,13 +560,13 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Target MAC</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="TargetHardwareAddress" />
+                            <input type="text" class="form-control" v-model="target_hardware_address" />
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Target IP</label>
                         <div class="col-sm-8">
-                            <ip-address-input v-model="TargetProtocolAddress" /></ip-address-input>
+                            <ip-address-input v-model="target_protocol_address" /></ip-address-input>
                         </div>
                     </div>
                 </div>
@@ -646,30 +646,30 @@ Vue.component("generator_modal", {
                 }
             }),
             computed: {
-                TypeCode: {
+                type_code: {
                     get() {
-                        return this.value.TypeCode;
+                        return this.value.type_code;
                     },
                     set(newValue) {
-                        this.value.TypeCode = newValue;
+                        this.value.type_code = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                ID: {
+                id: {
                     get() {
-                        return this.value.ID;
+                        return this.value.id;
                     },
                     set(newValue) {
-                        this.value.ID = newValue;
+                        this.value.id = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                Sequence: {
+                sequence: {
                     get() {
-                        return this.value.Sequence;
+                        return this.value.sequence;
                     },
                     set(newValue) {
-                        this.value.Sequence = newValue;
+                        this.value.sequence = newValue;
                         this.$emit('input', this.value);
                     }
                 }
@@ -679,7 +679,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Type Code</label>
                         <div class="col-sm-8">
-                            <select class="form-control" v-model="TypeCode">
+                            <select class="form-control" v-model="type_code">
                                 <template v-for="(codes, type) in type_codes">
                                     <option v-if="typeof codes !== 'object'" :value="codes">{{ type }}</option>
                                     <optgroup v-else :label="type">
@@ -692,13 +692,13 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">ID</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="ID" />
+                            <input type="text" class="form-control" v-model="id" />
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Sequence</label>
+                        <label class="col-sm-4 col-form-label">sequence</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="Sequence" />
+                            <input type="text" class="form-control" v-model="sequence" />
                         </div>
                     </div>
                 </div>
@@ -715,30 +715,30 @@ Vue.component("generator_modal", {
                 arp_is_lookingup: false
             }),
             computed: {
-                SourceAddress: {
+                source_address: {
                     get() {
-                        return this.value.SourceAddress;
+                        return this.value.source_address;
                     },
                     set(newValue) {
-                        this.value.SourceAddress = newValue;
+                        this.value.source_address = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                DestinationAddress: {
+                destination_address: {
                     get() {
-                        return this.value.DestinationAddress;
+                        return this.value.destination_address;
                     },
                     set(newValue) {
-                        this.value.DestinationAddress = newValue;
+                        this.value.destination_address = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                TimeToLive: {
+                time_to_live: {
                     get() {
-                        return this.value.TimeToLive;
+                        return this.value.time_to_live;
                     },
                     set(newValue) {
-                        this.value.TimeToLive = newValue;
+                        this.value.time_to_live = newValue;
                         this.$emit('input', this.value);
                     }
                 },
@@ -747,19 +747,19 @@ Vue.component("generator_modal", {
                 use_src: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.SourceAddress = this.src.value, 0)
+                        !newVal || setTimeout(() => this.source_address = this.src.value, 0)
                     }
                 },
                 use_dst: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.DestinationAddress = this.dst.value, 0)
+                        !newVal || setTimeout(() => this.destination_address = this.dst.value, 0)
                     }
                 },
                 use_ttl: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.TimeToLive = this.ttl.value, 0)
+                        !newVal || setTimeout(() => this.time_to_live = this.ttl.value, 0)
                     }
                 }
             },
@@ -767,19 +767,19 @@ Vue.component("generator_modal", {
                 if(this.src && this.src.default) {
                     this.use_src = true;
                 } else {
-                    this.SourceAddress = null;
+                    this.source_address = null;
                 }
 
                 if(this.dst && this.dst.default) {
                     this.use_dst = true;
                 } else {
-                    this.DestinationAddress = null;
+                    this.destination_address = null;
                 }
 
                 if(this.ttl && this.ttl.default) {
                     this.use_ttl = true;
                 } else {
-                    this.TimeToLive = 255;
+                    this.time_to_live = 255;
                 }
             },
             template: `
@@ -787,7 +787,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Source IP</label>
                         <div class="col-sm-8">
-                            <ip-address-input v-model="SourceAddress" v-bind:readonly="use_src && src" /></ip-address-input>
+                            <ip-address-input v-model="source_address" v-bind:readonly="use_src && src" /></ip-address-input>
                             <label class="form-check form-control-plaintext" v-if="src">
                                 <input type="checkbox" value="1" v-model="use_src" class="form-check-input"> {{ src.text }}
                             </label>
@@ -796,9 +796,9 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Destination IP</label>
                         <div class="col-sm-8">
-                            <ip-address-input v-if="!arp_interface_id" v-model="DestinationAddress" v-bind:readonly="use_dst && dst"></ip-address-input>
+                            <ip-address-input v-if="!arp_interface_id" v-model="destination_address" v-bind:readonly="use_dst && dst"></ip-address-input>
                             <div class="input-group" v-else>
-                                <ip-address-input v-model="DestinationAddress" v-bind:readonly="use_dst && dst"></ip-address-input>
+                                <ip-address-input v-model="destination_address" v-bind:readonly="use_dst && dst"></ip-address-input>
                                 <div class="input-group-append">
                                     <button class="btn btn-outline-secondary" @click="!arp_is_lookingup && !use_dst && ARP()" v-bind:class="{'disabled': arp_is_lookingup || use_dst}"> {{ arp_is_lookingup ? 'Processing...' : 'ARP Request' }}</button>
                                 </div>
@@ -809,9 +809,9 @@ Vue.component("generator_modal", {
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">TimeToLive</label>
+                        <label class="col-sm-4 col-form-label">time_to_live</label>
                         <div class="col-sm-8 input-group">
-                            <input type="text" class="form-control" v-model="TimeToLive" v-bind:readonly="use_ttl && ttl" />
+                            <input type="text" class="form-control" v-model="time_to_live" v-bind:readonly="use_ttl && ttl" />
                             <div class="input-group-append">
                                 <span class="input-group-text">hops</span>
                             </div>
@@ -828,7 +828,7 @@ Vue.component("generator_modal", {
                     
                     ajax("ARP", "Lookup", {
                         interface: this.arp_interface_id,
-                        ip: this.DestinationAddress
+                        ip: this.destination_address
                     })
                     .then(({ mac }) => {
                         this.$emit('arp:mac', mac);
@@ -843,7 +843,7 @@ Vue.component("generator_modal", {
             props: ['value'],
 
             data: () => ({
-                flags: {
+                flags_masks: {
                     'CWR': 1 << 7,
                     'ECN': 1 << 6,
                     'Urg': 1 << 5,
@@ -855,30 +855,30 @@ Vue.component("generator_modal", {
                 }
             }),
             computed: {
-                SourcePort: {
+                source_port: {
                     get() {
-                        return this.value.SourcePort;
+                        return this.value.source_port;
                     },
                     set(newValue) {
-                        this.value.SourcePort = newValue;
+                        this.value.source_port = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                DestinationPort: {
+                destination_port: {
                     get() {
-                        return this.value.DestinationPort;
+                        return this.value.destination_port;
                     },
                     set(newValue) {
-                        this.value.DestinationPort = newValue;
+                        this.value.destination_port = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                Flags: {
+                flags: {
                     get() {
-                        return this.value.Flags;
+                        return this.value.flags;
                     },
                     set(newValue) {
-                        this.value.Flags = newValue;
+                        this.value.flags = newValue;
                         this.$emit('input', this.value);
                     }
                 }
@@ -888,11 +888,11 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Ports</label>
                         <div class="col-sm-8 input-group">
-                            <input type="text" class="form-control" v-model="SourcePort" placeholder="Source" />
+                            <input type="text" class="form-control" v-model="source_port" placeholder="Source" />
                             <div class="input-group-prepend input-group-append">
                                 <button class="btn input-group-text" @click="Toggle()" title="Toggle">=&gt;</button>
                             </div>
-                            <input type="text" class="form-control" v-model="DestinationPort" placeholder="Destination" />
+                            <input type="text" class="form-control" v-model="destination_port" placeholder="Destination" />
                         </div>
                     </div>
                     <div class="form-group row">
@@ -900,7 +900,7 @@ Vue.component("generator_modal", {
                         <div class="col-sm-8">
                             <div class="btn-group d-flex mt-1">
                                 <button
-                                    v-for="(mask, flag) in flags"
+                                    v-for="(mask, flag) in flags_masks"
                                     v-bind:class="GetFlag(mask) ? 'btn btn-success btn-sm w-100': 'btn btn-danger btn-sm w-100'"
                                     v-on:click="ToggleFlag(mask)"
                                 >{{ flag }}</button>
@@ -911,15 +911,15 @@ Vue.component("generator_modal", {
             `,
             methods: {
                 Toggle(){
-                    var src_port = this.SourcePort;
-                    this.SourcePort = this.DestinationPort;
-                    this.DestinationPort = src_port;
+                    var src_port = this.source_port;
+                    this.source_port = this.destination_port;
+                    this.destination_port = src_port;
                 },
                 GetFlag(mask) {
-                    return (this.value.Flags & mask) != 0
+                    return (this.value.flags & mask) != 0
                 },
                 ToggleFlag(mask) {
-                    this.value.Flags ^= mask;
+                    this.value.flags ^= mask;
                 }
             }
         },
@@ -931,21 +931,21 @@ Vue.component("generator_modal", {
                 use_dst: false
             }),
             computed: {
-                SourcePort: {
+                source_port: {
                     get() {
-                        return this.value.SourcePort;
+                        return this.value.source_port;
                     },
                     set(newValue) {
-                        this.value.SourcePort = newValue;
+                        this.value.source_port = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                DestinationPort: {
+                destination_port: {
                     get() {
-                        return this.value.DestinationPort;
+                        return this.value.destination_port;
                     },
                     set(newValue) {
-                        this.value.DestinationPort = newValue;
+                        this.value.destination_port = newValue;
                         this.$emit('input', this.value);
                     }
                 }
@@ -954,13 +954,13 @@ Vue.component("generator_modal", {
                 use_src: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.SourcePort = this.src.value, 0)
+                        !newVal || setTimeout(() => this.source_port = this.src.value, 0)
                     }
                 },
                 use_dst: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.DestinationPort = this.dst.value, 0)
+                        !newVal || setTimeout(() => this.destination_port = this.dst.value, 0)
                     }
                 }
             },
@@ -968,13 +968,13 @@ Vue.component("generator_modal", {
                 if(this.src && this.src.default) {
                     this.use_src = true;
                 } else {
-                    this.SourcePort = null;
+                    this.source_port = null;
                 }
 
                 if(this.dst && this.dst.default) {
                     this.use_dst = true;
                 } else {
-                    this.DestinationPort = null;
+                    this.destination_port = null;
                 }
             },
             template: `
@@ -982,11 +982,11 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Ports</label>
                         <div class="col-sm-8 input-group">
-                            <input type="text" class="form-control" v-model="SourcePort" placeholder="Source" v-bind:readonly="use_src && src" />
+                            <input type="text" class="form-control" v-model="source_port" placeholder="Source" v-bind:readonly="use_src && src" />
                             <div class="input-group-prepend input-group-append">
                                 <button class="btn input-group-text" @click="Toggle()" title="Toggle">=&gt;</button>
                             </div>
-                            <input type="text" class="form-control" v-model="DestinationPort" placeholder="Destination" v-bind:readonly="use_dst && dst" />
+                            <input type="text" class="form-control" v-model="destination_port" placeholder="Destination" v-bind:readonly="use_dst && dst" />
                         </div>
 
                         <div class="col-sm-4"></div>
@@ -1005,11 +1005,11 @@ Vue.component("generator_modal", {
             `,
             methods: {
                 Toggle(){
-                    var src_port = this.SourcePort;
-                    this.SourcePort = this.DestinationPort;
-                    this.DestinationPort = src_port;
+                    var src_port = this.source_port;
+                    this.source_port = this.destination_port;
+                    this.destination_port = src_port;
 
-                    if (this.SourcePort != this.DestinationPort) {
+                    if (this.source_port != this.destination_port) {
                         this.use_src = false
                         this.use_dst = false
                     }
@@ -1039,30 +1039,30 @@ Vue.component("generator_modal", {
                 }
             }),
             computed: {
-                CommandType: {
+                command_type: {
                     get() {
-                        return this.value.CommandType;
+                        return this.value.command_type;
                     },
                     set(newValue) {
-                        this.value.CommandType = newValue;
+                        this.value.command_type = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                Version: {
+                version: {
                     get() {
-                        return this.value.Version;
+                        return this.value.version;
                     },
                     set(newValue) {
-                        this.value.Version = newValue;
+                        this.value.version = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                Routes: {
+                routes: {
                     get() {
-                        return this.value.Routes;
+                        return this.value.routes;
                     },
                     set(newValue) {
-                        this.value.Routes = newValue;
+                        this.value.routes = newValue;
                         this.$emit('input', this.value);
                     }
                 }
@@ -1072,7 +1072,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Command Type</label>
                         <div class="col-sm-8">
-                            <select class="form-control" v-model="CommandType">
+                            <select class="form-control" v-model="command_type">
                                 <option v-for="(command_type, id) in command_types" :value="id">{{ command_type }}</option>
                             </select>
                         </div>
@@ -1080,9 +1080,9 @@ Vue.component("generator_modal", {
 
                     <!--
                     <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Version</label>
+                        <label class="col-sm-4 col-form-label">version</label>
                         <div class="col-sm-8">
-                            <select class="form-control" v-model="Version">
+                            <select class="form-control" v-model="version">
                                 <option v-for="(version, id) in versions" :value="id">{{ version }}</option>
                             </select>
                         </div>
@@ -1090,15 +1090,15 @@ Vue.component("generator_modal", {
                     -->
 
                     <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Routes</label>
+                        <label class="col-sm-4 col-form-label">routes</label>
                         <div class="col-sm-8">
                             <button class="btn btn-info" @click="Open()">+ Add Route</button>
                             <button class="btn btn-warning" @click="Random()">+ Random Route</button>
                         </div>
                     </div>
 
-                    <ul v-if="Routes.length > 0" class="list-group list-group-flush">
-                        <li class="list-group-item d-flex" v-for="(route, id) in Routes">
+                    <ul v-if="routes.length > 0" class="list-group list-group-flush">
+                        <li class="list-group-item d-flex" v-for="(route, id) in routes">
                             <span class="w-100">
                                 <strong>{{ route.IP || '--unspecified--' }}</strong><br><small>{{ route.Mask || '--unspecified--' }}</small>
                             </span>
@@ -1173,12 +1173,12 @@ Vue.component("generator_modal", {
                     var NextHopIP = "0.0.0.0";
                     var Metric = Math.random() < 0.2 ? 16 : Math.floor(Math.random()*15)
 
-                    this.value.Routes.push({ AFI: 2, Tag: 0, IP, Mask, NextHopIP, Metric })
+                    this.value.routes.push({ AFI: 2, Tag: 0, IP, Mask, NextHopIP, Metric })
                     this.$emit('input', this.value);
                 },
                 Open(route_id = null) {
                     if (route_id !== null) {
-                        this.$set(this, 'route', { ...this.value.Routes[route_id] })
+                        this.$set(this, 'route', { ...this.value.routes[route_id] })
                         this.route_id = route_id;
                     } else {
                         this.$set(this, 'route', {
@@ -1194,9 +1194,9 @@ Vue.component("generator_modal", {
                 },
                 Action() {
                     if (this.route_id !== null) {
-                        this.$set(this.value.Routes, this.route_id, this.route)
+                        this.$set(this.value.routes, this.route_id, this.route)
                     } else {
-                        this.value.Routes.push(this.route)
+                        this.value.routes.push(this.route)
                     }
 
                     this.$emit('input', this.value);
@@ -1207,7 +1207,7 @@ Vue.component("generator_modal", {
                     this.route_id = null
                 },
                 Remove(id) {
-                    this.$delete(this.value.Routes, id)
+                    this.$delete(this.value.routes, id)
                 }
             }
         },
@@ -1230,7 +1230,7 @@ Vue.component("generator_modal", {
                     6: 'NAK',
                     7: 'RELEASE'
                 },
-                options: {
+                available_options: {
                     1: {
                         name: 'SubnetMask',
                     },
@@ -1267,57 +1267,57 @@ Vue.component("generator_modal", {
                 }
             }),
             computed: {
-                OperationCode: {
+                operation_code: {
                     get() {
-                        return this.value.OperationCode;
+                        return this.value.operation_code;
                     },
                     set(newValue) {
-                        this.value.OperationCode = newValue;
+                        this.value.operation_code = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                TransactionID: {
+                transaction_id: {
                     get() {
-                        return this.value.TransactionID;
+                        return this.value.transaction_id;
                     },
                     set(newValue) {
-                        this.value.TransactionID = newValue;
+                        this.value.transaction_id = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                YourClientIPAddress: {
+                your_client_ip_address: {
                     get() {
-                        return this.value.YourClientIPAddress;
+                        return this.value.your_client_ip_address;
                     },
                     set(newValue) {
-                        this.value.YourClientIPAddress = newValue;
+                        this.value.your_client_ip_address = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                NextServerIPAddress: {
+                next_server_ip_address: {
                     get() {
-                        return this.value.NextServerIPAddress;
+                        return this.value.next_server_ip_address;
                     },
                     set(newValue) {
-                        this.value.NextServerIPAddress = newValue;
+                        this.value.next_server_ip_address = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                ClientMACAddress: {
+                client_mac_address: {
                     get() {
-                        return this.value.ClientMACAddress;
+                        return this.value.client_mac_address;
                     },
                     set(newValue) {
-                        this.value.ClientMACAddress = newValue;
+                        this.value.client_mac_address = newValue;
                         this.$emit('input', this.value);
                     }
                 },
-                Options: {
+                options: {
                     get() {
-                        return this.value.Options;
+                        return this.value.options;
                     },
                     set(newValue) {
-                        this.value.Options = newValue;
+                        this.value.options = newValue;
                         this.$emit('input', this.value);
                     }
                 }
@@ -1326,7 +1326,7 @@ Vue.component("generator_modal", {
                 use_interface_ip: {
                     immediate: true,
                     handler(newVal) {
-                        !newVal || setTimeout(() => this.NextServerIPAddress = this.interface_ip, 0)
+                        !newVal || setTimeout(() => this.next_server_ip_address = this.interface_ip, 0)
                     }
                 }
             },
@@ -1336,7 +1336,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Operation Code</label>
                         <div class="col-sm-8 input-group">
-                            <select class="form-control" v-model="OperationCode">
+                            <select class="form-control" v-model="operation_code">
                                 <option v-for="(operation_code, id) in operation_codes" :value="id">{{ operation_code }}</option>
                             </select>
                         </div>
@@ -1344,7 +1344,7 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Transaction ID</label>
                         <div class="col-sm-8 input-group">
-                            <input type="text" class="form-control" v-model="TransactionID" />
+                            <input type="text" class="form-control" v-model="transaction_id" />
                             <div class="input-group-append">
                                 <button class="btn btn-outline-secondary" @click="RandomTransactionID()"> Random </button>
                             </div>
@@ -1353,13 +1353,13 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">(New) Client IP</label>
                         <div class="col-sm-8 input-group">
-                            <ip-address-input v-model="YourClientIPAddress"></ip-address-input>
+                            <ip-address-input v-model="your_client_ip_address"></ip-address-input>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Next Server IP</label>
                         <div class="col-sm-8">
-                            <ip-address-input v-model="NextServerIPAddress" v-bind:readonly="use_interface_ip && interface_ip" /></ip-address-input>
+                            <ip-address-input v-model="next_server_ip_address" v-bind:readonly="use_interface_ip && interface_ip" /></ip-address-input>
                             <label class="form-check form-control-plaintext" v-if="interface_ip">
                                 <input type="checkbox" value="1" v-model="use_interface_ip" class="form-check-input"> Use Interface IP
                             </label>
@@ -1368,18 +1368,18 @@ Vue.component("generator_modal", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Client MAC</label>
                         <div class="col-sm-8 input-group">
-                            <input type="text" class="form-control" v-model="ClientMACAddress" />
+                            <input type="text" class="form-control" v-model="client_mac_address" />
                         </div>
                     </div>
 
                     <hr>
                     <h3> DHCP Options </h3>
-                    <div class="form-group row" v-for="(option, id) in options">
+                    <div class="form-group row" v-for="(option, id) in available_options">
                         <label class="col-sm-4 col-form-label">{{ option.name }}</label>
                         <div class="col-sm-8 input-group">
-                            <input type="text" class="form-control" v-model="Options[id]" />
-                            <div class="input-group-append" v-if="typeof Options[id] != 'undefined'">
-                                <button class="btn btn-outline-danger" @click="$delete(Options, id)"> X </button>
+                            <input type="text" class="form-control" v-model="options[id]" />
+                            <div class="input-group-append" v-if="typeof options[id] != 'undefined'">
+                                <button class="btn btn-outline-danger" @click="$delete(options, id)"> X </button>
                             </div>
                         </div>
                     </div>
@@ -1390,10 +1390,10 @@ Vue.component("generator_modal", {
                     if (window && window.crypto && window.crypto.getRandomValues && Uint32Array) {
                         var o = new Uint32Array(1);
                         window.crypto.getRandomValues(o);
-                        this.TransactionID = o[0];
+                        this.transaction_id = o[0];
                     } else {
                         console.warn('Falling back to pseudo-random client seed');
-                        this.TransactionID = Math.floor(Math.random() * Math.pow(2, 32));
+                        this.transaction_id = Math.floor(Math.random() * Math.pow(2, 32));
                     }
                 }
             }
