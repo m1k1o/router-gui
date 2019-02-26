@@ -177,7 +177,7 @@ const store = new Vuex.Store({
         UPDATE({commit}) {
             return ajax("Global", "UpdateTables")
             .then(({ sniffing, ...tables }) => {
-                //commit('SNIFFING_PUSH', sniffing)
+                commit('SNIFFING_PUSH', sniffing)
                 commit('UPDATE_TABLES', tables)
             });
         },
@@ -244,9 +244,9 @@ const store = new Vuex.Store({
             });
         },
         
-        SNIFFING_INTERFACE({commit}, interface) {
-            return ajax("Sniffing", "Interface", { interface }).then(({ interface }) => {
-                commit('SNIFFING_INTERFACE', interface);
+        SNIFFING_INTERFACE({commit}, id) {
+            return ajax("Sniffing", "Interface", { id }).then(({ id }) => {
+                commit('SNIFFING_INTERFACE', id);
             });
         },
         
