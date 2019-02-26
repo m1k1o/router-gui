@@ -332,8 +332,7 @@ Vue.component("generator_modal", {
                 <hr>
                 <send_gen
                     :interface_id="interface_id"
-                    :protocol="component_type"
-                    :data="ExportData()"
+                    :packet="ExportPacket()"
                 ></send_gen>
             </div>
             
@@ -353,27 +352,55 @@ Vue.component("generator_modal", {
         Toggle(interface) {
             this.$store.dispatch('SERVICE_TOGGLE', { interface, service: this.service_name });
         },
-        ExportData() {
+        ExportPacket() {
+            var arr = [];
             switch(this.component_type) {
                 case 'ARP':
-                    return { ethernet: this.ethernet, arp: this.arp, }
+                    arr = [
+                        { ...this.arp, type: "ARP" }
+                    ]; break;
                     
                 case 'ICMP':
-                    return { ethernet: this.ethernet, ip: this.ip, icmp: this.icmp, payload: this.payload }
+                    arr = [
+                        { ...this.ip, type: "IP" },
+                        { ...this.icmp, type: "ICMP", payload_data: this.payload }
+                    ]; break;
 
                 case 'TCP':
-                    return { ethernet: this.ethernet, ip: this.ip, tcp: this.tcp, payload: this.payload }
+                    arr = [
+                        { ...this.ip, type: "IP" },
+                        { ...this.tcp, type: "TCP", payload_data: this.payload }
+                    ]; break;
                     
                 case 'UDP':
-                    return { ethernet: this.ethernet, ip: this.ip, udp: this.udp, payload: this.payload }
+                    arr = [
+                        { ...this.ip, type: "IP" },
+                        { ...this.udp, type: "UDP", payload_data: this.payload }
+                    ]; break;
                 
                 case 'RIP':
-                    return { ethernet: this.ethernet, ip: this.ip, udp: this.udp, rip: this.rip }
+                    arr = [
+                        { ...this.ip, type: "IP" },
+                        { ...this.udp, type: "UDP" },
+                        { ...this.rip, type: "RIP" },
+                    ]; break;
                     
                 case 'DHCP':
-                    return { ethernet: this.ethernet, ip: this.ip, udp: this.udp, dhcp: this.dhcp}
-            
+                    arr = [
+                        { ...this.ip, type: "IP" },
+                        { ...this.udp, type: "UDP" },
+                        { ...this.dhcp, type: "DHCP" },
+                    ]; break;
             }
+            
+            // Join
+            var Root = { ...this.ethernet, type: "Ethernet" };
+            var Last = Root;
+            for (const packet of arr) {
+                Last.payload_packet = packet;
+                Last = packet;
+            }
+            return Root;
         }
     },
     components: {
@@ -1423,7 +1450,7 @@ Vue.component("generator_modal", {
             `
         },
         'send_gen': {
-            props: ['protocol', 'interface_id', 'data'],
+            props: ['interface_id', 'packet'],
             data: () => ({
                 active: false,
                 running: false,
@@ -1473,11 +1500,9 @@ Vue.component("generator_modal", {
                     })
                 },
                 Send() {
-                    // TODO: REFACTOR
-                    return ajax("Generator", "Send", {
+                    return ajax("Sniffing", "Inject", {
                         interface: this.interface_id,
-                        protocol: this.protocol,
-                        ...this.data
+                        packet: this.packet
                     })
                 }
             }
