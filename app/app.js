@@ -9,7 +9,7 @@ const app = new Vue({
 
         api_settings: false,
         api_hostname: "localhost",
-        api_port: "5000",
+        api_port: "7000",
         
         update_interval: null,
         push: null
