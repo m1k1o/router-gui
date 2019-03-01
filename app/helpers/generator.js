@@ -1117,7 +1117,7 @@ Vue.component("generator_modal", {
                     -->
 
                     <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">routes</label>
+                        <label class="col-sm-4 col-form-label">Routes</label>
                         <div class="col-sm-8">
                             <button class="btn btn-info" @click="Open()">+ Add Route</button>
                             <button class="btn btn-warning" @click="Random()">+ Random Route</button>
@@ -1200,12 +1200,12 @@ Vue.component("generator_modal", {
                     var NextHopIP = "0.0.0.0";
                     var Metric = Math.random() < 0.2 ? 16 : Math.floor(Math.random()*15)
 
-                    this.value.routes.push({ AFI: 2, Tag: 0, IP, Mask, NextHopIP, Metric })
+                    this.routes.push({ AFI: 2, Tag: 0, IP, Mask, NextHopIP, Metric })
                     this.$emit('input', this.value);
                 },
                 Open(route_id = null) {
                     if (route_id !== null) {
-                        this.$set(this, 'route', { ...this.value.routes[route_id] })
+                        this.$set(this, 'route', { ...this.routes[route_id] })
                         this.route_id = route_id;
                     } else {
                         this.$set(this, 'route', {
@@ -1221,9 +1221,9 @@ Vue.component("generator_modal", {
                 },
                 Action() {
                     if (this.route_id !== null) {
-                        this.$set(this.value.routes, this.route_id, this.route)
+                        this.$set(this.routes, this.route_id, this.route)
                     } else {
-                        this.value.routes.push(this.route)
+                        this.routes.push(this.route)
                     }
 
                     this.$emit('input', this.value);
@@ -1234,7 +1234,8 @@ Vue.component("generator_modal", {
                     this.route_id = null
                 },
                 Remove(id) {
-                    this.$delete(this.value.routes, id)
+                    this.$delete(this.routes, id)
+                    this.$emit('input', this.value);
                 }
             }
         },
@@ -1258,38 +1259,68 @@ Vue.component("generator_modal", {
                     7: 'RELEASE'
                 },
                 available_options: {
-                    1: {
-                        name: 'SubnetMask',
+                    "3": {
+                        name: "Router",
+                        component: "dhcp_ips_option"
                     },
-                    3: {
-                        name: 'Router',
+                    "6": {
+                        name: "DomainNameServer",
+                        component: "dhcp_ips_option"
                     },
-                    6: {
-                        name: 'DomainNameServer',
+
+                    "1": {
+                        name: "SubnetMask",
+                        component: "dhcp_ip_option"
                     },
-                    50: {
-                        name: 'RequestedIPAddress',
+                    "50": {
+                        name: "RequestedIPAddress",
+                        component: "dhcp_ip_option"
                     },
-                    51: {
-                        name: 'IPAddressLeaseTime',
+                    "54": {
+                        name: "ServerIdentifier",
+                        component: "dhcp_ip_option"
                     },
-                    53: {
-                        name: 'MessageType',
+
+                    "51": {
+                        name: "IPAddressLeaseTime",
+                        component: "dhcp_time_option"
                     },
-                    54: {
-                        name: 'ServerIdentifier',
+                    "58": {
+                        name: "RenewalTimeValue",
+                        component: "dhcp_time_option"
                     },
-                    55: {
-                        name: 'ParameterRequestList',
+                    "59": {
+                        name: "RebindingTimeValue",
+                        component: "dhcp_time_option"
                     },
-                    58: {
-                        name: 'RenewalTimeValue',
+
+                    "53": {
+                        name: "MessageType",
+                        component: "dhcp_msg_type_option"
                     },
-                    59: {
-                        name: 'RebindingTimeValue',
+
+                    "55": {
+                        name: "ParameterRequestList",
+                        component: "dhcp_parameters_option"
                     },
-                    61: {
-                        name: 'ClientIdentifier',
+
+                    "61": {
+                        name: "ClientIdentifier",
+                        component: "dhcp_clientid_option"
+                    },
+                    
+                    "unknown": {
+                        name: "Unknown Option",
+                        component: "dhcp_unknown_option"
+                    },
+
+                    "0": {
+                        name: "Pad",
+                        component: "dhcp_pad_option"
+                    },
+                    "255": {
+                        name: "End",
+                        component: "dhcp_end_"
                     }
                 }
             }),
@@ -1399,17 +1430,29 @@ Vue.component("generator_modal", {
                         </div>
                     </div>
 
-                    <hr>
-                    <h3> DHCP Options </h3>
-                    <div class="form-group row" v-for="(option, id) in available_options">
-                        <label class="col-sm-4 col-form-label">{{ option.name }}</label>
-                        <div class="col-sm-8 input-group">
-                            <input type="text" class="form-control" v-model="options[id]" />
-                            <div class="input-group-append" v-if="typeof options[id] != 'undefined'">
-                                <button class="btn btn-outline-danger" @click="$delete(options, id)"> X </button>
-                            </div>
+
+                    <div class="form-group row">
+                        <div class="col-sm-4">
+                            DHCP Options
+                        </div>
+                        <div class="col-sm-8">
+                            <select class="form-control" @change="AddOption($event.target.value)">
+                                <option value="">+ Add option</option>
+                                <option v-for="(option, id) in available_options" :value="id">{{ option.name }}</option>
+                            </select>
                         </div>
                     </div>
+
+                    <ul v-if="options.length > 0" class="list-group list-group-flush">
+                        <li class="list-group-item d-flex" v-for="(option, id) in options">
+                            <span class="w-100">
+                                {{ option }}
+                            </span>
+                            <div class="btn-group my-2">
+                                <button class="btn btn-danger btn-sm" @click="RemoveOption(id)">Remove</button>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
             `,
             methods: {
@@ -1422,6 +1465,12 @@ Vue.component("generator_modal", {
                         console.warn('Falling back to pseudo-random client seed');
                         this.transaction_id = Math.floor(Math.random() * Math.pow(2, 32));
                     }
+                },
+                AddOption(id) {
+                    this.options.push({...this.available_options[id]});
+                },
+                RemoveOption(id) {
+                    this.$delete(this.options, id)
                 }
             }
         },
