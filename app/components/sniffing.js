@@ -184,45 +184,6 @@ Vue.component('sniffing', {
                     }
                 }
             },
-            computed: {
-                data() {
-                    return this.packet;
-                },
-                layers() {
-                    var data = this.data;
-
-                    var resp = [data]
-                    while ('payload_packet' in data) {
-                        data = data.payload_packet;
-                        resp.push(data);
-                    }
-                    return resp;
-                },
-                rip() {
-                    var data = this.data;
-                    
-                    while ('payload_packet' in data) {
-                        data = data.payload_packet;
-                        
-                        if (data.type == "RIP") {
-                            return data;
-                        }
-                    }
-                    return null;
-                },
-                dhcp() {
-                    var data = this.data;
-                    
-                    while ('payload_packet' in data) {
-                        data = data.payload_packet;
-                        
-                        if (data.type == "DHCP") {
-                            return data;
-                        }
-                    }
-                    return null;
-                },
-            },
             data() {
                 return {
                     visible: false
@@ -234,100 +195,10 @@ Vue.component('sniffing', {
                         <h1 class="mb-0"> Properties </h1>
                     </div>
                     <div slot="body" class="form-horizontal">
-                        <table class="table mb-0">
-                            <template v-for="packet in layers">
-                                <template v-if="packet.type == 'Ethernet'">
-                                    <tr style="border-top: 2px solid black;"><th>Source MAC</th><td>{{ packet.source_hw_address }}</td></tr>
-                                    <tr><th>Destination MAC</th><td>{{ packet.destination_hw_address }}</td></tr>
-                                    <tr style="border-bottom: 2px solid black;"><th>Ether Type</th><td>{{ packet.ethernet_packet_type }}</td></tr>
-                                </template>
-
-                                <template v-else-if="packet.type == 'ARP'">
-                                    <tr><th>Operation</th><td>{{ packet.operation }}</td></tr>
-                                    <tr><th>Sender MAC</th><td>{{ packet.sender_hardware_address }}</td></tr>
-                                    <tr><th>Sender IP</th><td>{{ packet.sender_protocol_address }}</td></tr>
-                                    <tr><th>Target MAC</th><td>{{ packet.target_hardware_address }}</td></tr>
-                                    <tr style="border-bottom: 2px solid black;"><th>Target IP</th><td>{{ packet.target_protocol_address }}</td></tr>
-                                </template>
-
-                                <template v-else-if="packet.type == 'LLDP'">
-                                    <!--
-                                    <tr><th>Chassis ID</th><td>{{ packet.chassis_id }}</td></tr>
-                                    <tr><th>Port ID</th><td>{{ packet.port_id }}</td></tr>
-                                    <tr><th>Time To Live</th><td>{{ packet.time_to_live }}</td></tr>
-                                    <tr><th>Port Description</th><td>{{ packet.port_description }}</td></tr>
-                                    <tr style="border-bottom: 2px solid black;"><th>System Name</th><td>{{ packet.system_name }}</td></tr>
-                                    -->
-                                </template>
-
-                                <template v-else-if="packet.type == 'IP'">
-                                    <tr><th>Source IP</th><td>{{ packet.source_address }}</td></tr>
-                                    <tr><th>Destination IP</th><td>{{ packet.destination_address }}</td></tr>
-                                    <tr><th>Time To Live</th><td>{{ packet.time_to_live }}</td></tr>
-                                    <tr style="border-bottom: 2px solid black;"><th>Protocol</th><td>{{ packet.ip_protocol_type }}</td></tr>
-                                </template>
-
-                                <template v-else-if="packet.type == 'TCP' || packet.type == 'UDP'">
-                                    <tr><th>Source Port</th><td>{{ packet.source_port }}</td></tr>
-                                    <tr style="border-bottom: 2px solid black;"><th>Destination Port</th><td>{{ packet.destination_port }}</td></tr>
-                                </template>
-
-                                <template v-else-if="packet.type == 'TCP'">
-                                    <!-- FLAGS -->
-                                </template>
-
-                                <template v-else-if="packet.type == 'RIP'">
-                                    <tr><th>Command</th><td>{{ packet.command_type }}</td></tr>
-                                    <tr><th>Version</th><td>{{ packet.version }}</td></tr>
-                                    <tr><th colspan=2>Routes:</th></tr>
-                                </template>
-
-                                <template v-else-if="packet.type == 'DHCP'">
-                                    <tr><th>Operation Code</th><td>{{ packet.operation_code }}</td></tr>
-                                    <tr><th>Transaction ID</th><td>{{ packet.transaction_id }}</td></tr>
-                                    <tr><th>Client IP</th><td>{{ packet.your_client_ip_address }}</td></tr>
-                                    <tr><th>Server IP</th><td>{{ packet.next_server_ip_address }}</td></tr>
-                                    <tr><th>Client Mac</th><td>{{ packet.client_mac_address }}</td></tr>
-                                    <tr><th>Message Type</th><td>{{ packet.message_type }}</td></tr>
-                                    <tr><th colspan="2">DHCP Options:</th></tr>
-                                </template>
-
-                                <template v-if="'payload_data' in packet">
-                                    <tr><th>Payload Data<br><i>base 64 encoded</i></th><td><textarea class="form-control form-control-plaintext" readonly rows="5">{{ packet.payload_data }}</textarea></td></tr>
-                                </template>
-                            </template>
-                        </table>
-                        
-                        <table class="table" v-if="rip != null">
-                            <thead>
-                                <tr>
-                                    <th>AFI</th>
-                                    <th>TAG</th>
-                                    <th>IP</th>
-                                    <th>Mask</th>
-                                    <th>Next&nbsp;Hop</th>
-                                    <th>Metric</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="route in rip.routes" v-bind:class="{
-                                    'table-danger': route.metric == 16
-                                }">
-                                    <td>{{ route.afi }}</td>
-                                    <td>{{ route.route_tag }}</td>
-                                    <td>{{ route.ip }}</td>
-                                    <td>{{ route.mask }}</td>
-                                    <td>{{ route.next_hop }}</td>
-                                    <td>{{ route.metric }}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <pre v-if="dhcp != null">{{ dhcp.options }}</pre>
-
-                        <!--
-                        <pre>{{ data }}</pre>
-                        -->
+                        <packet
+                            :value="packet"
+                            :readonly="true"
+                        ></packet>
                     </div>
                 </modal>
             `,
