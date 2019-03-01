@@ -12,7 +12,32 @@ const app = new Vue({
         api_port: "7000",
         
         update_interval: null,
-        push: null
+        push: null,
+
+        test_readonly: false,
+        test_packet: 
+        {
+          "source_hw_address": "00:FF:78:42:5C:B4",
+          "destination_hw_address": "00:FF:77:42:5C:B4",
+          "ethernet_packet_type": 2048,
+          "payload_packet": {
+            "source_address": "10.8.8.1",
+            "destination_address": "10.8.3.5",
+            "time_to_live": 64,
+            "ip_protocol_type": 17,
+            "payload_packet": {
+              "source_port": 53,
+              "destination_port": 49870,
+              "payload_packet": {
+                  "type": "DHCP"
+              },
+              "type": "UDP"
+              
+            },
+            "type": "IP"
+          },
+          "type": "Ethernet"
+        }
     },
     computed: {
         running() {
@@ -33,6 +58,20 @@ const app = new Vue({
             <h3 class="mb-3">Router</h3>
             
             <interfaces></interfaces>
+                
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Packet Crafting</h5>
+                    <button @click="test_readonly = !test_readonly">test_readonly</button>
+                    <packet
+                        v-model="test_packet"
+                        :readonly="test_readonly"
+                    ></packet>
+                    
+                    <pre>{{ test_packet }}</pre>
+                </div>
+            </div>
+
             <arp></arp>
             <routing></routing>
             <rip></rip>

@@ -54,6 +54,190 @@ const store = new Vuex.Store({
             },
 
             pools: {}
+        },
+
+        packets: {
+            ethernet_packet_type: {
+                0: "None",
+                2048: "IpV4",
+                2054: "Arp",
+                32821: "Reverse Arp",
+                35020: "LLDP"
+            },
+            arp_operation: {
+                1: "Request",
+                2: "Response",
+                3: "Reverse Request",
+                4: "Reverse Reply"
+            },
+            ip_protocol: {
+                0: "IP",
+                1: "ICMP",
+                //2: "IGMP",
+                4: "IPIP",
+                6: "TCP",
+                17: "UDP",
+                255: "RAW"
+            },
+            icmp_type_code: {
+                "Echo Reply": 0,
+                "Echo": 2048,
+
+                "Timestamp": 3328,
+                "Timestamp Reply": 3584,
+
+                "Destination Unreachable": {
+                    768: "Net Unreachable",
+                    769: "Host Unreachable",
+                    770: "Protocol Unreachable",
+                    771: "Port Unreachable",
+                    772: "Fragmentation Needed and Don't Fragment was Set",
+                    773: "Source Route Failed",
+                    774: "Destination Network Unknown",
+                    775: "Destination Host Unknown",
+                    776: "Source Host Isolated",
+                    777: "Communication with Destination Network is Administratively Prohibited",
+                    778: "Communication with Destination Host is Administratively Prohibited",
+                    779: "Destination Network Unreachable for Type of Service",
+                    780: "Destination Host Unreachable for Type of Service",
+                    781: "Communication Administratively Prohibited",
+                    782: "Host Precedence Violation",
+                    783: "Precedence cutoff in effect"
+                },
+                "Redirect": {
+                    1280: "Redirect Datagram for the Network (or subnet)",
+                    1281: "Redirect Datagram for the Host",
+                    1282: "Redirect Datagram for the Type of Service and Network",
+                    1283: "Redirect Datagram for the Type of Service and Host"
+                },
+                "Router Advertisement": {
+                    2304: "Normal router advertisement",
+                    //: "Does not route common traffic"
+                },
+                "Router Solicitation": {
+                    2560: "Router Advertisement"
+                },
+                "Time Exceeded": {
+                    2816: "Time to Live exceeded in Transit",
+                    //: "Fragment Reassembly Time Exceeded"
+                },
+                "Parameter Problem": {
+                    3072: "Pointer indicates the error",
+                    3073: "Missing a Required Option",
+                    3074: "Bad Length"
+                },
+                "Photuris": {
+                    9728: "Bad SPI",
+                    9729: "Authentication Failed",
+                    9730: "Decompression Failed",
+                    9731: "Decryption Failed",
+                    9732: "Need Authentication",
+                    9733: "Need Authorization"
+                },
+                /*
+                "Extended Echo Request": {
+                    //: "No Error"
+                },
+                "Extended Echo Reply": {
+                    //: "No Error",
+                    //: "Malformed Query",
+                    //: "No Such Interface",
+                    //: "No Such Table Entry",
+                    //: "Multiple Interfaces Satisfy Query"
+                }
+                */
+            },
+            
+            rip_command_types: {
+                1: 'Request',
+                2: 'Response'
+            },
+            rip_versions: {
+                0: 'Must be Discarded',
+                1: '1',
+                2: '2'
+            },
+            rip_afis: {
+                0: 'Unspecified',
+                2: 'IP',
+                65535: 'Authentication present'
+            },
+
+            
+            dhcp_operation_codes: {
+                1: 'BOOT REQUEST',
+                2: 'BOOT REPLY'
+            },
+            dhcp_message_types: {
+                1: 'Discover',
+                2: 'Offer',
+                3: 'Request',
+                4: 'Decline',
+                5: 'Ack',
+                6: 'Nak',
+                7: 'Release'
+            },
+            dhcp_options: {
+                3: {
+                    name: "Routers",
+                    component: "DHCPIPAddressesOption"
+                },
+                6: {
+                    name: "Domain Name Servers",
+                    component: "DHCPIPAddressesOption"
+                },
+
+                1: {
+                    name: "Subnet Mask",
+                    component: "DHCPIPAddressOption"
+                },
+                50: {
+                    name: "Requested IP Address",
+                    component: "DHCPIPAddressOption"
+                },
+                54: {
+                    name: "Server Identifier",
+                    component: "DHCPIPAddressOption"
+                },
+
+                51: {
+                    name: "IP Address Lease Time",
+                    component: "DHCPUIntOption"
+                },
+                58: {
+                    name: "Renewal Time",
+                    component: "DHCPUIntOption"
+                },
+                59: {
+                    name: "Rebinding Time",
+                    component: "DHCPUIntOption"
+                },
+
+                53: {
+                    name: "Message Type",
+                    component: "DHCPMessageTypeOption"
+                },
+
+                55: {
+                    name: "Parameter Request List",
+                    component: "DHCPParameterRequestListOption"
+                },
+
+                61: {
+                    name: "Client Identifier",
+                    component: "DHCPClientIdentifierOption"
+                }
+                /*
+                0: {
+                    name: "Pad",
+                    component: "dhcp_pad_option"
+                },
+                255: {
+                    name: "End",
+                    component: "dhcp_end_option"
+                }
+                */
+            }
         }
     },
     mutations: {
