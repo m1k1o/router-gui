@@ -57,6 +57,16 @@ const store = new Vuex.Store({
         },
 
         packets: {
+            plain: {
+                "Ethernet": "Layer 2 Ethernet",
+                "ARP": "Address Resolution Protocol",
+                "ICMP": "Internet Control Message Protocol",
+                "IP": "Internet Protocol",
+                "TCP": "Transmission Control Protocol",
+                "UDP": "User Datagram Protocol",
+                "RIP": "Routing Information Protocol",
+                "DHCP": "Dynamic Host Configuration Protocol"
+            },
             ethernet_packet_type: {
                 0: "None",
                 2048: "IpV4",

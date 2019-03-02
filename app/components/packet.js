@@ -150,6 +150,12 @@ Vue.component("packet", {
             }
         }
     },
+    computed: {
+        plain_packets() {
+            return this.$store.state.packets.plain;
+        }
+    },
+    // TODO: Refactor
     methods: {
         RemoveLayer(id) {
             // Delete layer
@@ -190,7 +196,7 @@ Vue.component("packet", {
                 <div class="card border-dark mb-3">
                     <div class="card-header">
                         <button class="btn btn-danger btn-sm float-right" @click="RemoveLayer(id)" v-if="!readonly">Remove</button>
-                        <h5 class="my-1"> {{ layer.type }} </h5>
+                        <h5 class="my-1"> {{ plain_packets[layer.type] }} </h5>
                     </div>
                     <div class="card-body">
                         <component
