@@ -1,6 +1,6 @@
 Vue.component('crafting', {
     template: `
-        <div class="card mb-3" :class="valid ? 'border-success' : 'border-danger'">
+        <div class="card mb-3" :class="!empty_packet ? (valid ? 'border-success' : 'border-danger') : ''">
             <div class="card-body pb-0">
                 <div class="float-right">
                     <div class="btn-group">
@@ -33,8 +33,7 @@ Vue.component('crafting', {
                     :strict="strict"
                     @valid="valid = $event;"
                 ></packet>
-                <pre>{{packet}}</pre>
-                <send_packet v-if="interface_id && valid"
+                <send_packet v-if="interface_id && valid && !empty_packet"
                     :interface_id="interface_id"
                     :packet="packet"
                 ></send_packet>
@@ -53,6 +52,9 @@ Vue.component('crafting', {
     computed: {
         running() {
             return this.$store.state.running;
+        },
+        empty_packet() {
+            return Object.values(this.packet).length == 0;
         }
     },
     components: {
