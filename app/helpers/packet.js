@@ -156,7 +156,19 @@ Vue.component("packet", {
     watch: {
         value: {
             immediate: true,
-            handler() {
+            handler(newValue, oldValue) {
+                // Empty packet is not valid
+                if (typeof newValue != 'undefined' && typeof oldValue != 'undefined') {
+                    if (Object.keys(newValue).length == 0 && Object.keys(oldValue).length > 0) {
+                        this.$emit("valid", false)
+                    }
+                    if (Object.keys(newValue).length > 0 && Object.keys(oldValue).length == 0) {
+                        this.$emit("valid", true)
+                    }    
+                } else {
+                    this.$emit("valid", false)
+                }
+                
                 if (Object.keys(this.value).length == 0) {
                     this.layers = []
                     return;
@@ -962,7 +974,7 @@ Vue.component("packet", {
                                 :disabled="readonly"
                             ></ip-address-input>
                             <div class="input-group-append" v-if="!readonly && interface_ip">
-                                <button class="btn btn-outline-secondary" @click="source_hw_address = interface_ip"> Interface </button>
+                                <button class="btn btn-outline-secondary" @click="next_server_ip_address = interface_ip"> Interface </button>
                             </div>
                         </div>
                     </div>
@@ -1099,13 +1111,12 @@ Vue.component("packet", {
                             <div class="form-group row">
                                 <label class="col-sm-4 col-form-label">Seconds</label>
                                 <div class="col-sm-8 input-group">
-                                    <input
-                                        type="text"
-                                        class="form-control"
+                                    <number-input :type="'uint'"
                                         v-model="seconds"
+                                        @valid="Valid('seconds', $event)"
                                         :disabled="readonly"
                                         :required="true"
-                                    />
+                                    ></number-input>
                                     <div class="input-group-append" v-if="!readonly">
                                         <button class="btn btn-outline-secondary" @click="Random()">Random</button>
                                     </div>
@@ -1310,7 +1321,7 @@ Vue.component("packet", {
                     <textarea class="form-control" v-model="string" style="min-height: 150px;" />
                 </div>
                 <div class="form-horizontal" v-else>
-                    <ul class="nav nav-pills nav-fill">
+                    <ul class="nav nav-pills nav-fill mb-3">
                         <li class="nav-item">
                             <a class="nav-link" :class="tab == 'string' ? 'active' : ''" @click="tab = 'string'" href="javacript:void(0);">String</a>
                         </li>
