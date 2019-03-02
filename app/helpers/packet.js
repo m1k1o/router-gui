@@ -130,6 +130,9 @@ Vue.component("packet", {
             type: Object,
             default: ()=> ({})
         },
+        interface_id: {
+            default: null
+        },
         strict: {
             type: Boolean,
             default: false
@@ -277,6 +280,7 @@ Vue.component("packet", {
 
                             :is="layer.type"
                             :readonly="readonly"
+                            :interface_id="interface_id"
                         />
                     </div>
                 </div>
@@ -289,29 +293,37 @@ Vue.component("packet", {
     `,
     components: {
         'Ethernet': {
+            props: ['interface_id'],
             mixins: [
                 Packet_Mixin_Factory({
                     'source_hw_address': "",
                     'destination_hw_address': "",
-                    'ethernet_packet_type': 2048
+                    'ethernet_packet_type': ""
                 })
             ],
             computed: {
                 types() {
                     return this.$store.state.packets.ethernet_packet_type;
+                },
+                interface_mac() {
+                    var iface = this.$store.state.interfaces.table[this.interface_id];
+                    return iface ? iface.mac : null;
                 }
             },
             template: `
                 <div class="form-horizontal">
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Source MAC</label>
-                        <div class="col-sm-8">
+                        <div class="col-sm-8 input-group">
                             <mac-input
                                 v-model="source_hw_address"
                                 @valid="Valid('source_hw_address', $event)"
                                 :disabled="readonly"
                                 :required="true"
                             ></mac-input>
+                            <div class="input-group-append" v-if="!readonly && interface_mac">
+                                <button class="btn btn-outline-secondary" @click="source_hw_address = interface_mac"> Interface </button>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -329,6 +341,7 @@ Vue.component("packet", {
                         <label class="col-sm-4 col-form-label">Type</label>
                         <div class="col-sm-8">
                             <select class="form-control" v-model="ethernet_packet_type" :disabled="readonly">
+                                <option value="">--auto-dectect--</option>
                                 <option v-for="(text, id) in types" :value="id">{{ text }}</option>
                             </select>
                         </div>
@@ -337,6 +350,7 @@ Vue.component("packet", {
             `
         },
         'ARP': {
+            props: ['interface_id'],
             mixins: [
                 Packet_Mixin_Factory({
                     'operation': 1,
@@ -349,6 +363,14 @@ Vue.component("packet", {
             computed: {
                 operations() {
                     return this.$store.state.packets.arp_operation;
+                },
+                interface_mac() {
+                    var iface = this.$store.state.interfaces.table[this.interface_id];
+                    return iface ? iface.mac : null;
+                },
+                interface_ip() {
+                    var iface = this.$store.state.interfaces.table[this.interface_id];
+                    return iface ? iface.ip : null;
                 }
             },
             template: `
@@ -363,24 +385,30 @@ Vue.component("packet", {
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Sender MAC</label>
-                        <div class="col-sm-8">
+                        <div class="col-sm-8 input-group">
                             <mac-input
                                 v-model="sender_hardware_address"
                                 @valid="Valid('sender_hardware_address', $event)"
                                 :disabled="readonly"
                                 :required="true"
                             ></mac-input>
+                            <div class="input-group-append" v-if="!readonly && interface_mac">
+                                <button class="btn btn-outline-secondary" @click="sender_hardware_address = interface_mac"> Interface </button>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Sender IP</label>
-                        <div class="col-sm-8">
+                        <div class="col-sm-8 input-group">
                             <ip-address-input
                                 v-model="sender_protocol_address"
                                 @valid="Valid('sender_protocol_address', $event)"
                                 :disabled="readonly"
                                 :required="true"
                             ></ip-address-input>
+                            <div class="input-group-append" v-if="!readonly && interface_ip">
+                                <button class="btn btn-outline-secondary" @click="sender_protocol_address = interface_ip"> Interface </button>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -462,30 +490,38 @@ Vue.component("packet", {
             `
         },
         'IP': {
+            props: ['interface_id'],
             mixins: [
                 Packet_Mixin_Factory({
                     'source_address': "",
                     'destination_address': "",
                     'time_to_live': 128,
-                    'ip_protocol_type': 0
+                    'ip_protocol_type': ""
                 })
             ],
             computed: {
                 protocols() {
                     return this.$store.state.packets.ip_protocol;
+                },
+                interface_ip() {
+                    var iface = this.$store.state.interfaces.table[this.interface_id];
+                    return iface ? iface.ip : null;
                 }
             },
             template: `
                 <div class="form-horizontal">
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Source IP</label>
-                        <div class="col-sm-8">
+                        <div class="col-sm-8 input-group">
                             <ip-address-input
                                 v-model="source_address"
                                 @valid="Valid('source_address', $event)"
                                 :disabled="readonly"
                                 :required="true"
                             ></ip-address-input>
+                            <div class="input-group-append" v-if="!readonly && interface_ip">
+                                <button class="btn btn-outline-secondary" @click="source_address = interface_ip"> Interface </button>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -517,6 +553,7 @@ Vue.component("packet", {
                         <label class="col-sm-4 col-form-label">Protocol</label>
                         <div class="col-sm-8">
                             <select class="form-control" v-model="ip_protocol_type" :disabled="readonly">
+                                <option value="">--auto-dectect--</option>
                                 <option v-for="(text, id) in protocols" :value="id">{{ text }}</option>
                             </select>
                         </div>
@@ -869,6 +906,7 @@ Vue.component("packet", {
             }
         },
         'DHCP': {
+            props: ['interface_id'],
             mixins: [
                 Packet_Mixin_Factory({
                     operation_code: 1,
@@ -885,6 +923,10 @@ Vue.component("packet", {
                 },
                 dhcp_options() {
                     return this.$store.state.packets.dhcp_options;
+                },
+                interface_ip() {
+                    var iface = this.$store.state.interfaces.table[this.interface_id];
+                    return iface ? iface.ip : null;
                 }
             },
             template: `
@@ -924,13 +966,16 @@ Vue.component("packet", {
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Next Server IP</label>
-                        <div class="col-sm-8">
+                        <div class="col-sm-8 input-group">
                             <ip-address-input
                                 v-model="next_server_ip_address"
                                 @valid="Valid('next_server_ip_address', $event)"
                                 :disabled="readonly"
                                 :required="true"
                             ></ip-address-input>
+                            <div class="input-group-append" v-if="!readonly && interface_ip">
+                                <button class="btn btn-outline-secondary" @click="source_hw_address = interface_ip"> Interface </button>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group row">
