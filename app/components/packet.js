@@ -172,22 +172,29 @@ Vue.component("packet", {
             return this.$store.state.packets.plain;
         }
     },
-    // TODO: Refactor
     methods: {
         AddLayer(type) {
+            // Add layer
             this.layers.push({ type });
             this.valid.push(true);
+
+            // If it is first layer
+            if (this.layers.length == 1){
+                this.$emit('input', { type })
+                return;
+            }
 
             // Convert layers to packet structure
             var resp = this.layers[0];
             if(this.layers.length > 0) {
                 var iterator = resp;
                 for (var i in this.layers) {
-                    iterator['payload_packet'] = this.layers[i];
+                    this.$set(iterator, 'payload_packet', this.layers[i])
                     iterator = iterator['payload_packet'];
                 }
             }
-
+            
+            // Save data
             this.$emit('input', resp)
         },
         RemoveLayer(id) {
@@ -211,14 +218,14 @@ Vue.component("packet", {
             if(this.layers.length > 0) {
                 var iterator = resp;
                 for (var i in this.layers) {
-                    iterator['payload_packet'] = this.layers[i];
+                    this.$set(iterator, 'payload_packet', this.layers[i])
                     iterator = iterator['payload_packet'];
                 }
             }
             
             // If it is last layer
             if (id == this.layers.length) {
-                delete iterator['payload_packet'];
+                this.$delete(iterator, 'payload_packet')
                 return;
             }
 
