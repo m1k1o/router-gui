@@ -3,12 +3,18 @@ Vue.component('sniffing', {
         <div class="card mb-3">
             <div class="card-body">
                 <div class="float-right">
-                    <interface-input :value="active_interface" @input="Select($event)" :running_only="true"></interface-input>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && (only_known = !only_known)">
+                        Hide unknown: 
+                            <span v-if="only_known" class=" text-success">Yes</span>
+                            <span v-else class=" text-danger">No</span>
+                        </button>
+                    </div>
+                    <div class="btn-group">
+                        <interface-input :value="active_interface" @input="Select($event)" :running_only="true"></interface-input>
+                    </div>
                 </div>
-                <div class="float-right mt-2 mr-2">
-                    <span style="display:inline-block;">Hide unknown: <input type="checkbox" value="1" v-model="only_known"></span>
-                </div>
-
+                
                 <interface-show :id="active_interface" style="position:absolute;"></interface-show>
                 <h5 style="margin-left:55px;margin-top:-5px;" class="card-title mb-0 mt-2">Sniffing</h5>
             </div>
