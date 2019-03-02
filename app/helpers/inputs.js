@@ -17,7 +17,7 @@ function Input_Validation_Mixin(condition = null) {
             value: {
                 immediate: true,
                 handler() {
-                    this.is_valid = (!this.required && (this.value == "" || this.value == null) ? true :
+                    this.is_valid = (!this.required && (this.value === "" || this.value == null) ? true :
                         (condition === null ? this.validate(this.value) : condition(this.value))
                     )
                 }

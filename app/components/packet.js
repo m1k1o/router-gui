@@ -693,6 +693,7 @@ Vue.component("packet", {
             },
             components: {
                 'rip_route': {
+                    mixins: [Validation_Mixin_Factory()],
                     props: ['opened'],
                     watch: { 
                         opened: function(newVal, oldVal) {
@@ -733,36 +734,56 @@ Vue.component("packet", {
                                 <div class="form-group row">
                                     <label class="col-sm-4 col-form-label">Route Tag</label>
                                     <div class="col-sm-8">
-                                        <number-input :type="'ushort'" v-model="data.route_tag"></number-input>
+                                        <number-input :type="'ushort'"
+                                            v-model="data.route_tag"
+                                            @valid="Valid('route_tag', $event)"
+                                            :required="true"
+                                        ></number-input>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-sm-4 col-form-label">IP Address</label>
                                     <div class="col-sm-8">
-                                        <ip-address-input v-model="data.ip"></ip-address-input>
+                                        <ip-address-input
+                                            v-model="data.ip"
+                                            @valid="Valid('ip', $event)"
+                                            :required="true"
+                                        ></ip-address-input>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-sm-4 col-form-label">Mask</label>
                                     <div class="col-sm-8">
-                                        <ip-mask-input v-model="data.mask"></ip-mask-input>
+                                        <ip-mask-input
+                                            v-model="data.mask"
+                                            @valid="Valid('mask', $event)"
+                                            :required="true"
+                                        ></ip-mask-input>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-sm-4 col-form-label">Next Hop</label>
                                     <div class="col-sm-8">
-                                        <ip-address-input v-model="data.next_hop"></ip-address-input>
+                                        <ip-address-input
+                                            v-model="data.next_hop"
+                                            @valid="Valid('next_hop', $event)"
+                                            :required="true"
+                                        ></ip-address-input>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-sm-4 col-form-label">Metric</label>
                                     <div class="col-sm-8">
-                                        <number-input :min="1" :max="16" v-model="data.metric"></number-input>
+                                        <number-input :min="1" :max="16"
+                                            v-model="data.metric"
+                                            @valid="Valid('metric', $event)"
+                                            :required="true"
+                                        ></number-input>
                                     </div>
                                 </div>
                             </div>
                             <div slot="footer">
-                                <button v-on:click="Action()" class="btn btn-success"> Save Changes </button>
+                                <button v-on:click="Action()" class="btn btn-success" :disabled="!is_valid"> Save Changes </button>
                                 <button v-on:click="Close()" class="btn btn-secondary">Cancel</button>
                             </div>
                         </modal>
@@ -775,10 +796,10 @@ Vue.component("packet", {
                             } else {
                                 this.$set(this, 'data', {
                                     afi: 2,
-                                    route_tag: "",
+                                    route_tag: 0,
                                     ip: "",
                                     mask: "",
-                                    next_hop: "",
+                                    next_hop: "0.0.0.0",
                                     metric: ""
                                 })
                                 this.id = null;
