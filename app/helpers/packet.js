@@ -48,20 +48,26 @@ function Packet_Mixin_Factory(defaults) {
     for (const prop of props) {
         computed[prop] = {
             get() {
-                // Lazy initialize
-                if((!(prop in this.value)) && defaults[prop] !== null) {
+                // If is default value not present and is not null, include it
+                if((!(prop in this.value)) && defaults[prop] !== null && defaults[prop] !== "") {
                     this.$set(this.value, prop, typeof defaults[prop] == 'function' ? defaults[prop]() : defaults[prop]);
                 }
 
-                return this.value[prop];
+                // If is value not present or null, return it as empty string
+                return typeof this.value[prop] === 'undefined' || this.value[prop] === null ? "" : this.value[prop];
             },
             set(value) {
-                // Is number, greaten than zero or default is number
-                //if((!isNaN(value) && value != "") || typeof defaults[prop] === 'number') {
-                //    this.$set(this.value, prop, Number(value));
-                //} else {
-                    this.$set(this.value, prop, value);
-                //}
+                // If is value empty, don't include it
+                if(typeof value === 'undefined' || value === null || value === "") {
+                    this.$delete(this.value, prop);
+                } else {
+                    // If is property number, include it as number
+                    if(!isNaN(value) && value !== "") {
+                        this.$set(this.value, prop, Number(value));
+                    } else {
+                        this.$set(this.value, prop, value);
+                    }
+                }
                 
                 this.$emit('input', this.value);
             }
@@ -295,11 +301,11 @@ Vue.component("packet", {
         'Ethernet': {
             props: ['interface_id'],
             mixins: [
-                Packet_Mixin_Factory({
-                    'source_hw_address': "",
-                    'destination_hw_address': "",
-                    'ethernet_packet_type': ""
-                })
+                Packet_Mixin_Factory([
+                    'source_hw_address',
+                    'destination_hw_address',
+                    'ethernet_packet_type'
+                ])
             ],
             computed: {
                 types() {
@@ -354,10 +360,10 @@ Vue.component("packet", {
             mixins: [
                 Packet_Mixin_Factory({
                     'operation': 1,
-                    'sender_hardware_address': "",
-                    'sender_protocol_address': "",
-                    'target_hardware_address': "00:00:00:00:00:00",
-                    'target_protocol_address': ""
+                    'sender_hardware_address': null,
+                    'sender_protocol_address': null,
+                    'target_hardware_address': null,
+                    'target_protocol_address': null
                 })
             ],
             computed: {
@@ -438,11 +444,11 @@ Vue.component("packet", {
         },
         'ICMP': {
             mixins: [
-                Packet_Mixin_Factory({
-                    'type_code': 0,
-                    'id': 0,
-                    'sequence': 0
-                })
+                Packet_Mixin_Factory([
+                    'type_code',
+                    'id',
+                    'sequence',
+                ])
             ],
             computed: {
                 type_codes() {
@@ -493,10 +499,10 @@ Vue.component("packet", {
             props: ['interface_id'],
             mixins: [
                 Packet_Mixin_Factory({
-                    'source_address': "",
-                    'destination_address': "",
+                    'source_address': null,
+                    'destination_address': null,
                     'time_to_live': 128,
-                    'ip_protocol_type': ""
+                    'ip_protocol_type': null
                 })
             ],
             computed: {
@@ -910,10 +916,10 @@ Vue.component("packet", {
             mixins: [
                 Packet_Mixin_Factory({
                     operation_code: 1,
-                    transaction_id: "",
-                    your_client_ip_address: "",
-                    next_server_ip_address: "",
-                    client_mac_address: "",
+                    transaction_id: null,
+                    your_client_ip_address: null,
+                    next_server_ip_address: null,
+                    client_mac_address: null,
                     options: () => [],
                 })
             ],
@@ -1156,7 +1162,7 @@ Vue.component("packet", {
                 'DHCPParameterRequestListOption': {
                     mixins: [
                         Packet_Mixin_Factory({
-                            codes: []
+                            codes: () => []
                         })
                     ],
                     computed: {
@@ -1198,9 +1204,7 @@ Vue.component("packet", {
                 },
                 'DHCPClientIdentifierOption': {
                     mixins: [
-                        Packet_Mixin_Factory([
-                            'physical_address'
-                        ])
+                        Packet_Mixin_Factory(['physical_address'])
                     ],
                     template: `
                         <div class="form-horizontal">
@@ -1298,10 +1302,10 @@ Vue.component("packet", {
         },
         'Payload': {
             mixins: [
-                Packet_Mixin_Factory({
-                    'string': null,
-                    'data': null
-                })
+                Packet_Mixin_Factory([
+                    'string',
+                    'data'
+                ])
             ],
 
             computed: {
