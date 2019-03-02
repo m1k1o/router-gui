@@ -1,3 +1,34 @@
+function Validation_Mixin_Factory() {
+    return {
+        computed: {
+            is_valid() {
+                for (const id in this.valid) {
+                    if(!this.valid[id]){
+                        return false;
+                    }
+                }
+                return true;
+            }
+        },
+        data: () => ({
+            valid: {}
+        }),
+        watch: {
+            is_valid: {
+                immediate: true,
+                handler(newValue) {
+                    this.$emit('valid', newValue);
+                }
+            }
+        },
+        methods: {
+            Valid(id, state = true) {
+                this.$set(this.valid, id, state);
+            }
+        }
+    }
+}
+
 function Packet_Mixin_Factory(defaults) {
     if(Array.isArray(defaults)) {
         var props = defaults;
@@ -10,21 +41,7 @@ function Packet_Mixin_Factory(defaults) {
         var props = Object.keys(defaults);
     }
 
-    var computed = {
-        // Is Valid Packet?
-        is_valid() {
-            for (const prop of props) {
-                if(!this.valid[prop]){
-                    this.$emit('valid', false);
-                    return false;
-                }
-            }
-
-            this.$emit('valid', true);
-            return true;
-        }
-    };
-
+    var computed = {};
     var valid = {};
 
     // Loop through properties, register getters & setters.
@@ -54,6 +71,10 @@ function Packet_Mixin_Factory(defaults) {
     }
     
     return {
+        mixins: [Validation_Mixin_Factory()],
+        data: () => ({
+            valid
+        }),
         props: {
             value: {
                 type: Object,
@@ -64,16 +85,7 @@ function Packet_Mixin_Factory(defaults) {
                 default: false
             }
         },
-        computed: {...computed},
-        data: () => ({
-            valid
-        }),
-        methods: {
-            // On input validity
-            Valid(prop, state = true) {
-                this.valid[prop] = state;
-            }
-        }
+        computed: {...computed}
     };
 }
 
@@ -112,6 +124,7 @@ function Packet_Default_Factory(props) {
 */
 
 Vue.component("packet", {
+    mixins: [Validation_Mixin_Factory()],
     props: {
         value: {
             type: Object,
@@ -127,7 +140,8 @@ Vue.component("packet", {
         }
     },
     data: () => ({
-        layers: []
+        layers: [],
+        valid: []
     }),
 
     watch: {
@@ -141,9 +155,12 @@ Vue.component("packet", {
 
                 var data = this.value;
                 var resp = [data]
+                var valid = [true]
+
                 while ('payload_packet' in data) {
                     data = data.payload_packet;
                     resp.push(data);
+                    valid.push(true)
                 }
 
                 this.layers = resp;
@@ -160,6 +177,7 @@ Vue.component("packet", {
         RemoveLayer(id) {
             // Delete layer
             this.$delete(this.layers, id)
+            this.$delete(this.valid, id)
 
             // If it is first layer
             if (id == 0) {
@@ -193,7 +211,7 @@ Vue.component("packet", {
     template: `
         <div>
             <template v-for="(layer, id) in layers">
-                <div class="card border-dark mb-3">
+                <div class="card mb-3" :class="valid[id] ? 'border-success' : 'border-danger'">
                     <div class="card-header">
                         <button class="btn btn-danger btn-sm float-right" @click="RemoveLayer(id)" v-if="!readonly">Remove</button>
                         <h5 class="my-1"> {{ plain_packets[layer.type] }} </h5>
@@ -202,7 +220,8 @@ Vue.component("packet", {
                         <component
                             :value="layer"
                             @input="UpdateLayer(id, $event)"
-                            
+                            @valid="Valid(id, $event)"
+
                             :is="layer.type"
                             :readonly="readonly"
                         />
@@ -735,19 +754,31 @@ Vue.component("packet", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">(New) Client IP</label>
                         <div class="col-sm-8 input-group">
-                            <ip-address-input v-model="your_client_ip_address" :disabled="readonly"></ip-address-input>
+                            <ip-address-input
+                                v-model="your_client_ip_address"
+                                @valid="Valid('your_client_ip_address', $event)"
+                                :disabled="readonly"
+                            ></ip-address-input>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Next Server IP</label>
                         <div class="col-sm-8">
-                            <ip-address-input v-model="next_server_ip_address" :disabled="readonly" /></ip-address-input>
+                            <ip-address-input
+                                v-model="next_server_ip_address"
+                                @valid="Valid('next_server_ip_address', $event)"
+                                :disabled="readonly"
+                            ></ip-address-input>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Client MAC</label>
                         <div class="col-sm-8 input-group">
-                            <input type="text" class="form-control" v-model="client_mac_address" :disabled="readonly" />
+                            <mac-input
+                                v-model="client_mac_address"
+                                @valid="Valid('client_mac_address', $event)"
+                                :disabled="readonly"
+                            ></mac-input>
                         </div>
                     </div>
                     
