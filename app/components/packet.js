@@ -130,7 +130,7 @@ Vue.component("packet", {
             type: Object,
             default: ()=> ({})
         },
-        validate: {
+        strict: {
             type: Boolean,
             default: false
         },
@@ -170,6 +170,30 @@ Vue.component("packet", {
     computed: {
         plain_packets() {
             return this.$store.state.packets.plain;
+        },
+        last_layer() {
+            if (this.layers.length == 0) {
+                return null;
+            }
+
+            return  this.layers[this.layers.length-1];
+        },
+        is_payload() {
+            if (this.last_layer == null) {
+                return true;
+            }
+            
+            var plain_packet = this.plain_packets[this.last_layer.type];
+            return plain_packet.payload
+        },
+        next_group() {
+            if (this.last_layer == null) {
+                // Default group
+                return 1;
+            }
+            
+            var plain_packet = this.plain_packets[this.last_layer.type];
+            return 'next_group' in plain_packet ? plain_packet.next_group : plain_packet.group+1;
         }
     },
     methods: {
@@ -238,12 +262,12 @@ Vue.component("packet", {
         }
     },
     template: `
-        <div>
+        <div class="form-horizontal">
             <template v-for="(layer, id) in layers">
                 <div class="card mb-3" :class="valid[id] ? 'border-success' : 'border-danger'">
                     <div class="card-header">
-                        <button class="btn btn-danger btn-sm float-right" @click="RemoveLayer(id)" v-if="!readonly">Remove</button>
-                        <h5 class="my-1"> {{ plain_packets[layer.type] }} </h5>
+                        <button class="btn btn-danger btn-sm float-right" @click="RemoveLayer(id)" v-if="!readonly && (!strict || (strict && last_layer == layer))">Remove</button>
+                        <h5 class="my-1"> {{ plain_packets[layer.type].name }} </h5>
                     </div>
                     <div class="card-body">
                         <component
@@ -258,8 +282,8 @@ Vue.component("packet", {
                 </div>
             </template>
 
-            <div class="form-group text-center" v-if="!readonly">
-                <button class="btn btn-outline-info m-2" v-for="(name, type) in plain_packets" @click="AddLayer(type)">{{ name }}</button>
+            <div class="form-group text-center" v-if="!readonly && (!strict || (strict && is_payload))">
+                <button class="btn btn-outline-info m-2" v-for="(packet, type) in plain_packets" @click="AddLayer(type)" v-if="!strict || strict && (packet.group == next_group || (next_group != 1 && packet.group == 0))"> + {{ packet.name }}</button>
             </div>
         </div>
     `,
@@ -286,6 +310,7 @@ Vue.component("packet", {
                                 v-model="source_hw_address"
                                 @valid="Valid('source_hw_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></mac-input>
                         </div>
                     </div>
@@ -296,6 +321,7 @@ Vue.component("packet", {
                                 v-model="destination_hw_address"
                                 @valid="Valid('destination_hw_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></mac-input>
                         </div>
                     </div>
@@ -342,6 +368,7 @@ Vue.component("packet", {
                                 v-model="sender_hardware_address"
                                 @valid="Valid('sender_hardware_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></mac-input>
                         </div>
                     </div>
@@ -352,6 +379,7 @@ Vue.component("packet", {
                                 v-model="sender_protocol_address"
                                 @valid="Valid('sender_protocol_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -362,6 +390,7 @@ Vue.component("packet", {
                                 v-model="target_hardware_address"
                                 @valid="Valid('target_hardware_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></mac-input>
                         </div>
                     </div>
@@ -372,6 +401,7 @@ Vue.component("packet", {
                                 v-model="target_protocol_address"
                                 @valid="Valid('target_protocol_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -409,20 +439,22 @@ Vue.component("packet", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">ID</label>
                         <div class="col-sm-8">
-                            <number-input :type="ushort"
+                            <number-input :type="'ushort'"
                                 v-model="id"
                                 @valid="Valid('id', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></number-input>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Sequence</label>
                         <div class="col-sm-8">
-                            <number-input :type="ushort"
+                            <number-input :type="'ushort'"
                                 v-model="sequence"
                                 @valid="Valid('sequence', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></number-input>
                         </div>
                     </div>
@@ -452,6 +484,7 @@ Vue.component("packet", {
                                 v-model="source_address"
                                 @valid="Valid('source_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -462,6 +495,7 @@ Vue.component("packet", {
                                 v-model="destination_address"
                                 @valid="Valid('destination_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -472,6 +506,7 @@ Vue.component("packet", {
                                 v-model="time_to_live"
                                 @valid="Valid('time_to_live', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></number-input>
                             <div class="input-group-append">
                                 <span class="input-group-text">hops</span>
@@ -520,6 +555,7 @@ Vue.component("packet", {
                                 v-model="source_port"
                                 @valid="Valid('source_port', $event)"
                                 :disabled="readonly"
+                                :required="true"
                                 placeholder="Source"
                             ></number-input>
                             <div class="input-group-prepend input-group-append">
@@ -529,6 +565,7 @@ Vue.component("packet", {
                                 v-model="destination_port"
                                 @valid="Valid('destination_port', $event)"
                                 :disabled="readonly"
+                                :required="true"
                                 placeholder="Destination"
                             ></number-input>
                         </div>
@@ -539,7 +576,7 @@ Vue.component("packet", {
                             <div class="btn-group d-flex mt-1">
                                 <button
                                     v-for="(mask, flag) in flags_masks"
-                                    v-bind:class="GetFlag(mask) ? 'btn btn-success btn-sm w-100': 'btn btn-danger btn-sm w-100'"
+                                    v-bind:class="GetFlag(mask) ? 'btn btn-success btn-sm w-100': 'btn btn-outline-secondary btn-sm w-100'"
                                     v-on:click="ToggleFlag(mask)"
                                     :disabled="readonly"
                                 >{{ flag }}</button>
@@ -574,6 +611,7 @@ Vue.component("packet", {
                                 v-model="source_port"
                                 @valid="Valid('source_port', $event)"
                                 :disabled="readonly"
+                                :required="true"
                                 placeholder="Source"
                             ></number-input>
                             <div class="input-group-prepend input-group-append">
@@ -583,6 +621,7 @@ Vue.component("packet", {
                                 v-model="destination_port"
                                 @valid="Valid('destination_port', $event)"
                                 :disabled="readonly"
+                                :required="true"
                                 placeholder="Destination"
                             ></number-input>
                         </div>
@@ -865,6 +904,7 @@ Vue.component("packet", {
                                 v-model="transaction_id"
                                 @valid="Valid('transaction_id', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></number-input>
                             <div class="input-group-append" v-if="!readonly">
                                 <button class="btn btn-outline-secondary" @click="RandomTransactionID()"> Random </button>
@@ -878,6 +918,7 @@ Vue.component("packet", {
                                 v-model="your_client_ip_address"
                                 @valid="Valid('your_client_ip_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -888,6 +929,7 @@ Vue.component("packet", {
                                 v-model="next_server_ip_address"
                                 @valid="Valid('next_server_ip_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -898,6 +940,7 @@ Vue.component("packet", {
                                 v-model="client_mac_address"
                                 @valid="Valid('client_mac_address', $event)"
                                 :disabled="readonly"
+                                :required="true"
                             ></mac-input>
                         </div>
                     </div>

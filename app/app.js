@@ -15,6 +15,9 @@ const app = new Vue({
         push: null,
 
         test_readonly: false,
+        test_strict: true,
+        test_valid: true,
+        test_interface_id: null,
         test_packet: 
         {
           "source_hw_address": "00:FF:78:42:5C:B4",
@@ -59,16 +62,40 @@ const app = new Vue({
             
             <interfaces></interfaces>
                 
-            <div class="card mb-3">
+            <div class="card mb-3" :class="test_valid ? 'border-success' : 'border-danger'">
+                <div class="card-body pb-0">
+                    <div class="float-right">
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && (test_readonly = !test_readonly)">
+                                Type: 
+                                <span v-if="!test_readonly" class=" text-success">Editing</span>
+                                <span v-else class=" text-danger">Readonly</span>
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && (test_strict = !test_strict)">
+                                Strict mode: 
+                                <span v-if="test_strict" class=" text-success">Yes</span>
+                                <span v-else class=" text-danger">No</span>
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                        <interface-input v-model="test_interface_id" :running_only="true"></interface-input>
+                        </div>
+                    </div>
+
+                    <interface-show :id="test_interface_id" style="position:absolute;"></interface-show>
+                    <h5 style="margin-left:55px;margin-top:-5px;" class="card-title mb-0 mt-2">Packet Crafting</h5>
+                </div>
                 <div class="card-body">
-                    <h5 class="card-title">Packet Crafting</h5>
-                    <button @click="test_readonly = !test_readonly">test_readonly</button>
+
                     <packet
                         v-model="test_packet"
+                        :interface_id="test_interface_id"
                         :readonly="test_readonly"
+                        :strict="test_strict"
+                        @valid="test_valid = $event;"
                     ></packet>
-                    
-                    <pre>{{ test_packet }}</pre>
                 </div>
             </div>
 

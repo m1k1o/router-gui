@@ -58,15 +58,53 @@ const store = new Vuex.Store({
 
         packets: {
             plain: {
-                "Ethernet": "Layer 2 Ethernet",
-                "ARP": "Address Resolution Protocol",
-                "ICMP": "Internet Control Message Protocol",
-                "IP": "Internet Protocol",
-                "TCP": "Transmission Control Protocol",
-                "UDP": "User Datagram Protocol",
-                "RIP": "Routing Information Protocol",
-                "DHCP": "Dynamic Host Configuration Protocol",
-                "Payload": "Payload Data"
+                "Ethernet": {
+                    name: "Layer 2 Ethernet",
+                    payload: true,
+                    group: 1
+                },
+                "ARP": {
+                    name: "Address Resolution Protocol",
+                    payload: false,
+                    group: 2
+                },
+                "ICMP": {
+                    name: "Internet Control Message Protocol",
+                    payload: true,
+                    group: 2,
+                    next_group: 2
+                },
+                "IP": {
+                    name: "Internet Protocol",
+                    payload: true,
+                    group: 2
+                },
+                "TCP": {
+                    name: "Transmission Control Protocol",
+                    payload: true,
+                    group: 3
+                },
+                "UDP": {
+                    name: "User Datagram Protocol",
+                    payload: true,
+                    group: 3,
+                    next_group: "udp_app"
+                },
+                "RIP": {
+                    name: "Routing Information Protocol",
+                    payload: false,
+                    group: "udp_app"
+                },
+                "DHCP": {
+                    name: "Dynamic Host Configuration Protocol",
+                    payload: false,
+                    group: "udp_app"
+                },
+                "Payload": {
+                    name: "Payload Data",
+                    payload: false,
+                    group: 0
+                }
             },
             ethernet_packet_type: {
                 0: "None",
