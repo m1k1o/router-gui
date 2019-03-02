@@ -71,7 +71,7 @@ const store = new Vuex.Store({
                 "ICMP": {
                     name: "Internet Control Message Protocol",
                     payload: true,
-                    group: 2,
+                    group: 3,
                     next_group: 2
                 },
                 "IP": {
