@@ -174,6 +174,22 @@ Vue.component("packet", {
     },
     // TODO: Refactor
     methods: {
+        AddLayer(type) {
+            this.layers.push({ type });
+            this.valid.push(true);
+
+            // Convert layers to packet structure
+            var resp = this.layers[0];
+            if(this.layers.length > 0) {
+                var iterator = resp;
+                for (var i in this.layers) {
+                    iterator['payload_packet'] = this.layers[i];
+                    iterator = iterator['payload_packet'];
+                }
+            }
+
+            this.$emit('input', resp)
+        },
         RemoveLayer(id) {
             // Delete layer
             this.$delete(this.layers, id)
@@ -234,6 +250,10 @@ Vue.component("packet", {
                     </div>
                 </div>
             </template>
+
+            <div class="form-group text-center" v-if="!readonly">
+                <button class="btn btn-outline-info m-2" v-for="(name, type) in plain_packets" @click="AddLayer(type)">{{ name }}</button>
+            </div>
         </div>
     `,
     components: {
