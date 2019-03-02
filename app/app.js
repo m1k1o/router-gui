@@ -12,35 +12,7 @@ const app = new Vue({
         api_port: "7000",
         
         update_interval: null,
-        push: null,
-
-        test_readonly: false,
-        test_strict: true,
-        test_valid: true,
-        test_interface_id: null,
-        test_packet: 
-        {
-          "source_hw_address": "00:FF:78:42:5C:B4",
-          "destination_hw_address": "00:FF:77:42:5C:B4",
-          "ethernet_packet_type": 2048,
-          "payload_packet": {
-            "source_address": "10.8.8.1",
-            "destination_address": "10.8.3.5",
-            "time_to_live": 64,
-            "ip_protocol_type": 17,
-            "payload_packet": {
-              "source_port": 53,
-              "destination_port": 49870,
-              "payload_packet": {
-                  "type": "DHCP"
-              },
-              "type": "UDP"
-              
-            },
-            "type": "IP"
-          },
-          "type": "Ethernet"
-        }
+        push: null
     },
     computed: {
         running() {
@@ -61,44 +33,7 @@ const app = new Vue({
             <h3 class="mb-3">Router</h3>
             
             <interfaces></interfaces>
-                
-            <div class="card mb-3" :class="test_valid ? 'border-success' : 'border-danger'">
-                <div class="card-body pb-0">
-                    <div class="float-right">
-                        <div class="btn-group">
-                            <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && (test_readonly = !test_readonly)">
-                                Type: 
-                                <span v-if="!test_readonly" class=" text-success">Editing</span>
-                                <span v-else class=" text-danger">Readonly</span>
-                            </button>
-                        </div>
-                        <div class="btn-group">
-                            <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && (test_strict = !test_strict)">
-                                Strict mode: 
-                                <span v-if="test_strict" class=" text-success">Yes</span>
-                                <span v-else class=" text-danger">No</span>
-                            </button>
-                        </div>
-                        <div class="btn-group">
-                        <interface-input v-model="test_interface_id" :running_only="true"></interface-input>
-                        </div>
-                    </div>
-
-                    <interface-show :id="test_interface_id" style="position:absolute;"></interface-show>
-                    <h5 style="margin-left:55px;margin-top:-5px;" class="card-title mb-0 mt-2">Packet Crafting</h5>
-                </div>
-                <div class="card-body">
-
-                    <packet
-                        v-model="test_packet"
-                        :interface_id="test_interface_id"
-                        :readonly="test_readonly"
-                        :strict="test_strict"
-                        @valid="test_valid = $event;"
-                    ></packet>
-                </div>
-            </div>
-
+            <crafting></crafting>
             <arp></arp>
             <routing></routing>
             <rip></rip>
