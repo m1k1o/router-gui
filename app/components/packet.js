@@ -53,15 +53,15 @@ function Packet_Mixin_Factory(defaults) {
                     this.$set(this.value, prop, typeof defaults[prop] == 'function' ? defaults[prop]() : defaults[prop]);
                 }
 
-                return this.value[prop] || defaults[prop];
+                return this.value[prop];
             },
             set(value) {
                 // Is number, greaten than zero or default is number
-                if((!isNaN(value) && value != "") || typeof defaults[prop] === 'number') {
-                    this.$set(this.value, prop, Number(value));
-                } else {
+                //if((!isNaN(value) && value != "") || typeof defaults[prop] === 'number') {
+                //    this.$set(this.value, prop, Number(value));
+                //} else {
                     this.$set(this.value, prop, value);
-                }
+                //}
                 
                 this.$emit('input', this.value);
             }
@@ -402,13 +402,21 @@ Vue.component("packet", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">ID</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="id" :disabled="readonly" />
+                            <number-input :type="ushort"
+                                v-model="id"
+                                @valid="Valid('id', $event)"
+                                :disabled="readonly"
+                            ></number-input>
                         </div>
                     </div>
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Sequence</label>
                         <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="sequence" :disabled="readonly" />
+                            <number-input :type="ushort"
+                                v-model="sequence"
+                                @valid="Valid('sequence', $event)"
+                                :disabled="readonly"
+                            ></number-input>
                         </div>
                     </div>
                 </div>
@@ -451,9 +459,13 @@ Vue.component("packet", {
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">time_to_live</label>
+                        <label class="col-sm-4 col-form-label">Time To Live</label>
                         <div class="col-sm-8 input-group">
-                            <input type="text" class="form-control" v-model="time_to_live" :disabled="readonly" />
+                            <number-input :type="'uchar'"
+                                v-model="time_to_live"
+                                @valid="Valid('time_to_live', $event)"
+                                :disabled="readonly"
+                            ></number-input>
                             <div class="input-group-append">
                                 <span class="input-group-text">hops</span>
                             </div>
@@ -497,21 +509,21 @@ Vue.component("packet", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Ports</label>
                         <div class="col-sm-8 input-group">
-                            <port-input
+                            <number-input :type="'ushort'"
                                 v-model="source_port"
                                 @valid="Valid('source_port', $event)"
                                 :disabled="readonly"
                                 placeholder="Source"
-                            ></port-input>
+                            ></number-input>
                             <div class="input-group-prepend input-group-append">
                                 <span class="input-group-text">=&gt;</span>
                             </div>
-                            <port-input
+                            <number-input :type="'ushort'"
                                 v-model="destination_port"
                                 @valid="Valid('destination_port', $event)"
                                 :disabled="readonly"
                                 placeholder="Destination"
-                            ></port-input>
+                            ></number-input>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -551,21 +563,21 @@ Vue.component("packet", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Ports</label>
                         <div class="col-sm-8 input-group">
-                            <port-input
+                            <number-input :type="'ushort'"
                                 v-model="source_port"
                                 @valid="Valid('source_port', $event)"
                                 :disabled="readonly"
                                 placeholder="Source"
-                            ></port-input>
+                            ></number-input>
                             <div class="input-group-prepend input-group-append">
                                 <span class="input-group-text">=&gt;</span>
                             </div>
-                            <port-input
+                            <number-input :type="'ushort'"
                                 v-model="destination_port"
                                 @valid="Valid('destination_port', $event)"
                                 :disabled="readonly"
                                 placeholder="Destination"
-                            ></port-input>
+                            ></number-input>
                         </div>
                     </div>
                 </div>
@@ -608,7 +620,7 @@ Vue.component("packet", {
                     </div>
                     
                     <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">version</label>
+                        <label class="col-sm-4 col-form-label">Version</label>
                         <div class="col-sm-8">
                             <select class="form-control" v-model="version" :disabled="readonly">
                                 <option v-for="(version, id) in versions" :value="id">{{ version }}</option>
@@ -655,7 +667,7 @@ Vue.component("packet", {
                             <div class="form-group row">
                                 <label class="col-sm-4 col-form-label">Route Tag</label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" v-model="route.route_tag" />
+                                    <number-input :type="'ushort'" v-model="route.route_tag"></number-input>
                                 </div>
                             </div>
                             <div class="form-group row">
@@ -679,7 +691,7 @@ Vue.component("packet", {
                             <div class="form-group row">
                                 <label class="col-sm-4 col-form-label">Metric</label>
                                 <div class="col-sm-8">
-                                    <input type="text" class="form-control" v-model="route.metric" />
+                                    <number-input :min="1" :max="16" v-model="route.metric"></number-input>
                                 </div>
                             </div>
                         </div>
@@ -771,7 +783,11 @@ Vue.component("packet", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Transaction ID</label>
                         <div class="col-sm-8 input-group">
-                            <input type="text" class="form-control" v-model="transaction_id" :disabled="readonly" />
+                            <number-input :type="'uint'"
+                                v-model="transaction_id"
+                                @valid="Valid('transaction_id', $event)"
+                                :disabled="readonly"
+                            ></number-input>
                             <div class="input-group-append" v-if="!readonly">
                                 <button class="btn btn-outline-secondary" @click="RandomTransactionID()"> Random </button>
                             </div>
