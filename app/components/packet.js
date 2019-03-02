@@ -1088,7 +1088,7 @@ Vue.component("packet", {
                             <div class="form-group row" v-else>
                                 <label class="col-sm-4 col-form-label">DHCP Options</label>
                                 <div class="col-sm-8">
-                                    <p v-for="(option, id) in dhcp_options" v-if="codes.includes(id)"> {{ option.name }} </p>
+                                    <p v-for="code in codes"> {{ code in dhcp_options ? dhcp_options[code].name : 'Code: ' + code }} </p>
                                 </div>
                             </div>
                         </div>
@@ -1246,7 +1246,7 @@ Vue.component("packet", {
                         </li>
                     </ul>
                     
-                    <textarea v-if="tab == 'string'" class="form-control" v-model="string" style="min-height: 150px;" disabled />
+                    <textarea v-if="tab == 'string'" class="form-control" v-model="raw_data" style="min-height: 150px;" disabled />
                     <textarea v-if="tab == 'base64'" class="form-control" :value="data" style="min-height: 150px;" disabled />
                     <pre v-if="tab == 'hexdump'" style="min-height: 150px;">{{ hexdump(raw_data) }}</pre>
                 </div>
