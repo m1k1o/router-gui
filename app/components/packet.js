@@ -49,7 +49,7 @@ function Packet_Mixin_Factory(defaults) {
         computed[prop] = {
             get() {
                 // Lazy initialize
-                if((!(prop in this.value))) {
+                if((!(prop in this.value)) && defaults[prop] !== null) {
                     this.$set(this.value, prop, typeof defaults[prop] == 'function' ? defaults[prop]() : defaults[prop]);
                 }
 
@@ -1205,6 +1205,70 @@ Vue.component("packet", {
                             </template>
                         </div>
                     `
+                }
+            }
+        },
+        'Payload': {
+            mixins: [
+                Packet_Mixin_Factory({
+                    'string': null,
+                    'data': null
+                })
+            ],
+
+            computed: {
+                raw_data() {
+                    try {
+                        return atob(this.data);
+                    } catch {
+                        return "";
+                    }
+                },
+            },
+            data: () => ({
+                tab: 'string'
+            }),
+            template: `
+                <div class="form-horizontal" v-if="!readonly">
+                    <h5> String Payload</h5>
+                    <textarea class="form-control" v-model="string" style="min-height: 150px;" />
+                </div>
+                <div class="form-horizontal" v-else>
+                    <ul class="nav nav-pills nav-fill">
+                        <li class="nav-item">
+                            <a class="nav-link" :class="tab == 'string' ? 'active' : ''" @click="tab = 'string'" href="javacript:void(0);">String</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" :class="tab == 'base64' ? 'active' : ''" @click="tab = 'base64'" href="javacript:void(0);">base64</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" :class="tab == 'hexdump' ? 'active' : ''" @click="tab = 'hexdump'" href="javacript:void(0);">Hexdump</a>
+                        </li>
+                    </ul>
+                    
+                    <textarea v-if="tab == 'string'" class="form-control" v-model="string" style="min-height: 150px;" disabled />
+                    <textarea v-if="tab == 'base64'" class="form-control" :value="data" style="min-height: 150px;" disabled />
+                    <pre v-if="tab == 'hexdump'" style="min-height: 150px;">{{ hexdump(raw_data) }}</pre>
+                </div>
+            `,
+            methods: {
+                hexdump(buffer, blockSize) {
+                    blockSize = blockSize || 16;
+                    var lines = [];
+                    var hex = "0123456789ABCDEF";
+                    for (var b = 0; b < buffer.length; b += blockSize) {
+                        var block = buffer.slice(b, Math.min(b + blockSize, buffer.length));
+                        var addr = ("0000" + b.toString(16)).slice(-4);
+                        var codes = block.split('').map(function (ch) {
+                            var code = ch.charCodeAt(0);
+                            return " " + hex[(0xF0 & code) >> 4] + hex[0x0F & code];
+                        }).join("");
+                        codes += "   ".repeat(blockSize - block.length);
+                        var chars = block.replace(/[\x00-\x1F\x20]/g, '.');
+                        chars +=  " ".repeat(blockSize - block.length);
+                        lines.push(addr + " " + codes + "  " + chars);
+                    }
+                    return lines.join("\n");
                 }
             }
         },

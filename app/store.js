@@ -65,7 +65,8 @@ const store = new Vuex.Store({
                 "TCP": "Transmission Control Protocol",
                 "UDP": "User Datagram Protocol",
                 "RIP": "Routing Information Protocol",
-                "DHCP": "Dynamic Host Configuration Protocol"
+                "DHCP": "Dynamic Host Configuration Protocol",
+                "Payload": "Payload Data"
             },
             ethernet_packet_type: {
                 0: "None",
