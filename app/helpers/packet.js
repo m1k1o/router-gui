@@ -325,7 +325,6 @@ Vue.component("packet", {
                                 v-model="source_hw_address"
                                 @valid="Valid('source_hw_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></mac-input>
                             <div class="input-group-append" v-if="!readonly && interface_mac">
                                 <button class="btn btn-outline-secondary" @click="source_hw_address = interface_mac"> Interface </button>
@@ -339,7 +338,6 @@ Vue.component("packet", {
                                 v-model="destination_hw_address"
                                 @valid="Valid('destination_hw_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></mac-input>
                         </div>
                     </div>
@@ -396,7 +394,6 @@ Vue.component("packet", {
                                 v-model="sender_hardware_address"
                                 @valid="Valid('sender_hardware_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></mac-input>
                             <div class="input-group-append" v-if="!readonly && interface_mac">
                                 <button class="btn btn-outline-secondary" @click="sender_hardware_address = interface_mac"> Interface </button>
@@ -410,7 +407,6 @@ Vue.component("packet", {
                                 v-model="sender_protocol_address"
                                 @valid="Valid('sender_protocol_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></ip-address-input>
                             <div class="input-group-append" v-if="!readonly && interface_ip">
                                 <button class="btn btn-outline-secondary" @click="sender_protocol_address = interface_ip"> Interface </button>
@@ -424,7 +420,6 @@ Vue.component("packet", {
                                 v-model="target_hardware_address"
                                 @valid="Valid('target_hardware_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></mac-input>
                         </div>
                     </div>
@@ -435,7 +430,6 @@ Vue.component("packet", {
                                 v-model="target_protocol_address"
                                 @valid="Valid('target_protocol_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -477,7 +471,6 @@ Vue.component("packet", {
                                 v-model="id"
                                 @valid="Valid('id', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></number-input>
                         </div>
                     </div>
@@ -488,7 +481,6 @@ Vue.component("packet", {
                                 v-model="sequence"
                                 @valid="Valid('sequence', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></number-input>
                         </div>
                     </div>
@@ -523,7 +515,6 @@ Vue.component("packet", {
                                 v-model="source_address"
                                 @valid="Valid('source_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></ip-address-input>
                             <div class="input-group-append" v-if="!readonly && interface_ip">
                                 <button class="btn btn-outline-secondary" @click="source_address = interface_ip"> Interface </button>
@@ -537,7 +528,6 @@ Vue.component("packet", {
                                 v-model="destination_address"
                                 @valid="Valid('destination_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -548,7 +538,6 @@ Vue.component("packet", {
                                 v-model="time_to_live"
                                 @valid="Valid('time_to_live', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></number-input>
                             <div class="input-group-append">
                                 <span class="input-group-text">hops</span>
@@ -598,7 +587,6 @@ Vue.component("packet", {
                                 v-model="source_port"
                                 @valid="Valid('source_port', $event)"
                                 :disabled="readonly"
-                                :required="true"
                                 placeholder="Source"
                             ></number-input>
                             <div class="input-group-prepend input-group-append">
@@ -608,7 +596,6 @@ Vue.component("packet", {
                                 v-model="destination_port"
                                 @valid="Valid('destination_port', $event)"
                                 :disabled="readonly"
-                                :required="true"
                                 placeholder="Destination"
                             ></number-input>
                         </div>
@@ -654,7 +641,6 @@ Vue.component("packet", {
                                 v-model="source_port"
                                 @valid="Valid('source_port', $event)"
                                 :disabled="readonly"
-                                :required="true"
                                 placeholder="Source"
                             ></number-input>
                             <div class="input-group-prepend input-group-append">
@@ -664,7 +650,6 @@ Vue.component("packet", {
                                 v-model="destination_port"
                                 @valid="Valid('destination_port', $event)"
                                 :disabled="readonly"
-                                :required="true"
                                 placeholder="Destination"
                             ></number-input>
                         </div>
@@ -952,7 +937,6 @@ Vue.component("packet", {
                                 v-model="transaction_id"
                                 @valid="Valid('transaction_id', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></number-input>
                             <div class="input-group-append" v-if="!readonly">
                                 <button class="btn btn-outline-secondary" @click="RandomTransactionID()"> Random </button>
@@ -966,7 +950,6 @@ Vue.component("packet", {
                                 v-model="your_client_ip_address"
                                 @valid="Valid('your_client_ip_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -977,7 +960,6 @@ Vue.component("packet", {
                                 v-model="next_server_ip_address"
                                 @valid="Valid('next_server_ip_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></ip-address-input>
                             <div class="input-group-append" v-if="!readonly && interface_ip">
                                 <button class="btn btn-outline-secondary" @click="source_hw_address = interface_ip"> Interface </button>
@@ -991,7 +973,6 @@ Vue.component("packet", {
                                 v-model="client_mac_address"
                                 @valid="Valid('client_mac_address', $event)"
                                 :disabled="readonly"
-                                :required="true"
                             ></mac-input>
                         </div>
                     </div>
@@ -1123,6 +1104,7 @@ Vue.component("packet", {
                                         class="form-control"
                                         v-model="seconds"
                                         :disabled="readonly"
+                                        :required="true"
                                     />
                                     <div class="input-group-append" v-if="!readonly">
                                         <button class="btn btn-outline-secondary" @click="Random()">Random</button>
@@ -1139,7 +1121,9 @@ Vue.component("packet", {
                 },
                 'DHCPMessageTypeOption': {
                     mixins: [
-                        Packet_Mixin_Factory(['message_type'])
+                        Packet_Mixin_Factory({
+                            'message_type': 1
+                        })
                     ],
                     computed: {
                         message_types() {
