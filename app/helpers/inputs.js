@@ -128,7 +128,7 @@ Vue.component('number-input', {
         validate(value) {
             var {min, max} = this.range;
 
-            return !isNaN(value) && value >= min && value <= max
+            return !isNaN(value) && value !== "" && value >= min && value <= max
         }
     },
 
