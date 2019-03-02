@@ -192,7 +192,7 @@ Vue.component("packet", {
             
             // Convert layers to packet structure
             var resp = this.layers[0];
-            if(this.layers.length > 1) {
+            if(this.layers.length > 0) {
                 var iterator = resp;
                 for (var i in this.layers) {
                     iterator['payload_packet'] = this.layers[i];
@@ -200,6 +200,12 @@ Vue.component("packet", {
                 }
             }
             
+            // If it is last layer
+            if (id == this.layers.length) {
+                delete iterator['payload_packet'];
+                return;
+            }
+
             // Save data
             this.$emit('input', resp)
         },
@@ -841,8 +847,7 @@ Vue.component("packet", {
 
                                     <div class="input-group mt-3" v-for="(ip, id) in ip_addresses">
                                         <ip-address-input
-                                            :value="ip"
-                                            @input="$set(ip_addresses, id, $event)"
+                                            v-model="ip_addresses[id]"
                                             
                                             :disabled="readonly"
                                             :required="true"
