@@ -33,7 +33,7 @@ Vue.component('crafting', {
                     :strict="strict"
                     @valid="valid = $event;"
                 ></packet>
-                <send_packet v-if="interface_id && valid && !empty_packet"
+                <send_packet v-if="interface_id && valid && !empty_packet && running"
                     :interface_id="interface_id"
                     :packet="packet"
                 ></send_packet>
