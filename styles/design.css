@@ -94,8 +94,8 @@
   background: #ccc;
 }
 
-.form-horizontal *:last-child {
-  margin-bottom: 0;
+.form-horizontal *:not(button):last-child {
+  margin-bottom: 0 !important;
 }
 
 .sniffing.arp {
