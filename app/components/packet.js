@@ -583,7 +583,6 @@ Vue.component("packet", {
                 </div>
             `
         },
-        // TODO: Refactor
         'RIP': {
             mixins: [
                 Packet_Mixin_Factory({
@@ -598,15 +597,10 @@ Vue.component("packet", {
                 },
                 versions() {
                     return this.$store.state.packets.rip_versions;
-                },
-                afis() {
-                    return this.$store.state.packets.rip_afis;
                 }
             },
-
             data: () => ({
-                route: null,
-                route_id: null
+                rip_route_modal: false
             }),
             template: `
                 <div class="form-horizontal">
@@ -631,7 +625,7 @@ Vue.component("packet", {
                     <div class="form-group row">
                         <label class="col-sm-4 col-form-label">Routes</label>
                         <div class="col-sm-8">
-                            <button class="btn btn-info" @click="Open()" v-if="!readonly">+ Add Route</button>
+                            <button class="btn btn-info" @click="Add()" v-if="!readonly">+ Add Route</button>
                             <button class="btn btn-warning" @click="Random()" v-if="!readonly">+ Random Route</button>
                         </div>
                     </div>
@@ -645,61 +639,17 @@ Vue.component("packet", {
                                 <span>via {{ route.next_hop || '--unspecified--' }}</span><br><small>metric <strong>{{ route.metric || '--unspecified--' }}</strong></small>
                             </span>
                             <div class="btn-group my-2" v-if="!readonly">
-                                <button class="btn btn-info btn-sm" @click="Open(id)">Edit</button>
+                                <button class="btn btn-info btn-sm" @click="Edit(id)">Edit</button>
                                 <button class="btn btn-danger btn-sm" @click="Remove(id)">Remove</button>
                             </div>
                         </li>
                     </ul>
 
-                    <modal v-if="route" v-on:close="Close()">
-                        <div slot="header">
-                            <h1 class="mb-0"> RIP Route </h1>
-                        </div>
-                        <div slot="body" class="form-horizontal">
-                            <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Address Family ID</label>
-                                <div class="col-sm-8">
-                                    <select class="form-control" v-model="route.afi">
-                                        <option v-for="(afi, id) in afis" :value="id">{{ afi }}</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Route Tag</label>
-                                <div class="col-sm-8">
-                                    <number-input :type="'ushort'" v-model="route.route_tag"></number-input>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">IP Address</label>
-                                <div class="col-sm-8">
-                                    <ip-address-input v-model="route.ip"></ip-address-input>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Mask</label>
-                                <div class="col-sm-8">
-                                    <ip-mask-input v-model="route.mask"></ip-mask-input>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Next Hop</label>
-                                <div class="col-sm-8">
-                                    <ip-address-input v-model="route.next_hop"></ip-address-input>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-4 col-form-label">Metric</label>
-                                <div class="col-sm-8">
-                                    <number-input :min="1" :max="16" v-model="route.metric"></number-input>
-                                </div>
-                            </div>
-                        </div>
-                        <div slot="footer">
-                            <button v-on:click="Action()" class="btn btn-success"> Save Changes </button>
-                            <button v-on:click="Close()" class="btn btn-secondary">Cancel</button>
-                        </div>
-                    </modal>
+                    <rip_route
+                        :opened="rip_route_modal"
+                        @closed="rip_route_modal = false"
+                        @save="Save($event)"
+                    ></rip_route>
                 </div>
             `,
             methods: {
@@ -715,39 +665,139 @@ Vue.component("packet", {
                     this.routes.push({ afi: 2, route_tag: 0, ip, mask, next_hop, metric })
                     this.$emit('input', this.value);
                 },
-                Open(route_id = null) {
-                    if (route_id !== null) {
-                        this.$set(this, 'route', { ...this.routes[route_id] })
-                        this.route_id = route_id;
-                    } else {
-                        this.$set(this, 'route', {
-                            afi: 2,
-                            route_tag: "",
-                            ip: "",
-                            mask: "",
-                            next_hop: "",
-                            metric: ""
-                        })
-                        this.route_id = null;
-                    }
+                Add() {
+                    this.rip_route_modal = {
+                        id: null,
+                        data: null
+                    };
                 },
-                Action() {
-                    if (this.route_id !== null) {
-                        this.$set(this.routes, this.route_id, this.route)
+                Edit(id) {
+                    this.rip_route_modal = {
+                        id,
+                        data: this.routes[id]
+                    };
+                },
+                Save({ id, data }) {
+                    if (id !== null) {
+                        this.$set(this.routes, id, data)
                     } else {
-                        this.routes.push(this.route)
+                        this.routes.push(data)
                     }
 
                     this.$emit('input', this.value);
-                    this.Close();
-                },
-                Close() {
-                    this.route = null
-                    this.route_id = null
                 },
                 Remove(id) {
                     this.$delete(this.routes, id)
                     this.$emit('input', this.value);
+                }
+            },
+            components: {
+                'rip_route': {
+                    props: ['opened'],
+                    watch: { 
+                        opened: function(newVal, oldVal) {
+                            if(!oldVal && newVal) {
+                                this.Open(newVal);
+                            }
+                            
+                            if(oldVal && !newVal) {
+                                this.Close();
+                            }
+                        }
+                    },
+                    computed: {
+                        afis() {
+                            return this.$store.state.packets.rip_afis;
+                        }
+                    },
+                    data: () => ({
+                        visible: false,
+                        
+                        id: null,
+                        data: {}
+                    }),
+                    template: `
+                        <modal v-if="visible" v-on:close="Close()">
+                            <div slot="header">
+                                <h1 class="mb-0"> RIP Route </h1>
+                            </div>
+                            <div slot="body" class="form-horizontal">
+                                <div class="form-group row">
+                                    <label class="col-sm-4 col-form-label">Address Family ID</label>
+                                    <div class="col-sm-8">
+                                        <select class="form-control" v-model="data.afi">
+                                            <option v-for="(afi, id) in afis" :value="id">{{ afi }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-4 col-form-label">Route Tag</label>
+                                    <div class="col-sm-8">
+                                        <number-input :type="'ushort'" v-model="data.route_tag"></number-input>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-4 col-form-label">IP Address</label>
+                                    <div class="col-sm-8">
+                                        <ip-address-input v-model="data.ip"></ip-address-input>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-4 col-form-label">Mask</label>
+                                    <div class="col-sm-8">
+                                        <ip-mask-input v-model="data.mask"></ip-mask-input>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-4 col-form-label">Next Hop</label>
+                                    <div class="col-sm-8">
+                                        <ip-address-input v-model="data.next_hop"></ip-address-input>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-4 col-form-label">Metric</label>
+                                    <div class="col-sm-8">
+                                        <number-input :min="1" :max="16" v-model="data.metric"></number-input>
+                                    </div>
+                                </div>
+                            </div>
+                            <div slot="footer">
+                                <button v-on:click="Action()" class="btn btn-success"> Save Changes </button>
+                                <button v-on:click="Close()" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </modal>
+                    `,
+                    methods: {
+                        Open({ id, data }) {
+                            if (id !== null) {
+                                this.$set(this, 'data', { ...data })
+                                this.id = id;
+                            } else {
+                                this.$set(this, 'data', {
+                                    afi: 2,
+                                    route_tag: "",
+                                    ip: "",
+                                    mask: "",
+                                    next_hop: "",
+                                    metric: ""
+                                })
+                                this.id = null;
+                            }
+        
+                            this.visible = true;
+                        },
+                        Close(){
+                            this.visible = false;
+                            this.$emit("closed");
+                        },
+                        Action(){
+                            this.$emit("save", {
+                                id: this.id,
+                                data: this.data,
+                            })
+                            this.Close();
+                        }
+                    }
                 }
             }
         },
