@@ -11,7 +11,7 @@ Vue.component('sniffing', {
                         </button>
                     </div>
                     <div class="btn-group">
-                        <interface-input :value="active_interface" @input="Select($event)" :running_only="true"></interface-input>
+                        <interface-input @input="Select($event)" :running_only="true"></interface-input>
                     </div>
                 </div>
                 
@@ -96,6 +96,7 @@ Vue.component('sniffing', {
     data: () => {
         return {
             properties_modal: false,
+            active_interface: null,
 
             only_known: true
         }
@@ -103,9 +104,6 @@ Vue.component('sniffing', {
     computed: {
         data() {
             return this.$store.state.sniffing.data;
-        },
-        active_interface() {
-            return this.$store.state.sniffing.interface;
         },
         interface() {
             return this.$store.state.interfaces.table[this.active_interface];
@@ -166,14 +164,14 @@ Vue.component('sniffing', {
 
             return packet;
         },
-        Select(interface) {
-            if(interface == ""){
-                interface = null;
+        Select(id) {
+            if(id == ""){
+                id = null;
             }
 
-            this.$store.dispatch('SNIFFING_INTERFACE', interface).then(() => {
-                this.$store.commit('SNIFFING_CLEAR');
-            })
+            this.$store.dispatch('SNIFFING_INTERFACE', id)
+            this.$store.commit('SNIFFING_CLEAR');
+            this.active_interface = id;
         }
     },
     components: {
