@@ -450,8 +450,11 @@ const store = new Vuex.Store({
             instance.onopen = () => commit('WEBSOCKETS_RUNNING', true);
             instance.onclose = () => commit('WEBSOCKETS_RUNNING', false);
             instance.onmessage = (event) => dispatch('WEBSOCKETS_ONMESSAGE', event.data);
-            instance.onerror = () => commit('WEBSOCKETS_RUNNING', false); //TODO: Show error
-
+            instance.onerror = (e) => { //TODO: Show error
+                commit('WEBSOCKETS_RUNNING', false);
+                commit('WEBSOCKETS_INSTANCE', null);
+            }
+            
 			commit('WEBSOCKETS_INSTANCE', instance);
         },
         WEBSOCKETS_ONMESSAGE({state, commit}, string) {
