@@ -47,9 +47,7 @@ const store = new Vuex.Store({
             settings: {},
         },
         sniffing: {
-            data: [],
-
-            interface: null
+            data: []
         },
         dhcp: {
             table: {},
@@ -380,14 +378,11 @@ const store = new Vuex.Store({
             }
         },
         
-        SNIFFING_PUSH(state, new_entries) {
-            state.sniffing.data.push(...new_entries)
+        SNIFFING_PUSH(state, entry) {
+            state.sniffing.data.push(entry)
         },
         SNIFFING_CLEAR(state) {
             Vue.set(state.sniffing, 'data', []);
-        },
-        SNIFFING_INTERFACE(state, interface) {
-            Vue.set(state.sniffing, 'interface', interface);
         },
         
         DHCP_TIMERS(state, timers) {
@@ -454,23 +449,33 @@ const store = new Vuex.Store({
             var instance = new WebSocket("ws://" + hostname + ":" + port);
             instance.onopen = () => commit('WEBSOCKETS_RUNNING', true);
             instance.onclose = () => commit('WEBSOCKETS_RUNNING', false);
-            instance.onmessage = (event) => dispatch('WEBSOCKETS_MESSAGE', event);
+            instance.onmessage = (event) => dispatch('WEBSOCKETS_ONMESSAGE', event.data);
             instance.onerror = () => commit('WEBSOCKETS_RUNNING', false); //TODO: Show error
 
 			commit('WEBSOCKETS_INSTANCE', instance);
         },
-        WEBSOCKETS_MESSAGE({state, commit}, event) {
-            console.log(event)
+        WEBSOCKETS_ONMESSAGE({state, commit}, string) {
+            let { key, data } = JSON.parse(string);
+
+            switch (key) {
+                case 'sniffing':
+                    commit('SNIFFING_PUSH', data)
+                break;
+            }
+
+            console.log(key, data)
+        },
+        WEBSOCKETS_EMIT({state}, data) {
+            state.websockets.instance.send(JSON.stringify(data));
         },
 
         UPDATE({commit}) {
             return ajax("Global", "UpdateTables")
-            .then(({ sniffing, ...tables }) => {
-                commit('SNIFFING_PUSH', sniffing)
-                commit('UPDATE_TABLES', tables)
-            });
+            .then((tables) => commit('UPDATE_TABLES', tables));
         },
-        INITIALIZE({commit}) {
+        INITIALIZE({commit, dispatch}) {
+            dispatch('WEBSOCKETS_CONNET')
+
             return ajax("Global", "Initialize")
             .then((data) => commit('INITIALIZE', data));
         },
@@ -533,9 +538,19 @@ const store = new Vuex.Store({
             });
         },
         
-        SNIFFING_INTERFACE({commit}, id) {
-            return ajax("Sniffing", "Interface", { id }).then(({ id }) => {
-                commit('SNIFFING_INTERFACE', id);
+        SNIFFING_INTERFACE({dispatch}, id) {
+            if(id === null) {
+                dispatch('WEBSOCKETS_EMIT', {
+                    key: 'sniffing',
+                    action: 'stop'
+                });
+                return;
+            }
+
+            dispatch('WEBSOCKETS_EMIT', {
+                key: 'sniffing',
+                action: 'start',
+                interface: id
             });
         },
         
