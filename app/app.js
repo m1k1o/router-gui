@@ -29,6 +29,7 @@ const app = new Vue({
             <h3 class="mb-3">Router</h3>
             
             <interfaces></interfaces>
+            <analyzer></analyzer>
             <crafting></crafting>
             <arp></arp>
             <routing></routing>
@@ -41,7 +42,7 @@ const app = new Vue({
                 :opened="generator_modal"
                 @closed="generator_modal = false"
             ></generator_modal>
-            
+
             <connection_modal
                 :opened="connection_modal"
                 @closed="connection_modal = false"
@@ -138,7 +139,12 @@ const app = new Vue({
                                 <input type="text" class="form-control" v-model="port">
                             </div>
                         </div>
-
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label"></label>
+                            <div class="col-sm-8">
+                                <button v-on:click="Action()" class="btn btn-success">Save changes</button>    
+                            </div>
+                        </div>
                         <hr>
                         <div class="form-group row">
                             <label class="col-sm-4 col-form-label">Websockets</label>
@@ -160,10 +166,6 @@ const app = new Vue({
                             </div>
                         </div>
                     </div>
-                    <div slot="footer">
-                        <button v-on:click="Action()" class="btn btn-success">Save changes</button>
-                        <button v-on:click="Close()" class="btn btn-secondary">Cancel</button>
-                    </div>
                 </modal>
             `,
             methods: {
@@ -182,8 +184,6 @@ const app = new Vue({
                         hostname: this.hostname,
                         port: this.port
                     })
-
-                    this.Close();
                 }
             }
         }

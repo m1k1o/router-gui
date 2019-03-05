@@ -121,4 +121,22 @@
 .sniffing.udp {
   background: #84bdfb;
 }
+
+@-webkit-keyframes progress_animate {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes progress_animate {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
 /*# sourceMappingURL=design.css.map */

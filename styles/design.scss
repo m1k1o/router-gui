@@ -63,3 +63,12 @@
         background:#84bdfb
     }
 }
+
+@keyframes progress_animate {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  } 

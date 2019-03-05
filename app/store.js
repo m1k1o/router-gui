@@ -62,6 +62,17 @@ const store = new Vuex.Store({
             pools: {}
         },
 
+        analyzer: {
+            error: false,
+            message: null,
+            
+            running: false,
+            log: [],
+
+            time_out: null,
+            status: null
+        },
+
         packets: {
             plain: {
                 "Ethernet": {
@@ -415,7 +426,32 @@ const store = new Vuex.Store({
         },
         DHCP_POOL_REMOVE(state, id) {
             Vue.delete(state.dhcp.pools, id);
-        }
+        },
+
+        ANALYZER_PUSH(state, data) {
+            if(typeof data.log !== 'undefined') {
+                state.analyzer.log.push(data.log)
+                return;
+            }
+            
+            for (const key in data) {
+                if (data.hasOwnProperty(key) && state.analyzer.hasOwnProperty(key)) {
+                    Vue.set(state.analyzer, key, data[key]);
+                }
+            }
+        },
+        ANALYZER_CLEAR(state) {
+            Vue.set(state, 'analyzer', {
+                error: false,
+                message: null,
+
+                running: false,
+                log: [],
+
+                time_out: null,
+                status: null
+            });
+        },
     },
     getters: {
         
@@ -448,11 +484,15 @@ const store = new Vuex.Store({
             // Create instance
             var instance = new WebSocket("ws://" + hostname + ":" + port);
             instance.onopen = () => commit('WEBSOCKETS_RUNNING', true);
-            instance.onclose = () => commit('WEBSOCKETS_RUNNING', false);
+            instance.onclose = () => {
+                commit('WEBSOCKETS_RUNNING', false);
+                console.log("WS CLOSE");
+            }
             instance.onmessage = (event) => dispatch('WEBSOCKETS_ONMESSAGE', event.data);
             instance.onerror = (e) => { //TODO: Show error
                 commit('WEBSOCKETS_RUNNING', false);
                 commit('WEBSOCKETS_INSTANCE', null);
+                console.log("WS ERROR");
             }
             
 			commit('WEBSOCKETS_INSTANCE', instance);
@@ -463,6 +503,8 @@ const store = new Vuex.Store({
             switch (key) {
                 case 'sniffing':
                     commit('SNIFFING_PUSH', data)
+                case 'analyzer':
+                    commit('ANALYZER_PUSH', data)
                 break;
             }
 
@@ -591,6 +633,5 @@ const store = new Vuex.Store({
                 commit('DHCP_POOL_REMOVE', interface);
             });
         }
-
     }
 })
