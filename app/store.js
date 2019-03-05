@@ -1,6 +1,14 @@
 const store = new Vuex.Store({
     state: {
         running: false,
+        connection: {
+            hostname: "localhost",
+            port: "7000"
+        },
+        websockets: {
+            running: false,
+            instance: null
+        },
 
         interfaces: {
             table: {},
@@ -290,6 +298,17 @@ const store = new Vuex.Store({
         }
     },
     mutations: {
+        SET_CONNECTION(state, {hostname, port}) {
+            Vue.set(state, 'connection', {hostname, port})
+        },
+
+        WEBSOCKETS_INSTANCE(state, instance) {
+            Vue.set(state.websockets, 'instance', instance)
+        },
+        WEBSOCKETS_RUNNING(state, running) {
+            Vue.set(state.websockets, 'running', running)
+        },
+
         UPDATE_TABLES(state, tables) {
             for (const key in tables) {
                 if (tables.hasOwnProperty(key)) {
@@ -407,6 +426,43 @@ const store = new Vuex.Store({
         
     },
     actions: {
+        WEBSOCKETS_DISCONNECT({state, commit, dispatch}) {
+            // Is Browser supporting WebSockets?
+            if(!('WebSocket' in window)) {
+                return false;
+            }
+            
+			if(state.websockets.instance != null) {
+				state.websockets.instance.close()
+            }
+
+			commit('WEBSOCKETS_INSTANCE', null);
+        },
+        WEBSOCKETS_CONNET({state, commit, dispatch}) {
+            // Is Browser supporting WebSockets?
+            if(!('WebSocket' in window)) {
+                return false;
+            }
+            
+			if(state.websockets.instance != null) {
+				state.websockets.instance.close()
+            }
+            
+            let { hostname, port } = state.connection;
+
+            // Create instance
+            var instance = new WebSocket("ws://" + hostname + ":" + port);
+            instance.onopen = () => commit('WEBSOCKETS_RUNNING', true);
+            instance.onclose = () => commit('WEBSOCKETS_RUNNING', false);
+            instance.onmessage = (event) => dispatch('WEBSOCKETS_MESSAGE', event);
+            instance.onerror = () => commit('WEBSOCKETS_RUNNING', false); //TODO: Show error
+
+			commit('WEBSOCKETS_INSTANCE', instance);
+        },
+        WEBSOCKETS_MESSAGE({state, commit}, event) {
+            console.log(event)
+        },
+
         UPDATE({commit}) {
             return ajax("Global", "UpdateTables")
             .then(({ sniffing, ...tables }) => {

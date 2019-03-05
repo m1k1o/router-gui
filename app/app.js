@@ -3,15 +3,11 @@ const app = new Vue({
     store,
     data: {
         generator_modal: false,
-
-        api_max_tries: 5,
-        api_tries: 0,
-
-        api_settings: false,
-        api_hostname: "localhost",
-        api_port: "7000",
+        connection_modal: false,
         
         update_interval: null,
+
+        push_interval: null,
         push: null
     },
     computed: {
@@ -25,7 +21,7 @@ const app = new Vue({
                 <button class="btn btn-primary" v-on:click="generator_modal = true">Packet Generator</button>
                 
                 <button class="btn btn-success" v-on:click="DefaultSettings();" v-if="running">Default Settings</button>
-                <button class="btn btn-info" v-on:click="api_settings = true" v-if="!running">API Settings</button>
+                <button class="btn btn-info" v-on:click="connection_modal = true" v-if="!running">Connection Settings</button>
                 <button class="btn btn-danger" v-on:click="Stop();" v-if="running">Pause Requests</button>
                 <button class="btn btn-success" v-on:click="Start();" v-if="!running">Start Requests</button>
             </div>
@@ -46,31 +42,10 @@ const app = new Vue({
                 @closed="generator_modal = false"
             ></generator_modal>
             
-            <modal v-if="api_settings" v-on:close="api_settings = false">
-                <div slot="header">
-                    <h1 class="mb-3"> Settings </h1>
-                </div>
-                <div slot="body" class="form-horizontal">
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">IP Address</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="api_hostname">
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Port</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="api_port">
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">Max Tries</label>
-                        <div class="col-sm-8">
-                            <input type="text" class="form-control" v-model="api_max_tries">
-                        </div>
-                    </div>
-                </div>
-            </modal>
+            <connection_modal
+                :opened="connection_modal"
+                @closed="connection_modal = false"
+            ></connection_modal>
             
             <div class="push" v-if="push">{{ push }}</div>
         </div>
@@ -93,7 +68,8 @@ const app = new Vue({
         Push(text) {
             this.push = text;
 
-            setTimeout(() => {
+            clearInterval(this.push_interval);
+            this.push_interval = setTimeout(() => {
                 this.push = null;
             }, 3000);
         },
@@ -111,15 +87,106 @@ const app = new Vue({
             if(!this.running) return;
             clearInterval(this.update_interval);
             this.$store.commit('STOP')
-        },
-        ApiError() {
-            if (this.api_tries++ > this.api_max_tries) {
-                this.Stop();
-            }
         }
     },
-    mounted(){
+    mounted() {
         setTimeout(() => this.Start(), 0);
+    },
+    components: {
+        'connection_modal': {
+            props: ['opened'],
+            watch: { 
+                opened: function(newVal, oldVal) {
+                    if(!oldVal && newVal) {
+                        this.Open();
+                    }
+                    
+                    if(oldVal && !newVal) {
+                        this.Close();
+                    }
+                }
+            },
+            data: () => ({
+                visible: false,
+
+                hostname: null,
+                port: null
+            }),
+            computed: {
+                running() {
+                    return this.$store.state.running;
+                },
+                websockets() {
+                    return this.$store.state.websockets;
+                }
+            },
+            template: `
+                <modal v-if="visible" v-on:close="Close()">
+                    <div slot="header">
+                        <h1 class="mb-3"> Connection Settings </h1>
+                    </div>
+                    <div slot="body" class="form-horizontal">
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">IP Address</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" v-model="hostname">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">Port</label>
+                            <div class="col-sm-8">
+                                <input type="text" class="form-control" v-model="port">
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">Websockets</label>
+                            <div class="col-sm-8">
+                                <button
+                                    v-if="websockets.instance == null"
+                                    v-on:click="$store.dispatch('WEBSOCKETS_CONNET')"
+                                    class="btn btn-info"
+                                > Start </button>
+                                <button
+                                    v-else
+                                    v-on:click="$store.dispatch('WEBSOCKETS_DISCONNECT')"
+                                    class="btn btn-danger"
+                                > Stop </button>
+
+                                <span v-if="websockets.running" class="text-success">Running</span>
+                                <span v-else-if="websockets.instance != null" class="text-warning">Trying to connect...</span>
+                                <span v-else class="text-danger">Not Running</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div slot="footer">
+                        <button v-on:click="Action()" class="btn btn-success">Save changes</button>
+                        <button v-on:click="Close()" class="btn btn-secondary">Cancel</button>
+                    </div>
+                </modal>
+            `,
+            methods: {
+                Open(){
+                    this.hostname = this.$store.state.connection.hostname;
+                    this.port = this.$store.state.connection.port;
+
+                    this.visible = true;
+                },
+                Close(){
+                    this.visible = false;
+                    this.$emit("closed");
+                },
+                Action(){
+                    this.$store.commit('SET_CONNECTION', {
+                        hostname: this.hostname,
+                        port: this.port
+                    })
+
+                    this.Close();
+                }
+            }
+        }
     }
 });
 
@@ -129,22 +196,22 @@ function ajax(model, controller, body = null) {
         body = JSON.stringify(body);
     }
 
-    return fetch('http://'+app.api_hostname+':'+app.api_port+'/'+model+'/'+controller, { method: 'POST', body })
-    .then(function(response) {
-        return response.json();
-    })
-    .then((response) => {
-        if(typeof response.error === 'undefined') {
-            return response;
+    let { hostname, port } = store.state.connection;
+    return fetch('http://'+hostname+':'+port+'/'+model+'/'+controller, { method: 'POST', body })
+    .then(res => res.json())
+    .then(res => {
+        if(typeof res.error === 'undefined') {
+            return res;
         }
         
-        console.log("Error Occured.");
-        app.api_tries = 0;
-        app.Push(response.error);
-        throw response.error;
+        console.log("Server Error Occured.");
+        app.Push(res.error);
+        throw res.error;
     }, (err) => {
-        app.ApiError();
+        app.Stop();
+        
+        console.log("Client Error Occured.");
         app.Push(err.toString());
-        throw err.toString();
+        throw err;
     });
 }
