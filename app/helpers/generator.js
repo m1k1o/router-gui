@@ -1549,7 +1549,7 @@ Vue.component("generator_modal", {
                     })
                 },
                 Send() {
-                    return ajax("Sniffing", "Inject", {
+                    return ajax("Packets", "Send", {
                         interface: this.interface_id,
                         packet: this.packet
                     })

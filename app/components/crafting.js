@@ -109,7 +109,7 @@ Vue.component('crafting', {
                     })
                 },
                 Send() {
-                    return ajax("Sniffing", "Inject", {
+                    return ajax("Packets", "Send", {
                         interface: this.interface_id,
                         packet: this.packet
                     })

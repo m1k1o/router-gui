@@ -1323,13 +1323,13 @@ Vue.component("packet", {
                 <div class="form-horizontal" v-else>
                     <ul class="nav nav-pills nav-fill mb-3">
                         <li class="nav-item">
-                            <a class="nav-link" :class="tab == 'string' ? 'active' : ''" @click="tab = 'string'" href="javacript:void(0);">String</a>
+                            <a class="nav-link" :class="tab == 'string' ? 'active' : ''" @click="tab = 'string'" href="javascript:void(0);">String</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" :class="tab == 'base64' ? 'active' : ''" @click="tab = 'base64'" href="javacript:void(0);">base64</a>
+                            <a class="nav-link" :class="tab == 'base64' ? 'active' : ''" @click="tab = 'base64'" href="javascript:void(0);">base64</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" :class="tab == 'hexdump' ? 'active' : ''" @click="tab = 'hexdump'" href="javacript:void(0);">Hexdump</a>
+                            <a class="nav-link" :class="tab == 'hexdump' ? 'active' : ''" @click="tab = 'hexdump'" href="javascript:void(0);">Hexdump</a>
                         </li>
                     </ul>
                     
