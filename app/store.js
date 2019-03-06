@@ -63,14 +63,26 @@ const store = new Vuex.Store({
         },
 
         analyzer: {
-            error: false,
-            message: null,
-            
-            running: false,
-            log: [],
-
-            time_out: null,
-            status: null
+            tests: {
+                "DummyTest": {
+                    name: "Dummy Test",
+                    component: null
+                },
+                "ARPRequest": {
+                    name: "ARP Request",
+                    component: "ARPRequestTest"
+                }
+            },
+            test: {
+                error: false,
+                message: null,
+                
+                running: false,
+                log: [],
+    
+                time_out: null,
+                status: null
+            }
         },
 
         packets: {
@@ -430,18 +442,18 @@ const store = new Vuex.Store({
 
         ANALYZER_PUSH(state, data) {
             if(typeof data.log !== 'undefined') {
-                state.analyzer.log.push(data.log)
+                state.analyzer.test.log.push(data.log)
                 return;
             }
             
             for (const key in data) {
-                if (data.hasOwnProperty(key) && state.analyzer.hasOwnProperty(key)) {
-                    Vue.set(state.analyzer, key, data[key]);
+                if (data.hasOwnProperty(key) && state.analyzer.test.hasOwnProperty(key)) {
+                    Vue.set(state.analyzer.test, key, data[key]);
                 }
             }
         },
         ANALYZER_CLEAR(state) {
-            Vue.set(state, 'analyzer', {
+            Vue.set(state.analyzer, 'test', {
                 error: false,
                 message: null,
 
