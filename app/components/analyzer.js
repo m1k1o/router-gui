@@ -37,6 +37,8 @@ Vue.component('analyzer', {
                             v-model="test_case" 
 
                             :is="selected_test.component"
+                            :generator_interface="test_case.generator_interface" 
+                            :analyzer_interface="test_case.analyzer_interface" 
                         />
                     </div>
                 </div>
@@ -157,6 +159,56 @@ Vue.component('analyzer', {
                     </div>
                 </div>
             `
+        },
+        'EchoReplyTest': {
+            props: ['generator_interface'],
+            mixins: [
+                Packet_Mixin_Factory(['ip', 'mac'])
+            ],
+            data: () => ({
+                arp_is_lookingup: false
+            }),
+            template: `
+                <div class="form-group ">
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">IP</label>
+                        <div class="col-sm-8">
+                            <ip-address-input
+                                v-model="ip"
+                                :required="true"
+                            ></ip-address-input>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">MAC</label>
+                        <div class="col-sm-8 input-group">
+                            <mac-input
+                                v-model="mac"
+                                :required="true"
+                            ></mac-input>
+                            <div class="input-group-append" v-if="generator_interface">
+                                <button class="btn btn-outline-secondary" @click="!arp_is_lookingup && ARP()" v-bind:class="{'disabled': arp_is_lookingup}"> {{ arp_is_lookingup ? 'Processing...' : 'ARP Request' }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `,
+            methods: {
+                ARP() {
+                    this.arp_is_lookingup = true
+                    
+                    ajax("ARP", "Lookup", {
+                        interface: this.generator_interface,
+                        ip: this.ip
+                    })
+                    .then(({ mac }) => {
+                        this.mac = mac;
+                    }, () => {})
+                    .finally(() => {
+                        this.arp_is_lookingup = false
+                    });
+                }
+            }
         }
     }
 })
