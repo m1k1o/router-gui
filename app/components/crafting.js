@@ -1,7 +1,7 @@
 Vue.component('crafting', {
     template: `
         <div class="card mb-3" :class="!empty_packet ? (valid ? 'border-success' : 'border-danger') : ''">
-            <div class="card-body pb-0">
+            <div class="card-header">
                 <div class="float-right">
                     <div class="btn-group">
                         <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && (readonly = !readonly)">
@@ -22,8 +22,8 @@ Vue.component('crafting', {
                     </div>
                 </div>
 
-                <interface-show :id="interface_id" style="position:absolute;"></interface-show>
-                <h5 style="margin-left:55px;margin-top:-5px;" class="card-title mb-0 mt-2">Packet Crafting</h5>
+                <interface-show :id="interface_id" style="position:absolute;margin-top:-4px;"></interface-show>
+                <h5 style="margin-left:55px;" class="card-title my-2">Packet Crafting</h5>
             </div>
             <div class="card-body">
                 <packet

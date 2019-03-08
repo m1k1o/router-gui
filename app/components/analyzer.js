@@ -1,8 +1,8 @@
 Vue.component('analyzer', {
     template: `
         <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title">Analyzer</h5>
+            <div class="card-header">
+                <h5 class="card-title my-2">Analyzer</h5>
             </div>
 
             <div class="card-body form-horizontal">

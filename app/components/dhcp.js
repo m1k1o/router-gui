@@ -1,14 +1,14 @@
 Vue.component('dhcp', {
     template: `
         <div class="card mb-3">
-            <div class="card-body">
+            <div class="card-header">
                 <div class="float-right">
                     <button class="btn btn-primary" v-on:click="running && (pools_modal = true)" v-bind:class="{'disabled': !running}">Pools</button>
                     <button class="btn btn-primary" v-on:click="running && (timers_modal = true)" v-bind:class="{'disabled': !running}">Timers</button>
                     <button class="btn btn-primary" v-on:click="running && (interfaces_modal = true)" v-bind:class="{'disabled': !running}">Interfaces</button>
                 </div>
 
-                <h5 class="card-title mb-0 mt-2">DHCP</h5>
+                <h5 class="card-title my-2">DHCP</h5>
             </div>
             
             <table class="table mb-0">

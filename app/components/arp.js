@@ -1,7 +1,7 @@
 Vue.component('arp', {
     template: `
         <div class="card mb-3">
-            <div class="card-body">
+            <div class="card-header">
                 <div class="float-right">
                     <button class="btn btn-primary" v-on:click="running && (lookup_modal = true)" v-bind:class="{'disabled': !running}">Lookup</button>
                     <button class="btn btn-primary" v-on:click="running && Flush()" v-bind:class="{'disabled': !running}">Flush</button>
@@ -10,7 +10,7 @@ Vue.component('arp', {
                     <button class="btn btn-primary" v-on:click="running && (interfaces_modal = true)" v-bind:class="{'disabled': !running}">Interfaces</button>
                 </div>
 
-                <h5 class="card-title mb-0 mt-2">ARP</h5>
+                <h5 class="card-title my-2">ARP</h5>
             </div>
             
             <table class="table mb-0">

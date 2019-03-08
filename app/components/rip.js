@@ -1,7 +1,7 @@
 Vue.component('rip', {
     template: `
         <div class="card mb-3">
-            <div class="card-body">
+            <div class="card-header">
                 <div class="float-right">
                     <div class="btn-group">
                         <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && timelapse_toggle()">
@@ -15,7 +15,7 @@ Vue.component('rip', {
                     <button v-bind:class="{'disabled': !running}" class="btn btn-primary" v-on:click="running && (interfaces_modal = true)">Interfaces</button>
                 </div>
 
-                <h5 class="card-title mb-0 mt-2">RIP</h5>
+                <h5 class="card-title my-2">RIP</h5>
             </div>
             
             <table class="table mb-0">

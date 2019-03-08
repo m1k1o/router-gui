@@ -1,7 +1,7 @@
 Vue.component('sniffing', {
     template: `
         <div class="card mb-3">
-            <div class="card-body">
+            <div class="card-header">
                 <div class="float-right">
                     <div class="btn-group">
                         <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && (only_known = !only_known)">
@@ -15,8 +15,8 @@ Vue.component('sniffing', {
                     </div>
                 </div>
                 
-                <interface-show :id="active_interface" style="position:absolute;"></interface-show>
-                <h5 style="margin-left:55px;margin-top:-5px;" class="card-title mb-0 mt-2">Sniffing</h5>
+                <interface-show :id="active_interface" style="position:absolute;margin-top:-4px;"></interface-show>
+                <h5 style="margin-left:55px;" class="card-title my-2">Sniffing</h5>
             </div>
 
             <div v-auto-scroll style="width:100%;height:500px;overflow:auto;">

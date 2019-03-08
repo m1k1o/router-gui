@@ -1,8 +1,8 @@
 Vue.component('interfaces', {
     template: `
         <div class="card mb-3">
-            <div class="card-body">
-                <h5 class="card-title mb-0">Available Interfaces</h5>
+            <div class="card-header">
+                <h5 class="card-title my-2">Available Interfaces</h5>
             </div>
 
             <table class="table mb-0">
