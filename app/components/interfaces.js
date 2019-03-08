@@ -2,6 +2,9 @@ Vue.component('interfaces', {
     template: `
         <div class="card mb-3">
             <div class="card-header">
+                <div class="float-right">
+                    <button class="btn btn-primary" v-on:click="running && Random()" v-bind:class="{'disabled': !running}">Random IPs</button>
+                </div>
                 <h5 class="card-title my-2">Available Interfaces</h5>
             </div>
 
@@ -58,6 +61,17 @@ Vue.component('interfaces', {
         },
         Toggle(id) {
             this.$store.dispatch('INTERFACE_TOGGLE', id);
+        },
+        Random() {
+            let i = 0;
+            for (const iface in this.entries) {
+                if(!iface.ip)
+                this.$store.dispatch('INTERFACE_EDIT', {
+                    id: iface,
+                    ip: "10.0."+(i++)+".1",
+                    mask: "255.255.255.0"
+                })
+            }
         }
     },
     components: {
