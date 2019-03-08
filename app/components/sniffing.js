@@ -38,7 +38,6 @@ Vue.component('sniffing', {
                             @click="properties_modal = packet"
                             :class="{
                                 'arp': IsType(packet, 'ARP'),
-                                'lldp': IsType(packet, 'LLDP'),
                                 'tcp': IsType(packet, 'TCP', 1),
                                 'rip': IsType(packet, 'RIP', 2),
                                 'dhcp': IsType(packet, 'DHCP', 2),
@@ -48,12 +47,12 @@ Vue.component('sniffing', {
                         >
                             <td class="text-center" v-html="MAC(packet.source_hw_address)"></td>
                             <td class="text-center" v-html="MAC(packet.destination_hw_address)"></td>
-                            <td>{{ packet.ethernet_packet_type }}</td>
+                            <td>{{ ethernet_packet_types[packet.ethernet_packet_type] || packet.ethernet_packet_type }}</td>
                             
                             <template v-if="IsType(packet, 'IP')">
                                 <td class="text-center" v-html="IP(Onion(packet).source_address)"></td>
                                 <td class="text-center" v-html="IP(Onion(packet).destination_address)"></td>
-                                <td>{{ Onion(packet).ip_protocol_type }}</td>
+                                <td>{{ ip_protocol_types[Onion(packet).ip_protocol_type] || Onion(packet).ip_protocol_type }}</td>
                                 
                                 <td>
                                     <template v-if="IsType(packet, 'TCP', 1) || IsType(packet, 'UDP', 1)">
@@ -61,20 +60,17 @@ Vue.component('sniffing', {
                                     </template>
                                     
                                     <template v-if="IsType(packet, 'RIP', 2)">
-                                        <span class="ml-3">RIPv{{ Onion(packet, 2).version }} {{ Onion(packet, 2).command_type}}</span>
+                                        <span class="ml-3">RIPv{{ Onion(packet, 2).version }} {{ rip_command_types[Onion(packet, 2).command_type] || Onion(packet, 2).command_type }}</span>
                                     </template>
                                     <template v-if="IsType(packet, 'DHCP', 2)">
-                                        <span class="ml-3">DHCP {{ Onion(packet, 2).message_type }} &bull; {{ Onion(packet, 2).transaction_id }}</span>
+                                        <span class="ml-3">{{ Onion(packet, 2).message_type }} &bull; {{ Onion(packet, 2).transaction_id }}</span>
                                     </template>
                                 </td>
                             </template>
                             <td colspan="4" v-else-if="IsType(packet, 'ARP')">
-                                <span class="ml-3">{{ Onion(packet).operation }}</span>
-                                <span class="ml-3" v-if="Onion(packet).operation == 'Request'"> Where is <strong>{{ Onion(packet).target_protocol_address }}</strong>? Tell <strong>{{ Onion(packet).sender_protocol_address }}</strong> </span>
+                                <span class="ml-3">{{ arp_operation[Onion(packet).operation] || Onion(packet).operation }}</span>
+                                <span class="ml-3" v-if="Onion(packet).operation == 1"> Where is <strong>{{ Onion(packet).target_protocol_address }}</strong>? Tell <strong>{{ Onion(packet).sender_protocol_address }}</strong> </span>
                                 <span class="ml-3" v-else> <strong>{{ Onion(packet).sender_protocol_address }}</strong> is at <strong>{{ Onion(packet).sender_hardware_address }}</strong> </span>
-                            </td>
-                            <td colspan="4" v-else-if="IsType(packet, 'LLDP')">
-                                <!--{{ packet.lldp.system_name }} &bull; {{ packet.lldp.port_description }}-->
                             </td>
                             <td colspan="4" v-else>
                                 --unknown--
@@ -102,6 +98,19 @@ Vue.component('sniffing', {
         }
     },
     computed: {
+        ethernet_packet_types() {
+            return this.$store.state.packets.ethernet_packet_type;
+        },
+        ip_protocol_types() {
+            return this.$store.state.packets.ip_protocol;
+        },
+        rip_command_types() {
+            return this.$store.state.packets.rip_command_types;
+        },
+        arp_operation() {
+            return this.$store.state.packets.arp_operation;
+        },
+        
         data() {
             return this.$store.state.sniffing.data;
         },
