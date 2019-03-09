@@ -326,7 +326,7 @@ Vue.component("packet", {
                 <button class="btn btn-outline-info m-2" v-for="(packet, type) in plain_packets" @click="AddLayer(type)" v-if="!strict || strict && (packet.group == next_group || (next_group != 1 && packet.group == 0))"> + {{ packet.name }}</button>
             </div>
             
-            <div class="form-group text-center" v-if="!readonly && next_group == 1">
+            <div class="form-group text-center" v-if="!readonly">
                 <button class="btn btn-outline-info m-2" v-for="(packet, name) in presets" @click="AddPreset(packet)">{{ name }}</button>
             </div>
         </div>
