@@ -62,8 +62,9 @@ const store = new Vuex.Store({
             pools: {}
         },
 
+        test_cases: [],
         analyzer: {
-            tests: {
+            test_presets: {
                 "DummyTest": {
                     name: "Dummy Test",
                     component: null
@@ -681,6 +682,16 @@ const store = new Vuex.Store({
                 status: null
             });
         },
+        ANALYZER_STORAGE_PUT(state, entries) {
+            for (const id in entries) {
+                if (entries.hasOwnProperty(id)) {
+                    Vue.set(state.test_cases, id, entries[id]);
+                }
+            }
+        },
+        ANALYZER_STORAGE_REMOVE(state, id) {
+            Vue.delete(state.test_cases, id);
+        }
     },
     getters: {
         
@@ -865,6 +876,22 @@ const store = new Vuex.Store({
         DHCP_POOL_REMOVE({commit}, interface) {
             return ajax("DHCP", "PoolRemove", { interface }).then(() => {
                 commit('DHCP_POOL_REMOVE', interface);
+            });
+        },
+
+        ANALYZER_STORAGE_IMPORT({commit}, test_cases){
+            return ajax("Analyzer", "ImportTestCase", { test_cases }).then(data => {
+                commit('ANALYZER_STORAGE_PUT', data);
+            });
+        },
+        ANALYZER_STORAGE_PUT({commit}, { index, test_case }){
+            return ajax("Analyzer", "PutTestCase", { index, test_case }).then(({ index, test_case }) => {
+                commit('ANALYZER_STORAGE_PUT', { [index]: test_case });
+            });
+        },
+        ANALYZER_STORAGE_REMOVE({commit}, index){
+            return ajax("Analyzer", "RemoveTestCase", { index }).then((entry) => {
+                commit('ANALYZER_STORAGE_REMOVE', index);
             });
         }
     }

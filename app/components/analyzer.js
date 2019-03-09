@@ -25,7 +25,7 @@ Vue.component('analyzer', {
                             <label class="col-sm-4 col-form-label">Test Case</label>
                             <div class="col-sm-8">
                                 <select class="form-control" v-model="test_case.type">
-                                    <option v-for="({name}, id) in tests" :value="id">{{ name }}</option>
+                                    <option v-for="({name}, id) in test_presets" :value="id">{{ name }}</option>
                                 </select>
                             </div>
                         </div>
@@ -98,12 +98,12 @@ Vue.component('analyzer', {
         test() {
             return this.$store.state.analyzer.test;
         },
-        tests() {
-            return this.$store.state.analyzer.tests;
+        test_presets() {
+            return this.$store.state.analyzer.test_presets;
         },
         selected_test() {
-            console.log(this.test_case.type, this.$store.state.analyzer.tests[this.test_case.type])
-            return this.$store.state.analyzer.tests[this.test_case.type];
+            console.log(this.test_case.type, this.test_presets)
+            return this.test_presets[this.test_case.type];
         },
     },
     methods: {
