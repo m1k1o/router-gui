@@ -754,6 +754,11 @@ const store = new Vuex.Store({
             .then((data) => commit('INITIALIZE', data));
         },
 
+        INTERFACES_REFRESH({commit}) {
+            return ajax("Interfaces", "Refresh").then((response) => {
+                commit('UPDATE_TABLES', { interfaces: response });
+            });
+        },
         INTERFACE_EDIT({commit}, { id, ip, mask }) {
             return ajax("Interfaces", "Edit", { id, ip, mask }).then((response) => {
                 commit('INTERFACE_EDIT', response);

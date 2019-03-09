@@ -3,7 +3,8 @@ Vue.component('interfaces', {
         <div class="card mb-3">
             <div class="card-header">
                 <div class="float-right">
-                    <button class="btn btn-primary" v-on:click="running && Random()" v-bind:class="{'disabled': !running}">Random IPs</button>
+                    <button class="btn btn-outline-primary" v-on:click="Random()">Random IPs</button>
+                    <button class="btn btn-primary" v-on:click="!is_refreshing && Refresh()" :disabled="is_refreshing"> {{ is_refreshing ? 'Refreshing...' : 'Refresh' }}</button>
                 </div>
                 <h5 class="card-title my-2">Available Interfaces</h5>
             </div>
@@ -44,7 +45,8 @@ Vue.component('interfaces', {
     `,
     data: () => {
         return {
-            interface_modal: false
+            interface_modal: false,
+            is_refreshing: false
         }
     },
     computed: {
@@ -69,6 +71,12 @@ Vue.component('interfaces', {
                     mask: "255.255.255.0"
                 })
             }
+        },
+        Refresh() {
+            this.is_refreshing = true;
+            this.$store.dispatch('INTERFACES_REFRESH').then(() => {
+                this.is_refreshing = false;
+            })
         }
     },
     components: {
