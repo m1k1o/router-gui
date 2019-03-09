@@ -48,16 +48,22 @@ Vue.component('test-cases', {
                 <div class="form-group row">
                     <label class="col-sm-4 col-form-label">Name</label>
                     <div class="col-sm-8">
-                        <input type="text" class="form-control" v-model="test_case.name" />
+                        <input type="text" class="form-control" v-model="test_case.name" placeholder="Use default" />
                     </div>
                 </div>
                 <div class="form-group row">
                     <label class="col-sm-4 col-form-label">Description</label>
                     <div class="col-sm-8">
-                        <textarea class="form-control" v-model="test_case.description" />
+                        <textarea class="form-control" v-model="test_case.description" placeholder="Use default" />
                     </div>
                 </div>
-
+                <div class="form-group row">
+                    <label class="col-sm-4 col-form-label">Timeout <small>sec</small></label>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" v-model="test_case.timeout_sec" placeholder="Use default" />
+                    </div>
+                </div>
+                <hr>
                 <component
                     v-if="selected_test && 'component' in selected_test"
                     v-model="test_case" 
