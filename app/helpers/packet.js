@@ -129,7 +129,7 @@ function Packet_Default_Factory(props) {
 }
 */
 
-Vue.component("packet", {
+Vue.component('packet', {
     mixins: [Validation_Mixin_Factory()],
     props: {
         value: {

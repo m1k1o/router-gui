@@ -1,4 +1,4 @@
-Vue.component("services_modal", {
+Vue.component('services_modal', {
     props: ['service_name', 'opened'],
     watch: { 
         opened: function(newVal, oldVal) {

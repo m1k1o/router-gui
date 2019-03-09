@@ -1,4 +1,4 @@
-Vue.component("generator_modal", {
+Vue.component('generator_modal', {
     props: ['opened'],
     watch: { 
         opened: function(newVal, oldVal) {
