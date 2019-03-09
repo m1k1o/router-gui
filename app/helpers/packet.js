@@ -192,6 +192,9 @@ Vue.component("packet", {
         plain_packets() {
             return this.$store.state.packets.plain;
         },
+        presets() {
+            return this.$store.state.packets.presets;
+        },
         last_layer() {
             if (this.layers.length == 0) {
                 return null;
@@ -218,6 +221,21 @@ Vue.component("packet", {
         }
     },
     methods: {
+        AddPreset(factory) {
+            let packet;
+            if(typeof factory === 'function') {
+                if(this.interface_id != null) {
+                    var iface = this.$store.state.interfaces.table[this.interface_id];
+                    packet = factory(iface.mac, iface.ip)
+                } else {
+                    packet = factory(null, null)
+                }
+            } else {
+                packet = factory;
+            }
+
+            this.$emit('input', packet)
+        },
         AddLayer(type) {
             // Add layer
             this.layers.push({ type });
@@ -306,6 +324,10 @@ Vue.component("packet", {
 
             <div class="form-group text-center" v-if="!readonly && (!strict || (strict && is_payload))">
                 <button class="btn btn-outline-info m-2" v-for="(packet, type) in plain_packets" @click="AddLayer(type)" v-if="!strict || strict && (packet.group == next_group || (next_group != 1 && packet.group == 0))"> + {{ packet.name }}</button>
+            </div>
+            
+            <div class="form-group text-center" v-if="!readonly && next_group == 1">
+                <button class="btn btn-outline-info m-2" v-for="(packet, name) in presets" @click="AddPreset(packet)">{{ name }}</button>
             </div>
         </div>
     `,

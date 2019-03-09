@@ -139,6 +139,219 @@ const store = new Vuex.Store({
                     group: 0
                 }
             },
+            presets: {
+                "ARP": (if_mac, if_ip) => {
+                    return {
+                        "type": "Ethernet",
+                        "source_hw_address": if_mac,
+                        "destination_hw_address": "FF:FF:FF:FF:FF:FF",
+                        "ethernet_packet_type": 2054,
+                        "payload_packet": {
+                            "type": "ARP",
+                            "operation": 1,
+                            "sender_hardware_address": if_mac,
+                            "sender_protocol_address": if_ip,
+                            "target_hardware_address": "00:00:00:00:00:00"
+                        }
+                    }
+                },
+                "Gratuitous ARP": (if_mac, if_ip) => {
+                    return {
+                        "type": "Ethernet",
+                        "source_hw_address": if_mac,
+                        "destination_hw_address": "FF:FF:FF:FF:FF:FF",
+                        "ethernet_packet_type": 2054,
+                        "payload_packet": {
+                            "type": "ARP",
+                            "operation": 1,
+                            "sender_hardware_address": if_mac,
+                            "sender_protocol_address": if_ip,
+                            "target_hardware_address": if_mac,
+                            "target_protocol_address": if_ip
+                        }
+                    }
+                },
+                "RIP": (if_mac, if_ip) => {
+                    return {
+                        "type": "Ethernet",
+                        "source_hw_address": if_mac,
+                        "destination_hw_address": "01:00:5E:00:00:09",
+                        "ethernet_packet_type": 2048,
+                        "payload_packet": {
+                            "type": "IP",
+                            "source_address": if_ip,
+                            "destination_address": "224.0.0.9",
+                            "time_to_live": 1,
+                            "ip_protocol_type": 17,
+                            "payload_packet": {
+                                "type": "UDP",
+                                "source_port": 520,
+                                "destination_port": 520,
+                                "payload_packet": {
+                                    "type": "RIP"
+                                },
+                            },
+                        },
+                    }
+                },
+                "DHCP Server": (if_mac, if_ip) => {
+                    return {
+                        "type": "Ethernet",
+                        "source_hw_address": if_mac,
+                        "ethernet_packet_type": 2048,
+                        "payload_packet": {
+                            "type": "IP",
+                            "source_address": if_ip,
+                            "destination_address": "255.255.255.255",
+                            "time_to_live": 128,
+                            "ip_protocol_type": 17,
+                            "payload_packet": {
+                                "type": "UDP",
+                                "source_port": 67,
+                                "destination_port": 68,
+                                "payload_packet": {
+                                    "type": "DHCP",
+                                    "operation_code": 2,
+                                    "transaction_id": 123456,
+                                    "next_server_ip_address": if_ip,
+                                    "options": [{
+                                            "message_type": 2,
+                                            "type": 53
+                                        },
+                                        {
+                                            "ip_address": "255.255.255.0",
+                                            "type": 1
+                                        },
+                                        {
+                                            "ip_addresses": [if_ip],
+                                            "type": 3
+                                        },
+                                        {
+                                            "seconds": 3600,
+                                            "type": 51
+                                        },
+                                        {
+                                            "seconds": 1800,
+                                            "type": 58
+                                        },
+                                        {
+                                            "seconds": 3150,
+                                            "type": 59
+                                        },
+                                        {
+                                            "ip_address": if_ip,
+                                            "type": 54
+                                        },
+                                        {
+                                            "ip_addresses": [
+                                                "1.1.1.1",
+                                                "1.0.0.1"
+                                            ],
+                                            "type": 6
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "DHCP Client": (if_mac, if_ip) => {
+                    return {
+                        "type": "Ethernet",
+                        "source_hw_address": if_mac,
+                        "destination_hw_address": "FF:FF:FF:FF:FF:FF",
+                        "ethernet_packet_type": 2048,
+                        "payload_packet": {
+                            "type": "IP",
+                            "source_address": if_ip,
+                            "destination_address": "255.255.255.255",
+                            "time_to_live": 128,
+                            "ip_protocol_type": 17,
+                            "payload_packet": {
+                                "type": "UDP",
+                                "source_port": 68,
+                                "destination_port": 67,
+                                "payload_packet": {
+                                    "type": "DHCP",
+                                    "operation_code": 1,
+                                    "transaction_id": 123456,
+                                    "options": [{
+                                            "message_type": 1,
+                                            "type": 53
+                                        },
+                                        {
+                                            "type": 61
+                                        },
+                                        {
+                                            "ip_address": "0.0.0.0",
+                                            "type": 50
+                                        },
+                                        {
+                                            "codes": [1,3,6],
+                                            "type": 55
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                },
+                "ICMP Echo/Reply": (if_mac, if_ip) => {
+                    return {
+                        "type": "Ethernet",
+                        "source_hw_address": if_mac,
+                        "ethernet_packet_type": 2054,
+                        "payload_packet": {
+                            "source_address": if_ip,
+                            "time_to_live": 128,
+                            "ip_protocol_type": 1,
+                            "payload_packet": {
+                                "type": "ICMP",
+                                "type_code": 0,
+                                "id": 1,
+                                "sequence": 1,
+                                "payload_packet": {
+                                    "string": "ABCDEFGH",
+                                    "type": "Payload"
+                                },
+                            },
+                            "type": "IP"
+                        }
+                    }
+                },
+                "UDP": (if_mac, if_ip) => {
+                    return {
+                        "type": "Ethernet",
+                        "source_hw_address": if_mac,
+                        "ethernet_packet_type": 2054,
+                        "payload_packet": {
+                            "source_address": if_ip,
+                            "time_to_live": 128,
+                            "ip_protocol_type": 1,
+                            "payload_packet": {
+                                "type": "UDP"
+                            },
+                            "type": "IP"
+                        }
+                    }
+                },
+                "TCP": (if_mac, if_ip) => {
+                    return {
+                        "type": "Ethernet",
+                        "source_hw_address": if_mac,
+                        "ethernet_packet_type": 2054,
+                        "payload_packet": {
+                            "source_address": if_ip,
+                            "time_to_live": 128,
+                            "ip_protocol_type": 1,
+                            "payload_packet": {
+                                "type": "TCP"
+                            },
+                            "type": "IP"
+                        }
+                    }
+                },
+            },
             ethernet_packet_type: {
                 0: "None",
                 2048: "IpV4",
