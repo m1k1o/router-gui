@@ -4,14 +4,14 @@ Vue.component('crafting', {
             <div class="card-header">
                 <div class="float-right">
                     <div class="btn-group">
-                        <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && (readonly = !readonly)">
+                        <button class="btn btn-outline-primary" v-on:click="readonly = !readonly">
                             Type: 
                             <span v-if="!readonly" class=" text-success">Editing</span>
                             <span v-else class=" text-danger">Readonly</span>
                         </button>
                     </div>
                     <div class="btn-group">
-                        <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && (strict = !strict)">
+                        <button class="btn btn-outline-primary" v-on:click="strict = !strict">
                             Strict mode: 
                             <span v-if="strict" class=" text-success">Yes</span>
                             <span v-else class=" text-danger">No</span>
@@ -33,7 +33,7 @@ Vue.component('crafting', {
                     :strict="strict"
                     @valid="valid = $event;"
                 ></packet>
-                <send_packet v-if="interface_id && valid && !empty_packet && running"
+                <send_packet v-if="interface_id && valid && !empty_packet"
                     :interface_id="interface_id"
                     :packet="packet"
                 ></send_packet>
@@ -50,9 +50,6 @@ Vue.component('crafting', {
         }
     },
     computed: {
-        running() {
-            return this.$store.state.running;
-        },
         empty_packet() {
             return Object.values(this.packet).length == 0;
         }

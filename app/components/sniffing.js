@@ -4,7 +4,7 @@ Vue.component('sniffing', {
             <div class="card-header">
                 <div class="float-right">
                     <div class="btn-group">
-                        <button class="btn btn-outline-primary" v-bind:class="{'disabled': !running }" v-on:click="running && (only_known = !only_known)">
+                        <button class="btn btn-outline-primary" v-on:click="only_known = !only_known">
                         Hide unknown: 
                             <span v-if="only_known" class=" text-success">Yes</span>
                             <span v-else class=" text-danger">No</span>
@@ -116,9 +116,6 @@ Vue.component('sniffing', {
         },
         interface() {
             return this.$store.state.interfaces.table[this.active_interface];
-        },
-        running() {
-            return this.$store.state.running;
         }
     },
     methods: {

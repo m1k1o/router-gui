@@ -50,9 +50,6 @@ Vue.component('interfaces', {
     computed: {
         entries() {
             return this.$store.state.interfaces.table;
-        },
-        running() {
-            return this.$store.state.running;
         }
     },
     methods: {

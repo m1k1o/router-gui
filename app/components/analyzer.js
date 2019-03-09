@@ -95,9 +95,6 @@ Vue.component('analyzer', {
         }
     },
     computed: {
-        running() {
-            return this.$store.state.running;
-        },
         test() {
             return this.$store.state.analyzer.test;
         },

@@ -19,23 +19,25 @@ const app = new Vue({
         <div class="container mt-3">
             <div class="float-right btn-group">
                 <button class="btn btn-primary" v-on:click="generator_modal = true">Packet Generator</button>
-                
-                <button class="btn btn-success" v-on:click="DefaultSettings();" v-if="running">Default Settings</button>
-                <button class="btn btn-info" v-on:click="connection_modal = true" v-if="!running">Connection Settings</button>
-                <button class="btn btn-danger" v-on:click="Stop();" v-if="running">Pause Requests</button>
-                <button class="btn btn-success" v-on:click="Start();" v-if="!running">Start Requests</button>
+                <button class="btn btn-info" v-on:click="connection_modal = true">Connection Settings</button>
             </div>
 
-            <h3 class="mb-3">Router</h3>
+            <h3 class="mb-3">Network Traffic Analyzer</h3>
             
             <interfaces></interfaces>
             <analyzer></analyzer>
             <crafting></crafting>
+            <sniffing></sniffing>
+
+            <div class="float-right btn-group">
+                <button class="btn btn-danger" v-on:click="Stop();" v-if="running">Pause Requests</button>
+                <button class="btn btn-success" v-on:click="Start();" v-if="!running">Start Requests</button>
+            </div>
+            <h3 class="mb-3">Router</h3>
             <arp></arp>
             <routing></routing>
             <rip></rip>
             <lldp></lldp>
-            <sniffing></sniffing>
             <dhcp></dhcp>
             
             <generator_modal
@@ -52,20 +54,6 @@ const app = new Vue({
         </div>
     `,
     methods: {
-        DefaultSettings() {
-            this.$store.dispatch('INTERFACE_EDIT', {
-                id: 1,
-                ip: "192.168.1.5",
-                mask: "255.255.0.0"
-            })
-
-            this.$store.dispatch('INTERFACE_EDIT', {
-                id: 3,
-                ip: "10.10.0.2",
-                mask: "255.255.0.0"
-            })
-        },
-
         Push(text) {
             this.push = text;
 
