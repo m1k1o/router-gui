@@ -80,7 +80,14 @@ const app = new Vue({
         }
     },
     mounted() {
-        setTimeout(() => this.Start(), 0);
+        // Only INITIALIZE
+        setTimeout(() => {
+            this.$store.dispatch('INITIALIZE').then(() => {
+                this.$store.commit('STOP')
+            }, () => {})
+        })
+
+        //setTimeout(() => this.Start(), 0);
     },
     components: {
         'connection_modal': {
