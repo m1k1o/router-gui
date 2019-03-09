@@ -11,7 +11,7 @@ Vue.component('test-cases', {
             </div>
             
             <div class="card-body">
-                <ul class="list-group">
+                <ul class="list-group mb-3" v-if="Object.keys(test_cases).length > 0">
                     <li class="list-group-item" v-for="(test_case, index) in test_cases">
                         <div class="float-right">
                             <button class="btn btn-primary btn-sm" @click="Edit(index)">Edit</button>
