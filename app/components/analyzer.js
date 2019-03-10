@@ -9,13 +9,13 @@ Vue.component('analyzer', {
                 <div class="form-group row">
                     <label class="col-sm-4 col-form-label">Generator Interface</label>
                     <div class="col-sm-8">
-                        <interface-input v-model="test_case.generator_interface" :running_only="true"></interface-input>
+                        <interface-input v-model="generator_interface" :running_only="true"></interface-input>
                     </div>
                 </div>
                 <div class="form-group row">
                     <label class="col-sm-4 col-form-label">Analyzer Interface</label>
                     <div class="col-sm-8">
-                        <interface-input v-model="test_case.analyzer_interface" :running_only="true"></interface-input>
+                        <interface-input v-model="analyzer_interface" :running_only="true"></interface-input>
                     </div>
                 </div>
                 
@@ -37,8 +37,8 @@ Vue.component('analyzer', {
                             v-model="test_case" 
 
                             :is="selected_test.component"
-                            :generator_interface="test_case.generator_interface" 
-                            :analyzer_interface="test_case.analyzer_interface" 
+                            :generator_interface="generator_interface" 
+                            :analyzer_interface="analyzer_interface" 
                         />
                     </div>
                 </div>
@@ -87,9 +87,9 @@ Vue.component('analyzer', {
     data: () => {
         return {
             started: false,
+            generator_interface: null,
+            analyzer_interface: null,
             test_case: {
-                generator_interface: null,
-                analyzer_interface: null,
                 type: "DummyTest"
             }
         }
@@ -102,7 +102,6 @@ Vue.component('analyzer', {
             return this.$store.state.analyzer.test_presets;
         },
         selected_test() {
-            console.log(this.test_case.type, this.test_presets)
             return this.test_presets[this.test_case.type];
         },
     },
@@ -112,17 +111,19 @@ Vue.component('analyzer', {
 
             if(!this.test.running) {
                 // start
-                this.$store.commit('ANALYZER_CLEAR');
+                this.$store.commit('ANALYZER_TEST_CASE_CLEAR');
                 this.$store.dispatch('WEBSOCKETS_EMIT', {
-                    key: 'analyzer',
+                    key: 'test_case',
                     action: 'start',
+                    analyzer_interface: this.analyzer_interface,
+                    generator_interface: this.generator_interface,
                     test_case: this.test_case
                 });
             
             } else {
                 // stop
                 this.$store.dispatch('WEBSOCKETS_EMIT', {
-                    key: 'analyzer',
+                    key: 'test_case',
                     action: 'stop'
                 });
             }
