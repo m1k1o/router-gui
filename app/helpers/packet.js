@@ -228,7 +228,7 @@ Vue.component('packet', {
                     var iface = this.$store.state.interfaces.table[this.interface_id];
                     packet = factory(iface.mac, iface.ip)
                 } else {
-                    packet = factory(null, null)
+                    packet = factory(undefined, undefined)
                 }
             } else {
                 packet = factory;

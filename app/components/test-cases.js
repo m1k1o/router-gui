@@ -58,9 +58,22 @@ Vue.component('test-cases', {
                     </div>
                 </div>
                 <div class="form-group row">
-                    <label class="col-sm-4 col-form-label">Timeout <small>sec</small></label>
-                    <div class="col-sm-8">
+                    <label class="col-sm-4 col-form-label">Timeout</label>
+                    <div class="col-sm-4 input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">Status:</span>
+                        </div>
+                        <select class="form-control" v-model="test_case.timeout_status">
+                            <option :value="test_status.Timeout">Timeout</option>
+                            <option :value="test_status.Success">Success</option>
+                            <option :value="test_status.Error">Error</option>
+                        </select>
+                    </div>
+                    <div class="col-sm-4 input-group">
                         <input type="text" class="form-control" v-model="test_case.timeout_sec" placeholder="Use default" />
+                        <div class="input-group-append">
+                            <span class="input-group-text">sec.</span>
+                        </div>
                     </div>
                 </div>
                 <hr>
@@ -89,11 +102,6 @@ Vue.component('test-cases', {
         }
     },
     methods: {
-        Import() {
-            return ajax("Analyzer", "ExportTestCases").then(data => {
-                this.DownloadObjectAsJson(data, "test_scenarios")
-            });
-        },
         Export() {
             return ajax("Analyzer", "ExportTestCases").then(data => {
                 this.DownloadObjectAsJson(data, "test_scenarios")
@@ -111,7 +119,9 @@ Vue.component('test-cases', {
         Edit(index) {
             this.editing = index;
             if(index === null) {
-                this.$set(this, 'test_case', { type: "DummyTest" });
+                this.$set(this, 'test_case', {
+                    type: "DummyTest"
+                });
             } else {
                 this.$set(this, 'test_case', this.test_cases[index]);
             }
@@ -136,6 +146,9 @@ Vue.component('test-cases', {
     computed: {
         test_cases() {
             return this.$store.state.test_cases;
+        },
+        test_status() {
+            return this.$store.state.analyzer.test_status;
         },
         test_presets() {
             return this.$store.state.analyzer.test_presets;

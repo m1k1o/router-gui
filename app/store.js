@@ -78,6 +78,14 @@ const store = new Vuex.Store({
                     component: "EchoReplyTest"
                 }
             },
+            test_status: {
+                Idle: 0,
+                Running: 1,
+                Success: 2,
+                Error: 3,
+                Timeout: 4,
+                Canceled: 5
+            },
             test: {
                 error: false,
                 message: null,
@@ -658,7 +666,7 @@ const store = new Vuex.Store({
             Vue.delete(state.dhcp.pools, id);
         },
 
-        ANALYZER_PUSH(state, data) {
+        ANALYZER_TEST_CASE_PUSH(state, data) {
             if(typeof data.log !== 'undefined') {
                 state.analyzer.test.log.push(data.log)
                 return;
@@ -670,7 +678,7 @@ const store = new Vuex.Store({
                 }
             }
         },
-        ANALYZER_CLEAR(state) {
+        ANALYZER_TEST_CASE_CLEAR(state) {
             Vue.set(state.analyzer, 'test', {
                 error: false,
                 message: null,
@@ -682,6 +690,7 @@ const store = new Vuex.Store({
                 status: null
             });
         },
+
         ANALYZER_STORAGE_PUT(state, entries) {
             for (const id in entries) {
                 if (entries.hasOwnProperty(id)) {
@@ -743,8 +752,8 @@ const store = new Vuex.Store({
             switch (key) {
                 case 'sniffing':
                     commit('SNIFFING_PUSH', data)
-                case 'analyzer':
-                    commit('ANALYZER_PUSH', data)
+                case 'test_case':
+                    commit('ANALYZER_TEST_CASE_PUSH', data)
                 break;
             }
 
