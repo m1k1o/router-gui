@@ -25,8 +25,11 @@ const app = new Vue({
             <h3 class="mb-3">Network Traffic Analyzer</h3>
             
             <interfaces></interfaces>
+
+            <scenarios></scenarios>
             <testcases></testcases>
             <analyzer></analyzer>
+
             <crafting></crafting>
             <sniffing></sniffing>
 
