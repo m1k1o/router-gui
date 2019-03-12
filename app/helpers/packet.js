@@ -1,134 +1,3 @@
-function Validation_Mixin_Factory() {
-    return {
-        computed: {
-            is_valid() {
-                for (const id in this.valid) {
-                    if(!this.valid[id]){
-                        return false;
-                    }
-                }
-                return true;
-            }
-        },
-        data: () => ({
-            valid: {}
-        }),
-        watch: {
-            is_valid: {
-                immediate: true,
-                handler(newValue) {
-                    this.$emit('valid', newValue);
-                }
-            }
-        },
-        methods: {
-            Valid(id, state = true) {
-                this.$set(this.valid, id, state);
-            }
-        }
-    }
-}
-
-function Packet_Mixin_Factory(defaults) {
-    if(Array.isArray(defaults)) {
-        var props = defaults;
-            
-        defaults = {};
-        for (const prop of props) {
-            defaults[prop] = "";
-        }
-    } else {
-        var props = Object.keys(defaults);
-    }
-
-    var computed = {};
-    var valid = {};
-
-    // Loop through properties, register getters & setters.
-    for (const prop of props) {
-        computed[prop] = {
-            get() {
-                // If is default value not present and is not null, include it
-                if((!(prop in this.value)) && defaults[prop] !== null && defaults[prop] !== "") {
-                    this.$set(this.value, prop, typeof defaults[prop] == 'function' ? defaults[prop]() : defaults[prop]);
-                }
-
-                // If is value not present or null, return it as empty string
-                return typeof this.value[prop] === 'undefined' || this.value[prop] === null ? "" : this.value[prop];
-            },
-            set(value) {
-                // If is value empty, don't include it
-                if(typeof value === 'undefined' || value === null || value === "") {
-                    this.$delete(this.value, prop);
-                } else {
-                    // If is property number, include it as number
-                    if(!isNaN(value) && value !== "") {
-                        this.$set(this.value, prop, Number(value));
-                    } else {
-                        this.$set(this.value, prop, value);
-                    }
-                }
-                
-                this.$emit('input', this.value);
-            }
-        };
-
-        valid[prop] = true;
-    }
-    
-    return {
-        mixins: [Validation_Mixin_Factory()],
-        data: () => ({
-            valid
-        }),
-        props: {
-            value: {
-                type: Object,
-                default: ()=> defaults
-            },
-            readonly: {
-                type: Boolean,
-                default: false
-            }
-        },
-        computed: {...computed}
-    };
-}
-
-/*
-function Packet_Default_Factory(props) {
-    var watch = {};
-    
-    for (const prop of props) {
-        watch["use_"+prop] = {
-            immediate: true,
-            handler(newVal) {
-                !newVal || setTimeout(() => this[props] = this.default[props].value, 0)
-            }
-        };
-    }
-    
-    return {
-        props: {
-            defaults: {
-                type: Object,
-                default: ()=> ({})
-            }
-        },
-        watch,
-        mounted() {
-            for (const prop of props) {
-                if(this.default[props] && this.default[props].default) {
-                    this["use_"+prop] = true;
-                } else {
-                    this[props] = null;
-                }
-            }
-        }
-    };
-}
-*/
-
 Vue.component('packet', {
     mixins: [Validation_Mixin_Factory()],
     props: {
@@ -335,7 +204,7 @@ Vue.component('packet', {
         'Ethernet': {
             props: ['interface_id'],
             mixins: [
-                Packet_Mixin_Factory([
+                Model_Mixin_Factory([
                     'source_hw_address',
                     'destination_hw_address',
                     'ethernet_packet_type'
@@ -390,7 +259,7 @@ Vue.component('packet', {
         'ARP': {
             props: ['interface_id'],
             mixins: [
-                Packet_Mixin_Factory({
+                Model_Mixin_Factory({
                     'operation': 1,
                     'sender_hardware_address': null,
                     'sender_protocol_address': null,
@@ -472,7 +341,7 @@ Vue.component('packet', {
         },
         'ICMP': {
             mixins: [
-                Packet_Mixin_Factory([
+                Model_Mixin_Factory([
                     'type_code',
                     'id',
                     'sequence',
@@ -524,7 +393,7 @@ Vue.component('packet', {
         'IP': {
             props: ['interface_id'],
             mixins: [
-                Packet_Mixin_Factory({
+                Model_Mixin_Factory({
                     'source_address': null,
                     'destination_address': null,
                     'time_to_live': 128,
@@ -592,7 +461,7 @@ Vue.component('packet', {
         },
         'TCP': {
             mixins: [
-                Packet_Mixin_Factory([
+                Model_Mixin_Factory([
                     'source_port',
                     'destination_port',
                     'flags'
@@ -660,7 +529,7 @@ Vue.component('packet', {
         },
         'UDP': {
             mixins: [
-                Packet_Mixin_Factory([
+                Model_Mixin_Factory([
                     'source_port',
                     'destination_port'
                 ])
@@ -693,7 +562,7 @@ Vue.component('packet', {
         },
         'RIP': {
             mixins: [
-                Packet_Mixin_Factory({
+                Model_Mixin_Factory({
                     'command_type': 2,
                     'version': 2,
                     'routes': () => []
@@ -933,7 +802,7 @@ Vue.component('packet', {
         'DHCP': {
             props: ['interface_id'],
             mixins: [
-                Packet_Mixin_Factory({
+                Model_Mixin_Factory({
                     operation_code: 1,
                     transaction_id: null,
                     your_client_ip_address: null,
@@ -1056,7 +925,7 @@ Vue.component('packet', {
             components: {
                 'DHCPIPAddressesOption': {
                     mixins: [
-                        Packet_Mixin_Factory({
+                        Model_Mixin_Factory({
                             ip_addresses: () => [],
                         })
                     ],
@@ -1098,7 +967,7 @@ Vue.component('packet', {
                 },
                 'DHCPIPAddressOption': {
                     mixins: [
-                        Packet_Mixin_Factory(['ip_address'])
+                        Model_Mixin_Factory(['ip_address'])
                     ],
                     template: `
                         <div class="form-horizontal">
@@ -1126,7 +995,7 @@ Vue.component('packet', {
                 },
                 'DHCPUIntOption': {
                     mixins: [
-                        Packet_Mixin_Factory(['seconds'])
+                        Model_Mixin_Factory(['seconds'])
                     ],
                     template: `
                         <div class="form-horizontal">
@@ -1154,7 +1023,7 @@ Vue.component('packet', {
                 },
                 'DHCPMessageTypeOption': {
                     mixins: [
-                        Packet_Mixin_Factory({
+                        Model_Mixin_Factory({
                             'message_type': 1
                         })
                     ],
@@ -1178,7 +1047,7 @@ Vue.component('packet', {
                 },
                 'DHCPParameterRequestListOption': {
                     mixins: [
-                        Packet_Mixin_Factory({
+                        Model_Mixin_Factory({
                             codes: () => []
                         })
                     ],
@@ -1221,7 +1090,7 @@ Vue.component('packet', {
                 },
                 'DHCPClientIdentifierOption': {
                     mixins: [
-                        Packet_Mixin_Factory(['physical_address'])
+                        Model_Mixin_Factory(['physical_address'])
                     ],
                     template: `
                         <div class="form-horizontal">
@@ -1277,7 +1146,7 @@ Vue.component('packet', {
                 },
                 'DHCPUnknownOption': {
                     mixins: [
-                        Packet_Mixin_Factory([
+                        Model_Mixin_Factory([
                             'type',
                             'raw_data'
                         ])
@@ -1319,7 +1188,7 @@ Vue.component('packet', {
         },
         'Payload': {
             mixins: [
-                Packet_Mixin_Factory([
+                Model_Mixin_Factory([
                     'string',
                     'data'
                 ])

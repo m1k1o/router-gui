@@ -123,7 +123,7 @@ Vue.component('testcases_modal', {
     components: {
         'ARPRequestTest': {
             mixins: [
-                Packet_Mixin_Factory(['requested_ip', 'expected_mac'])
+                Model_Mixin_Factory(['requested_ip', 'expected_mac'])
             ],
             template: `
                 <div class="form-group ">
@@ -152,7 +152,7 @@ Vue.component('testcases_modal', {
         'EchoReplyTest': {
             props: ['generator_interface'],
             mixins: [
-                Packet_Mixin_Factory(['ip', 'mac'])
+                Model_Mixin_Factory(['ip', 'mac'])
             ],
             data: () => ({
                 arp_is_lookingup: false

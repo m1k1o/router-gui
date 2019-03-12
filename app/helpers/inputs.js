@@ -1,37 +1,3 @@
-function Input_Validation_Mixin(condition = null) {
-    return {
-        props: {
-            value: {
-                //type: String,
-                default: ""
-            },
-            required: {
-                type: Boolean,
-                default: false
-            }
-        },
-        data: () => ({
-            is_valid: false
-        }),
-        watch: {
-            value: {
-                immediate: true,
-                handler() {
-                    this.is_valid = (!this.required && (this.value === "" || this.value == null) ? true :
-                        (condition === null ? this.validate(this.value) : condition(this.value))
-                    )
-                }
-            },
-            is_valid: {
-                immediate: true,
-                handler() {
-                    this.$emit('valid', this.is_valid)
-                }
-            }
-        }
-    }
-}
-
 Vue.component('ip-address-input', {
     mixins: [
         Input_Validation_Mixin((value) =>
