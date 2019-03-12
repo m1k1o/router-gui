@@ -732,16 +732,19 @@ const store = new Vuex.Store({
 
             // Create instance
             var instance = new WebSocket("ws://" + hostname + ":" + port);
-            instance.onopen = () => commit('WEBSOCKETS_RUNNING', true);
+            instance.onopen = () => {
+                commit('WEBSOCKETS_RUNNING', true);
+                console.log("Websocket Connect.");
+            }
             instance.onclose = () => {
                 commit('WEBSOCKETS_RUNNING', false);
-                console.log("WS CLOSE");
+                console.log("Websocket Disconnect.");
             }
             instance.onmessage = (event) => dispatch('WEBSOCKETS_ONMESSAGE', event.data);
             instance.onerror = (e) => { //TODO: Show error
                 commit('WEBSOCKETS_RUNNING', false);
                 commit('WEBSOCKETS_INSTANCE', null);
-                console.log("WS ERROR");
+                console.log("Websocket Error.");
             }
             
 			commit('WEBSOCKETS_INSTANCE', instance);
@@ -756,8 +759,6 @@ const store = new Vuex.Store({
                     commit('ANALYZER_TEST_CASE_PUSH', data)
                 break;
             }
-
-            console.log(key, data)
         },
         WEBSOCKETS_EMIT({state}, data) {
             state.websockets.instance.send(JSON.stringify(data));
