@@ -102,7 +102,7 @@ Vue.component('testcases_modal', {
                 });
                 this.index = null;
             } else {
-                this.$set(this, 'test_case', this.test_cases[index]);
+                this.$set(this, 'test_case', { ...this.test_cases[index]});
                 this.index = index;
             }
         },

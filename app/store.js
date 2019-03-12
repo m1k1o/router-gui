@@ -94,7 +94,7 @@ const store = new Vuex.Store({
                 log: [],
     
                 time_out: null,
-                status: null
+                status: 0
             }
         },
 
