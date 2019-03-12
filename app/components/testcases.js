@@ -11,9 +11,66 @@ Vue.component('testcases', {
             </div>
             
             <div class="card-body">
+                <div class="card mb-3">
+                    <div class="card-header"
+                    :class="{
+                        'text-black bg-light': test.status == status.Idle,
+                        'text-white bg-info': test.status == status.Running,
+                        'text-white bg-success': test.status == status.Success,
+                        'text-white bg-danger': test.status == status.Error,
+                        'text-white bg-warning': test.status == status.Timeout,
+                        'text-black bg-light': test.status == status.Canceled
+                        }">
+                        <h5 class="card-title my-2">
+                            Testing
+                            <span class="float-right"> {{test_status}} </span>
+                        </h5>
+                    </div>
+
+                    <div class="card-body form-horizontal">
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">Generator Interface</label>
+                            <div class="col-sm-8">
+                                <interface-input v-model="generator_interface" :running_only="true"></interface-input>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-4 col-form-label">Analyzer Interface</label>
+                            <div class="col-sm-8">
+                                <interface-input v-model="analyzer_interface" :running_only="true"></interface-input>
+                            </div>
+                        </div>
+                        <div class="form-group row" v-if="test.running">
+                            <label class="col-sm-4 col-form-label"></label>
+                            <div class="col-sm-8">
+                                <button class="btn btn-danger" @click="Stop()">STOP</button>
+                            </div>
+                        </div>
+                        
+                        <div class="progress mb-3" v-if="test.running">
+                            <div class="progress-bar progress-bar-striped" style="width:0;" :style="'animation: progress_animate '+test.time_out+'s ease-in-out forwards;'"></div>
+                        </div>
+                        
+                        <div class="alert alert-danger" v-if="test.error">
+                            {{ test.message }}
+                        </div>
+                        <template v-else-if="started">
+                            <h5> Log: </h5>
+                            <pre>{{test_log}}</pre>
+                        </template>
+                    </div>
+                </div>
+
                 <ul class="list-group mb-3" v-if="Object.keys(test_cases).length > 0">
                     <li class="list-group-item" v-for="(test_case, index) in test_cases">
                         <div class="float-right">
+                            <button
+                                class="btn btn-success btn-sm"
+                                v-if="!test.running"
+                                :disabled="!can_start"
+                                @click="can_start && Start(index)"
+                                :title="can_start ? '' : 'Select interfaces...'"
+                            >RUN</button>
                             <button class="btn btn-primary btn-sm" @click="Edit(index)">Edit</button>
                             <button class="btn btn-danger btn-sm" @click="Remove(index)">Remove</button>
                         </div>
@@ -39,8 +96,43 @@ Vue.component('testcases', {
             />
         </div>
     `,
+    computed: {
+        can_start() {
+            return this.generator_interface && this.analyzer_interface;
+        },
+        test() {
+            return this.$store.state.analyzer.test;
+        },
+        test_log() {
+            return this.$store.state.analyzer.test.log.join("\n");
+        },
+        test_status() {
+            if (this.test.status == this.status.Idle)
+                return 'Idle'
+            if (this.test.status == this.status.Running)
+                return 'Running'
+            if (this.test.status == this.status.Success)
+                return 'Success'
+            if (this.test.status == this.status.Error)
+                return 'Error'
+            if (this.test.status == this.status.Timeout)
+                return 'Timeout'
+            if (this.test.status == this.status.Cancel)
+                return 'Cancel'
+        },
+        test_cases() {
+            return this.$store.state.test_cases;
+        },
+        status() {
+            return this.$store.state.analyzer.test_status;
+        }
+    },
     data: () => {
         return {
+            started: false,
+            generator_interface: null,
+            analyzer_interface: null,
+
             import_modal: false,
             edit_modal: false,
 
@@ -67,11 +159,26 @@ Vue.component('testcases', {
         },
         Remove(index) {
             this.$store.dispatch('ANALYZER_STORAGE_REMOVE', index)
-        }
-    },
-    computed: {
-        test_cases() {
-            return this.$store.state.test_cases;
+        },
+        Start(index) {
+            this.started = true;
+
+            // start
+            this.$store.commit('ANALYZER_TEST_CASE_CLEAR');
+            this.$store.dispatch('WEBSOCKETS_EMIT', {
+                key: 'test_case',
+                action: 'start',
+                analyzer_interface: this.analyzer_interface,
+                generator_interface: this.generator_interface,
+                test_case: this.test_cases[index]
+            });
+        },
+        Stop(index) {
+            // stop
+            this.$store.dispatch('WEBSOCKETS_EMIT', {
+                key: 'test_case',
+                action: 'stop'
+            });
         }
     },
     components: {
