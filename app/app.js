@@ -26,7 +26,6 @@ const app = new Vue({
             
             <interfaces></interfaces>
             <testcases></testcases>
-            <analyzer></analyzer>
             <crafting></crafting>
             <sniffing></sniffing>
 
