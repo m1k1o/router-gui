@@ -170,7 +170,7 @@ Vue.component('testcases', {
                 action: 'start',
                 analyzer_interface: this.analyzer_interface,
                 generator_interface: this.generator_interface,
-                test_case: this.test_cases[index]
+                test_case_id: index
             });
         },
         Stop(index) {
@@ -198,8 +198,8 @@ Vue.component('testcases', {
             data() {
                 return {
                     visible: false,
-                    data: {},
-                    error: false
+                    error: false,
+                    data: {}
                 }
             },
             template: `
@@ -222,11 +222,11 @@ Vue.component('testcases', {
                                 From File
                             </label>
                             <div class="btn-group col-sm-8">
-                                <input type="file" class="form-control" ref="file" @change="HandleFile($event)" />
+                                <input type="file" class="form-control" ref="file" @change="HandleFile()" />
                             </div>
                         </div>
 
-                        <div class="alert alert-danger" v-if="error">{{error}}</div>
+                        <div class="alert alert-danger" v-if="error">{{ error }}</div>
                     </div>
                     <div slot="footer">
                         <button v-on:click="Action()" class="btn btn-success">Import data</button>
@@ -235,7 +235,7 @@ Vue.component('testcases', {
                 </modal>
             `,
             methods: {
-                HandleFile(event) {
+                HandleFile() {
                     this.error = false;
 
                     var el = this.$refs.file;
@@ -254,14 +254,9 @@ Vue.component('testcases', {
                     reader.readAsText(file);
                 },
                 Open() {
+                    this.visible = true;
                     this.error = false;
                     this.data = "";
-                    this.visible = true;
-
-                    setTimeout(() => {
-                        var file = this.$refs.file;
-                        console.log(file.files);
-                    }, 0)
                 },
                 Close() {
                     this.visible = false;
