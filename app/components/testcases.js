@@ -40,12 +40,24 @@ Vue.component('testcases', {
                                 <interface-input v-model="analyzer_interface" :running_only="true"></interface-input>
                             </div>
                         </div>
-                        <div class="form-group row" v-if="test.running">
-                            <label class="col-sm-4 col-form-label"></label>
-                            <div class="col-sm-8">
-                                <button class="btn btn-danger" @click="Stop()">STOP</button>
-                            </div>
-                        </div>
+                        
+                        <ul class="list-group mb-3" v-if="test_case_id">
+                            <li class="list-group-item">
+                                <div class="float-right">
+                                    <button
+                                        class="btn btn-success"
+                                        v-if="!test.running"
+                                        :disabled="!can_start"
+                                        @click="can_start && Start(test_case_id)"
+                                        :title="can_start ? '' : 'Select interfaces...'"
+                                    >Repeat</button>
+                                    <button class="btn btn-danger" v-else @click="Stop()">Stop</button>
+                                </div>
+                                <div>
+                                    <strong>{{ test_cases[test_case_id].name }}</strong><br><small>{{ test_cases[test_case_id].description }}</small>
+                                </div>
+                            </li>
+                        </ul>
                         
                         <div class="progress mb-3" v-if="test.running">
                             <div class="progress-bar progress-bar-striped" style="width:0;" :style="'animation: progress_animate '+test.time_out+'s ease-in-out forwards;'"></div>
@@ -55,8 +67,8 @@ Vue.component('testcases', {
                             {{ test.message }}
                         </div>
                         <template v-else-if="started">
-                            <h5> Log: </h5>
-                            <pre>{{test_log}}</pre>
+                            <h5> Log: <a href="javascript:void(0);" v-if="!test.running" @click="Clear()"> Clear </a></h5>
+                            <pre v-auto-scroll style="width:100%;height:500px;overflow:auto;" ref="logs"><span v-for="log in test.log">{{ log }}\n</span></pre>
                         </template>
                     </div>
                 </div>
@@ -103,9 +115,6 @@ Vue.component('testcases', {
         test() {
             return this.$store.state.analyzer.test;
         },
-        test_log() {
-            return this.$store.state.analyzer.test.log.join("\n");
-        },
         test_status() {
             if (this.test.status == this.status.Idle)
                 return 'Idle'
@@ -132,11 +141,10 @@ Vue.component('testcases', {
             started: false,
             generator_interface: null,
             analyzer_interface: null,
+            test_case_id: null,
 
             import_modal: false,
             edit_modal: false,
-
-            test_case: null
         }
     },
     methods: {
@@ -160,6 +168,10 @@ Vue.component('testcases', {
         Remove(index) {
             this.$store.dispatch('ANALYZER_STORAGE_REMOVE', index)
         },
+        Clear() {
+            this.started = false;
+            this.$store.commit('ANALYZER_TEST_CASE_CLEAR');
+        },
         Start(index) {
             this.started = true;
 
@@ -170,10 +182,10 @@ Vue.component('testcases', {
                 action: 'start',
                 analyzer_interface: this.analyzer_interface,
                 generator_interface: this.generator_interface,
-                test_case_id: index
+                test_case_id: (this.test_case_id = index)
             });
         },
-        Stop(index) {
+        Stop() {
             // stop
             this.$store.dispatch('WEBSOCKETS_EMIT', {
                 key: 'test_case',
