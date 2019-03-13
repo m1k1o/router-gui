@@ -123,7 +123,7 @@ Vue.component('testcases_modal', {
         }
     },
     components: {
-        'ARPRequestTest': {
+        'ARPResponseTest': {
             mixins: [
                 Model_Mixin_Factory(['requested_ip', 'expected_mac'])
             ],
@@ -148,6 +148,37 @@ Vue.component('testcases_modal', {
                                 placeholder="Unspecified"
                                 @valid="Valid('expected_mac', $event)"
                             ></mac-input>
+                        </div>
+                    </div>
+                </div>
+            `
+        },
+        'ARPRequestTest': {
+            mixins: [
+                Model_Mixin_Factory(['device_mac', 'expected_ip'])
+            ],
+            template: `
+                <div class="form-group ">
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Device MAC</label>
+                        <div class="col-sm-8 input-group">
+                            <mac-input
+                                v-model="device_mac"
+                                :required="false"
+                                placeholder="Unspecified"
+                                @valid="Valid('device_mac', $event)"
+                            ></mac-input>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Expected IP</label>
+                        <div class="col-sm-8">
+                            <ip-address-input
+                                v-model="expected_ip"
+                                :required="false"
+                                placeholder="Unspecified"
+                                @valid="Valid('expected_ip', $event)"
+                            ></ip-address-input>
                         </div>
                     </div>
                 </div>

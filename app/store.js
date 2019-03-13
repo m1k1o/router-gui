@@ -73,6 +73,10 @@ const store = new Vuex.Store({
                     name: "ARP Request",
                     component: "ARPRequestTest"
                 },
+                "ARPResponse": {
+                    name: "ARP Response",
+                    component: "ARPResponseTest"
+                },
                 "EchoReply": {
                     name: "Echo Reply",
                     component: "EchoReplyTest"
