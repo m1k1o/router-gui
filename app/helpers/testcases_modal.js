@@ -83,8 +83,8 @@ Vue.component('testcases_modal', {
                     v-model="test_case" 
     
                     :is="selected_test.component"
-                    :generator_interface="test_case.generator_interface" 
-                    :analyzer_interface="test_case.analyzer_interface"
+                    :generator_interface="generator_interface" 
+                    :analyzer_interface="analyzer_interface"
                     @valid="valid = $event"
                 />
             </div>
