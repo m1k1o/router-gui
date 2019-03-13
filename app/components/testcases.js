@@ -90,7 +90,7 @@ Vue.component('testcases', {
                         }"
                     > {{test_status}} </span></h5>
 
-                    <div class="progress mb-3" v-if="test.running">
+                    <div class="progress mb-3">
                         <div class="progress-bar progress-bar-striped" style="width:0;" :style="'animation: progress_animate '+test.time_out+'s ease-in-out forwards;'"></div>
                     </div>
                     
