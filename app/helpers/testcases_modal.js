@@ -184,10 +184,10 @@ Vue.component('testcases_modal', {
                 </div>
             `
         },
-        'EchoReplyTest': {
+        'ICMPEchoReplyTest': {
             props: ['generator_interface'],
             mixins: [
-                Model_Mixin_Factory(['ip', 'mac'])
+                Model_Mixin_Factory(['destination_mac', 'destination_ip'])
             ],
             data: () => ({
                 arp_is_lookingup: false
@@ -195,26 +195,26 @@ Vue.component('testcases_modal', {
             template: `
                 <div class="form-group ">
                     <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">IP</label>
-                        <div class="col-sm-8">
-                            <ip-address-input
-                                v-model="ip"
-                                :required="true"
-                                @valid="Valid('ip', $event)"
-                            ></ip-address-input>
-                        </div>
-                    </div>
-                    <div class="form-group row">
-                        <label class="col-sm-4 col-form-label">MAC</label>
+                        <label class="col-sm-4 col-form-label">Destination MAC</label>
                         <div class="col-sm-8 input-group">
                             <mac-input
-                                v-model="mac"
+                                v-model="destination_mac"
                                 :required="true"
-                                @valid="Valid('mac', $event)"
+                                @valid="Valid('destination_mac', $event)"
                             ></mac-input>
                             <div class="input-group-append" v-if="generator_interface">
                                 <button class="btn btn-outline-secondary" @click="!arp_is_lookingup && ARP()" v-bind:class="{'disabled': arp_is_lookingup}"> {{ arp_is_lookingup ? 'Processing...' : 'ARP Request' }}</button>
                             </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Destination IP</label>
+                        <div class="col-sm-8">
+                            <ip-address-input
+                                v-model="destination_ip"
+                                :required="true"
+                                @valid="Valid('destination_ip', $event)"
+                            ></ip-address-input>
                         </div>
                     </div>
                 </div>
@@ -225,10 +225,64 @@ Vue.component('testcases_modal', {
                     
                     ajax("ARP", "Lookup", {
                         interface: this.generator_interface,
-                        ip: this.ip
+                        ip: this.destination_ip
                     })
                     .then(({ mac }) => {
-                        this.mac = mac;
+                        this.destination_mac = mac;
+                    }, () => {})
+                    .finally(() => {
+                        this.arp_is_lookingup = false
+                    });
+                }
+            }
+        },
+        'ICMPEchoRequestTest': {
+            props: ['generator_interface'],
+            mixins: [
+                Model_Mixin_Factory(['source_mac', 'source_ip'])
+            ],
+            data: () => ({
+                arp_is_lookingup: false
+            }),
+            template: `
+                <div class="form-group ">
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Source MAC</label>
+                        <div class="col-sm-8 input-group">
+                            <mac-input
+                                v-model="source_mac"
+                                :required="false"
+                                placeholder="Unspecified"
+                                @valid="Valid('source_mac', $event)"
+                            ></mac-input>
+                            <div class="input-group-append" v-if="generator_interface">
+                                <button class="btn btn-outline-secondary" @click="!arp_is_lookingup && ARP()" v-bind:class="{'disabled': arp_is_lookingup}"> {{ arp_is_lookingup ? 'Processing...' : 'ARP Request' }}</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label">Source IP</label>
+                        <div class="col-sm-8">
+                            <ip-address-input
+                                v-model="source_ip"
+                                :required="false"
+                                placeholder="Unspecified"
+                                @valid="Valid('source_ip', $event)"
+                            ></ip-address-input>
+                        </div>
+                    </div>
+                </div>
+            `,
+            methods: {
+                ARP() {
+                    this.arp_is_lookingup = true
+                    
+                    ajax("ARP", "Lookup", {
+                        interface: this.generator_interface,
+                        ip: this.source_ip
+                    })
+                    .then(({ mac }) => {
+                        this.source_mac = mac;
                     }, () => {})
                     .finally(() => {
                         this.arp_is_lookingup = false

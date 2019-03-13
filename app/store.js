@@ -77,9 +77,13 @@ const store = new Vuex.Store({
                     name: "ARP Response",
                     component: "ARPResponseTest"
                 },
-                "EchoReply": {
-                    name: "Echo Reply",
-                    component: "EchoReplyTest"
+                "ICMPEchoReply": {
+                    name: "ICMP Echo Reply",
+                    component: "ICMPEchoReplyTest"
+                },
+                "ICMPEchoRequest": {
+                    name: "ICMP Echo Request",
+                    component: "ICMPEchoRequestTest"
                 }
             },
             test_status: {
