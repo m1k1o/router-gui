@@ -14,6 +14,7 @@ Vue.component('testcases_modal', {
     data() {
         return {
             visible: false,
+            valid: true,
 
             index: false,
             test_case: null
@@ -83,11 +84,12 @@ Vue.component('testcases_modal', {
     
                     :is="selected_test.component"
                     :generator_interface="test_case.generator_interface" 
-                    :analyzer_interface="test_case.analyzer_interface" 
+                    :analyzer_interface="test_case.analyzer_interface"
+                    @valid="valid = $event"
                 />
             </div>
             <div slot="footer">
-                <button class="btn btn-success" @click="Action()">Save Changes</button>
+                <button class="btn btn-success" @click="Action()" :disabled="!valid">Save Changes</button>
                 <button class="btn btn-secondary" @click="Close()">Cancel</button>
             </div>
         </modal>
@@ -133,6 +135,7 @@ Vue.component('testcases_modal', {
                             <ip-address-input
                                 v-model="requested_ip"
                                 :required="true"
+                                @valid="Valid('requested_ip', $event)"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -143,6 +146,7 @@ Vue.component('testcases_modal', {
                                 v-model="expected_mac"
                                 :required="false"
                                 placeholder="Unspecified"
+                                @valid="Valid('expected_mac', $event)"
                             ></mac-input>
                         </div>
                     </div>
@@ -165,6 +169,7 @@ Vue.component('testcases_modal', {
                             <ip-address-input
                                 v-model="ip"
                                 :required="true"
+                                @valid="Valid('ip', $event)"
                             ></ip-address-input>
                         </div>
                     </div>
@@ -174,6 +179,7 @@ Vue.component('testcases_modal', {
                             <mac-input
                                 v-model="mac"
                                 :required="true"
+                                @valid="Valid('mac', $event)"
                             ></mac-input>
                             <div class="input-group-append" v-if="generator_interface">
                                 <button class="btn btn-outline-secondary" @click="!arp_is_lookingup && ARP()" v-bind:class="{'disabled': arp_is_lookingup}"> {{ arp_is_lookingup ? 'Processing...' : 'ARP Request' }}</button>
