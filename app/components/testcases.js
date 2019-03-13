@@ -59,7 +59,7 @@ Vue.component('testcases', {
             <modal v-if="results" @close="Close()">
                 <ul class="list-group mb-0 w-100" slot="header">
                     <li class="list-group-item">
-                        <div class="float-right">
+                        <div class="float-right ml-2">
                             <button
                                 class="btn btn-success"
                                 v-if="!test.running"
@@ -81,19 +81,19 @@ Vue.component('testcases', {
                 <div v-else slot="body" class="form-horizontal">
                     <h5> Status: <span
                         :class="{
-                            'text-light': test.status == status.Idle,
+                            //'': test.status == status.Idle,
                             'text-info': test.status == status.Running,
                             'text-success': test.status == status.Success,
                             'text-danger': test.status == status.Error,
                             'text-warning': test.status == status.Timeout,
-                            'text-light': test.status == status.Canceled
+                            //'': test.status == status.Canceled,
                         }"
                     > {{test_status}} </span></h5>
-
-                    <div class="progress mb-3">
-                        <div class="progress-bar progress-bar-striped" style="width:0;" :style="'animation: progress_animate '+test.time_out+'s ease-in-out forwards;'"></div>
-                    </div>
                     
+                    <div class="progress mb-3">
+                        <div class="progress-bar progress-bar-striped" :style="test.running ? 'width:0;animation: progress_animate '+test.time_out+'s ease-in-out forwards;' : (test.status == status.Canceled ? 'width:0;' : 'width:100%;')"></div>
+                    </div>
+
                     <pre v-auto-scroll style="width:100%;height:50vh;overflow:auto;" ref="logs"><span v-for="log in test.log">{{ log }}\n</span></pre>
                 </div>
             </modal>
@@ -127,8 +127,8 @@ Vue.component('testcases', {
                 return 'Error'
             if (this.test.status == this.status.Timeout)
                 return 'Timeout'
-            if (this.test.status == this.status.Cancel)
-                return 'Cancel'
+            if (this.test.status == this.status.Canceled)
+                return 'Canceled'
         },
         test_cases() {
             return this.$store.state.test_cases;
