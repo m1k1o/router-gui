@@ -1,5 +1,5 @@
 Vue.component('testcases_modal', {
-    props: ['opened'],
+    props: ['opened', 'generator_interface', 'analyzer_interface'],
     watch: { 
         opened: function(newVal, oldVal) {
             if(!oldVal && newVal) {

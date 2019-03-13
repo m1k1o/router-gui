@@ -106,6 +106,9 @@ Vue.component('testcases', {
             <testcases_modal
                 :opened="edit_modal"
                 @closed="edit_modal = false"
+                
+                :generator_interface="generator_interface" 
+                :analyzer_interface="analyzer_interface"
             />
         </div>
     `,
