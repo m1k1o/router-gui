@@ -313,7 +313,7 @@ const store = new Vuex.Store({
                     return {
                         "type": "Ethernet",
                         "source_hw_address": if_mac,
-                        "ethernet_packet_type": 2054,
+                        "ethernet_packet_type": 2048,
                         "payload_packet": {
                             "source_address": if_ip,
                             "time_to_live": 128,
@@ -336,11 +336,11 @@ const store = new Vuex.Store({
                     return {
                         "type": "Ethernet",
                         "source_hw_address": if_mac,
-                        "ethernet_packet_type": 2054,
+                        "ethernet_packet_type": 2048,
                         "payload_packet": {
                             "source_address": if_ip,
                             "time_to_live": 128,
-                            "ip_protocol_type": 1,
+                            "ip_protocol_type": 17,
                             "payload_packet": {
                                 "type": "UDP"
                             },
@@ -352,11 +352,11 @@ const store = new Vuex.Store({
                     return {
                         "type": "Ethernet",
                         "source_hw_address": if_mac,
-                        "ethernet_packet_type": 2054,
+                        "ethernet_packet_type": 2048,
                         "payload_packet": {
                             "source_address": if_ip,
                             "time_to_live": 128,
-                            "ip_protocol_type": 1,
+                            "ip_protocol_type": 6,
                             "payload_packet": {
                                 "type": "TCP"
                             },

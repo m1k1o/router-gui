@@ -64,8 +64,8 @@ Vue.component('crafting', {
                 interval: null
             }),
             template: `
-                <div class="form-group">
-                    <div class="form-group row">
+                <div class="mt-3">
+                    <div class="form-group row mb-0">
                         <label class="col-sm-4 col-form-label form-control-plaintext text-right">
                             Repeat <input type="checkbox" value="1" v-model="active" class="ml-1">
                         </label>
