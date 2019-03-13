@@ -12,19 +12,8 @@ Vue.component('testcases', {
             
             <div class="card-body">
                 <div class="card mb-3">
-                    <div class="card-header"
-                    :class="{
-                        'text-black bg-light': test.status == status.Idle,
-                        'text-white bg-info': test.status == status.Running,
-                        'text-white bg-success': test.status == status.Success,
-                        'text-white bg-danger': test.status == status.Error,
-                        'text-white bg-warning': test.status == status.Timeout,
-                        'text-black bg-light': test.status == status.Canceled
-                        }">
-                        <h5 class="card-title my-2">
-                            Testing
-                            <span class="float-right"> {{test_status}} </span>
-                        </h5>
+                    <div class="card-header">
+                        <h5 class="card-title my-2"> Testing </h5>
                     </div>
 
                     <div class="card-body form-horizontal">
@@ -40,36 +29,6 @@ Vue.component('testcases', {
                                 <interface-input v-model="analyzer_interface" :running_only="true"></interface-input>
                             </div>
                         </div>
-                        
-                        <ul class="list-group mb-3" v-if="test_case_id">
-                            <li class="list-group-item">
-                                <div class="float-right">
-                                    <button
-                                        class="btn btn-success"
-                                        v-if="!test.running"
-                                        :disabled="!can_start"
-                                        @click="can_start && Start(test_case_id)"
-                                        :title="can_start ? '' : 'Select interfaces...'"
-                                    >Repeat</button>
-                                    <button class="btn btn-danger" v-else @click="Stop()">Stop</button>
-                                </div>
-                                <div>
-                                    <strong>{{ test_cases[test_case_id].name }}</strong><br><small>{{ test_cases[test_case_id].description }}</small>
-                                </div>
-                            </li>
-                        </ul>
-                        
-                        <div class="progress mb-3" v-if="test.running">
-                            <div class="progress-bar progress-bar-striped" style="width:0;" :style="'animation: progress_animate '+test.time_out+'s ease-in-out forwards;'"></div>
-                        </div>
-                        
-                        <div class="alert alert-danger" v-if="test.error">
-                            {{ test.message }}
-                        </div>
-                        <template v-else-if="started">
-                            <h5> Log: <a href="javascript:void(0);" v-if="!test.running" @click="Clear()"> Clear </a></h5>
-                            <pre v-auto-scroll style="width:100%;height:500px;overflow:auto;" ref="logs"><span v-for="log in test.log">{{ log }}\n</span></pre>
-                        </template>
                     </div>
                 </div>
 
@@ -96,6 +55,48 @@ Vue.component('testcases', {
                     <button class="btn btn-outline-info m-2" @click="Edit(true)">+ Create Test Case</button>
                 </div>
             </div>
+            
+            <modal v-if="results" @close="Close()">
+                <ul class="list-group mb-0 w-100" slot="header">
+                    <li class="list-group-item">
+                        <div class="float-right">
+                            <button
+                                class="btn btn-success"
+                                v-if="!test.running"
+                                :disabled="!can_start"
+                                @click="can_start && Start(test_case_id)"
+                                :title="can_start ? '' : 'Select interfaces...'"
+                            >Repeat</button>
+                            <button class="btn btn-danger" v-else @click="Stop()">Stop</button>
+                        </div>
+                        <div>
+                            <strong>{{ test_cases[test_case_id].name }}</strong><br><small>{{ test_cases[test_case_id].description }}</small>
+                        </div>
+                    </li>
+                </ul>
+                
+                <div slot="body" class="alert alert-danger" v-if="test.error">
+                    {{ test.message }}
+                </div>
+                <div v-else slot="body" class="form-horizontal">
+                    <h5> Status: <span
+                        :class="{
+                            'text-light': test.status == status.Idle,
+                            'text-info': test.status == status.Running,
+                            'text-success': test.status == status.Success,
+                            'text-danger': test.status == status.Error,
+                            'text-warning': test.status == status.Timeout,
+                            'text-light': test.status == status.Canceled
+                        }"
+                    > {{test_status}} </span></h5>
+
+                    <div class="progress mb-3" v-if="test.running">
+                        <div class="progress-bar progress-bar-striped" style="width:0;" :style="'animation: progress_animate '+test.time_out+'s ease-in-out forwards;'"></div>
+                    </div>
+                    
+                    <pre v-auto-scroll style="width:100%;height:50vh;overflow:auto;" ref="logs"><span v-for="log in test.log">{{ log }}\n</span></pre>
+                </div>
+            </modal>
 
             <import_modal
                 :opened="import_modal"
@@ -138,7 +139,7 @@ Vue.component('testcases', {
     },
     data: () => {
         return {
-            started: false,
+            results: false,
             generator_interface: null,
             analyzer_interface: null,
             test_case_id: null,
@@ -168,12 +169,13 @@ Vue.component('testcases', {
         Remove(index) {
             this.$store.dispatch('ANALYZER_STORAGE_REMOVE', index)
         },
-        Clear() {
-            this.started = false;
+        Close() {
+            this.results = false;
+            this.Stop();
             this.$store.commit('ANALYZER_TEST_CASE_CLEAR');
         },
         Start(index) {
-            this.started = true;
+            this.results = true;
 
             // start
             this.$store.commit('ANALYZER_TEST_CASE_CLEAR');
