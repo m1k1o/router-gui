@@ -1,4 +1,4 @@
-Vue.component('testcases_modal', {
+Vue.component('analyzer_modal', {
     props: ['opened', 'generator_interface', 'analyzer_interface'],
     watch: { 
         opened: function(newVal, oldVal) {
@@ -41,14 +41,14 @@ Vue.component('testcases_modal', {
             </div>
             <div slot="body" class="form-horizontal">
                 <div class="form-group row">
-                    <label class="col-sm-4 col-form-label">Test Case</label>
+                    <label class="col-sm-4 col-form-label">Type</label>
                     <div class="col-sm-8">
                         <select class="form-control" v-model="test_case.type">
                             <option v-for="({name}, id) in test_presets" :value="id">{{ name }}</option>
                         </select>
                     </div>
                 </div>
-                
+                <hr>
                 <div class="form-group row">
                     <label class="col-sm-4 col-form-label">Name</label>
                     <div class="col-sm-8">
@@ -64,7 +64,7 @@ Vue.component('testcases_modal', {
                 <div class="form-group row">
                     <label class="col-sm-4 col-form-label">Timeout <small>sec.</small></label>
                     <div class="col-sm-8">
-                        <input type="text" class="form-control" v-model="test_case.timeout_sec" placeholder="Use default" />
+                        <input type="number" class="form-control" v-model="test_case.timeout_sec" placeholder="Use default" />
                     </div>
                 </div>
                 <div class="form-group row">

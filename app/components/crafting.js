@@ -23,7 +23,7 @@ Vue.component('crafting', {
                 </div>
 
                 <interface-show :id="interface_id" style="position:absolute;margin-top:-4px;"></interface-show>
-                <h5 style="margin-left:55px;" class="card-title my-2">Packet Crafting</h5>
+                <h5 style="margin-left:55px;" class="card-title my-2">Packet Crafter</h5>
             </div>
             <div class="card-body">
                 <packet

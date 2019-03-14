@@ -16,10 +16,10 @@ Vue.component('sniffing', {
                 </div>
                 
                 <interface-show :id="active_interface" style="position:absolute;margin-top:-4px;"></interface-show>
-                <h5 style="margin-left:55px;" class="card-title my-2">Sniffing</h5>
+                <h5 style="margin-left:55px;" class="card-title my-2">Packet Sniffer</h5>
             </div>
 
-            <div v-auto-scroll style="width:100%;height:500px;overflow:auto;">
+            <div v-auto-scroll style="width:100%;height:500px;overflow:auto;" v-if="active_interface">
                 <table class="table table-sm" style="width:100%;" v-if="data.length > 0">
                     <thead>
                         <th width="1%"> Src MAC </th>

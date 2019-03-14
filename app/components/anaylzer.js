@@ -1,4 +1,4 @@
-Vue.component('testcases', {
+Vue.component('analyzer', {
     template: `
         <div class="card mb-3">
             <div class="card-header">
@@ -7,13 +7,13 @@ Vue.component('testcases', {
                     <button class="btn btn-primary" @click="Export()">Export</button>
                 </div>
 
-                <h5 class="card-title my-2">Test Cases</h5>
+                <h5 class="card-title my-2">Packet Analyzer</h5>
             </div>
             
             <div class="card-body">
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h5 class="card-title my-2"> Testing </h5>
+                        <h5 class="card-title my-2">Environment</h5>
                     </div>
 
                     <div class="card-body form-horizontal">
@@ -103,7 +103,7 @@ Vue.component('testcases', {
                 @closed="import_modal = false"
             />
 
-            <testcases_modal
+            <analyzer_modal
                 :opened="edit_modal"
                 @closed="edit_modal = false"
                 
