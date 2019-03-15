@@ -2,9 +2,7 @@ const app = new Vue({
     el: '#app',
     store,
     data: {
-        generator_modal: false,
         connection_modal: false,
-        
         update_interval: null,
 
         push_interval: null,
@@ -18,32 +16,24 @@ const app = new Vue({
     template: `
         <div class="container mt-3">
             <div class="float-right btn-group">
-                <button class="btn btn-primary" v-on:click="generator_modal = true">Packet Generator</button>
                 <button class="btn btn-info" v-on:click="connection_modal = true">Connection Settings</button>
-            </div>
-
-            <h3 class="mb-3">Network Traffic Analyzer</h3>
-            
-            <interfaces></interfaces>
-            <analyzer></analyzer>
-            <crafting></crafting>
-            <sniffing></sniffing>
-
-            <div class="float-right btn-group">
                 <button class="btn btn-danger" v-on:click="Stop();" v-if="running">Pause Requests</button>
                 <button class="btn btn-success" v-on:click="Start();" v-if="!running">Start Requests</button>
             </div>
             <h3 class="mb-3">Router</h3>
+            
+            <interfaces></interfaces>
             <arp></arp>
             <routing></routing>
             <rip></rip>
             <lldp></lldp>
             <dhcp></dhcp>
             
-            <generator_modal
-                :opened="generator_modal"
-                @closed="generator_modal = false"
-            ></generator_modal>
+            <h3 class="mb-3">Network Traffic Analyzer</h3>
+
+            <analyzer></analyzer>
+            <crafting></crafting>
+            <sniffing></sniffing>
 
             <connection_modal
                 :opened="connection_modal"
@@ -79,14 +69,7 @@ const app = new Vue({
         }
     },
     mounted() {
-        // Only INITIALIZE
-        setTimeout(() => {
-            this.$store.dispatch('INITIALIZE').then(() => {
-                this.$store.commit('STOP')
-            }, () => {})
-        })
-
-        //setTimeout(() => this.Start(), 0);
+        setTimeout(() => this.Start(), 0);
     },
     components: {
         'connection_modal': {
