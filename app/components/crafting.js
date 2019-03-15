@@ -111,6 +111,9 @@ Vue.component('crafting', {
                         packet: this.packet
                     })
                 }
+            },
+            beforeDestroy() {
+                clearInterval(this.interval);
             }
         }
     }
